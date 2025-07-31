@@ -93,7 +93,7 @@ p1 <- ggplot(fwcv, aes(x = date2, y = yield, group = date)) +
   )
 # save plot
 ggsave(
-  filename = file.path("plots", "1.GBP-OIS.png"),
+  filename = file.path("gbp_ois", "plots", "1.GBP-OIS.png"),
   plot = p1,
   width = 9,
   height = 5,
@@ -119,7 +119,7 @@ p2 <- ggplot(
     caption = "Source: Bank of England data"
   )
 ggsave(
-  here::file.path('plots', '2.GBP-OIS_12m.png'),
+  filename = file.path("gbp_ois", "plots", "2.GBP-OIS_12m.png"),
   plot = p2,
   width = 9,
   height = 5,
