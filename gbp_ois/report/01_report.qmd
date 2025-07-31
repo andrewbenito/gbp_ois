@@ -5,3 +5,17 @@ date: last-modified
 format: pdf
 ---
 
+A first chart shows how GBP OIS curves have evolved over time, alongside Bank Rate.
+
+```{r}
+source("gbp_ois/report/00_setup.R")
+
+```
+
+
+A second chart zooms in on experience in the past year.
+
+
+```{r}
+
+```
