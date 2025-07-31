@@ -1,10 +1,16 @@
 # GBP OIS Forward Curves and How they have Evolved
-# Download BoE data from url, Tidy and Plot
-# incl Ban k Rate from dbnomics
+# Download BoE data from url, Tidy and Plot incl Bank Rate
 
 # Packages ----
 lapply(
-  c('tidyverse', 'readxl', 'lubridate', 'xts', 'showtext', 'rdbnomics'),
+  c(
+    'tidyverse',
+    'readxl',
+    'lubridate',
+    'xts',
+    'showtext',
+    "data.table"
+  ),
   require,
   character.only = TRUE
 )
@@ -80,22 +86,71 @@ fwcv <- pivot_longer(df_m, !date, names_to = "tau", values_to = "yield") %>%
     date2 = ymd(as.Date(date) %m+% months(tau) - 1)
   )
 
+# Bank Rate from Bank of England ----
+url <- 'https://www.bankofengland.co.uk/-/media/boe/files/monetary-policy/baserate.xls'
+temp <- tempfile()
+download.file(url, temp)
+# read the data
+bankrate <- read_excel(temp, sheet = "HISTORICAL SINCE 1694", skip = 995) %>%
+  rename(year = 1, day = 2, month = 3, bankrate = 4) |>
+  dplyr::filter(!is.na(bankrate)) |>
+  fill(year, .direction = "down") |>
+  fill(year, .direction = "up")
 
-# Figure: Evolving Forwards----
-p1 <- ggplot(fwcv, aes(x = date2, y = yield, group = date)) +
+# Date variable
+bankrate <- bankrate |>
+  mutate(
+    date_str = paste(day, month, year, sep = " "),
+    date = as.Date(date_str, format = "%d %b %Y"),
+    date2 = ceiling_date(date, unit = 'month') - days(1)
+  ) |>
+  dplyr::select(date2, bankrate) |>
+  dplyr::filter(date2 >= as.Date('2007-01-01'))
+
+# monthly data frame
+start_date <- floor_date(min(bankrate$date2, na.rm = TRUE), unit = "month")
+end_date <- ceiling_date(Sys.Date(), unit = "month") - days(1)
+eom_dates <- seq.Date(from = start_date, to = end_date, by = "month") %>%
+  ceiling_date(unit = "month") -
+  days(1)
+eom_df <- tibble(date2 = eom_dates)
+
+# Add the most recent rate as of each month
+dat <- eom_df %>%
+  left_join(bankrate) %>%
+  fill(bankrate, .direction = "down")
+
+fwcv <- left_join(fwcv, dat, by = 'date2', relationship = "many-to-many")
+fwcv <- left_join(fwcv, bankrate, by = 'date2', relationship = "many-to-many")
+
+
+# Figure 1: Evolving Forwards----
+#================================
+latest <- fwcv |> dplyr::filter(date == max(date))
+
+ois1 <- ggplot(fwcv, aes(x = date2, y = yield, group = date)) +
   geom_line(aes(colour = as.factor(date))) +
+  geom_line(
+    data = latest,
+    aes(x = date2, y = yield),
+    color = "black",
+    lty = 2,
+    linewidth = 1.2
+  ) +
+  geom_line(aes(y = bankrate.x)) +
+  geom_hline(yintercept = 0.0, lty = 4) +
   theme(legend.position = "none") +
+  scale_x_date(date_breaks = "2 years", date_labels = "%Y") +
   labs(
-    title = "GBP OIS Curves",
+    title = "Bank Rate and GBP OIS Curves",
     subtitle = "monthly averages of end-of-day daily data",
     x = "date",
     y = "rate %",
     caption = "Source: Bank of England data"
   )
-# save plot
 ggsave(
   filename = file.path("gbp_ois", "plots", "1.GBP-OIS.png"),
-  plot = p1,
+  plot = ois1,
   width = 9,
   height = 5,
   dpi = 90,
@@ -103,52 +158,34 @@ ggsave(
   device = 'png'
 )
 
-# Recent data
+# Figure 2: Recent data, 12m lookback----
+#========================================
 comp.date <- last(fwcv$date) %m-% months(12)
 
-# Bank Rate from dbnomics ----
-bank_rate <- DBnomics::db_get_series(
-  "BOE/BR",
-  start_date = comp.date,
-  end_date = last(fwcv$date)
-) %>%
-  mutate(date = as.Date(date)) %>%
-  rename(bank_rate = value)
-
-# Merge Bank Rate with fwcv
-fwcv <- fwcv %>%
-  left_join(bank_rate, by = "date") %>%
-  mutate(
-    yield = ifelse(tau == 0, bank_rate, yield),
-    date2 = ymd(as.Date(date) %m+% months(tau) - 1)
-  ) %>%
-  select(-bank_rate)
-
-
-p2 <- ggplot(
+ois2 <- ggplot(
   subset(fwcv, date >= as.Date(comp.date)),
   aes(x = date2, y = yield, group = date)
 ) +
-  geom_line(aes(colour = as.factor(date))) +
-  geom_line(
-    data = subset(fwcv, date == last(fwcv$date)),
+  geom_line(aes(colour = as.factor(date)), linewidth = 1.4) +
+  geom_point(
+    data = subset(fwcv, date == last(date)),
     aes(x = date2, y = yield),
-    colour = "red",
-    linewidth = 1.5
+    color = "red",
+    size = 3
   ) +
+  geom_line(aes(y = bankrate), linewidth = 1.25) +
   theme(legend.position = "none") +
+  scale_x_date(date_breaks = "1 year", date_labels = "%Y") +
   labs(
-    title = "GBP OIS Curves: Past 12 months",
+    title = "GBP OIS Curves: The past 12 months",
     subtitle = "monthly averages of end-of-day daily data",
     x = "date",
     y = "rate %",
     caption = "Source: Bank of England data"
   )
-
-
 ggsave(
   filename = file.path("gbp_ois", "plots", "2.GBP-OIS_12m.png"),
-  plot = p2,
+  plot = ois2,
   width = 9,
   height = 5,
   dpi = 90,

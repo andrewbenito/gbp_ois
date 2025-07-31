@@ -2,13 +2,13 @@
 title: "OIS Report: GBP Rates and Bank Rate"
 author: Andrew Benito
 date: last-modified  
-format: pdf
+format: html
 ---
 
 A first chart shows how GBP OIS curves have evolved over time, alongside Bank Rate.
 
 ```{r}
-source("gbp_ois/report/00_setup.R")
+source("gbp_ois/report/01_setup.R")
 
 ```
 
