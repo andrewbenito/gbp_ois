@@ -1,9 +1,10 @@
 # GBP OIS Forward Curves and How they have Evolved
 # Download BoE data from url, Tidy and Plot
+# incl Ban k Rate from dbnomics
 
 # Packages ----
 lapply(
-  c('tidyverse', 'readxl', 'lubridate', 'xts', 'showtext', 'dbnomics'),
+  c('tidyverse', 'readxl', 'lubridate', 'xts', 'showtext', 'rdbnomics'),
   require,
   character.only = TRUE
 )
@@ -105,11 +106,36 @@ ggsave(
 # Recent data
 comp.date <- last(fwcv$date) %m-% months(12)
 
+# Bank Rate from dbnomics ----
+bank_rate <- DBnomics::db_get_series(
+  "BOE/BR",
+  start_date = comp.date,
+  end_date = last(fwcv$date)
+) %>%
+  mutate(date = as.Date(date)) %>%
+  rename(bank_rate = value)
+
+# Merge Bank Rate with fwcv
+fwcv <- fwcv %>%
+  left_join(bank_rate, by = "date") %>%
+  mutate(
+    yield = ifelse(tau == 0, bank_rate, yield),
+    date2 = ymd(as.Date(date) %m+% months(tau) - 1)
+  ) %>%
+  select(-bank_rate)
+
+
 p2 <- ggplot(
   subset(fwcv, date >= as.Date(comp.date)),
   aes(x = date2, y = yield, group = date)
 ) +
   geom_line(aes(colour = as.factor(date))) +
+  geom_line(
+    data = subset(fwcv, date == last(fwcv$date)),
+    aes(x = date2, y = yield),
+    colour = "red",
+    linewidth = 1.5
+  ) +
   theme(legend.position = "none") +
   labs(
     title = "GBP OIS Curves: Past 12 months",
@@ -118,6 +144,8 @@ p2 <- ggplot(
     y = "rate %",
     caption = "Source: Bank of England data"
   )
+
+
 ggsave(
   filename = file.path("gbp_ois", "plots", "2.GBP-OIS_12m.png"),
   plot = p2,
