@@ -176,7 +176,7 @@ ois2 <- ggplot(
     data = subset(fwcv, date == max(date)),
     aes(x = date2, y = yield),
     color = "red",
-    size = 3
+    size = 2
   ) +
   geom_line(aes(y = bankrate), linewidth = 1.25) +
   theme(legend.position = "none") +
