@@ -9,12 +9,14 @@ lapply(
     'lubridate',
     'xts',
     'showtext',
-    "data.table"
+    "data.table",
+    'here'
   ),
   require,
   character.only = TRUE
 )
 
+here::here()
 # Settings: ggplot2 ----
 font_add_google("Roboto Condensed", "Roboto Condensed")
 theme_set(
@@ -33,7 +35,8 @@ showtext_auto()
 url <- "https://www.bankofengland.co.uk/-/media/boe/files/statistics/yield-curves/oisddata.zip"
 td <- tempdir()
 tf <- tempfile(tmpdir = td, fileext = ".zip")
-download.file(url, tf)
+download.file(url, tf, mode = "wb") # Added binary mode for Excel files
+
 fname1 <- unzip(tf, list = TRUE)$Name[1]
 fname2 <- unzip(tf, list = TRUE)$Name[2]
 df1 <- read_xlsx(unzip(tf, files = fname1, exdir = td), sheet = "1. fwd curve")
@@ -41,6 +44,7 @@ df2 <- read_xlsx(
   unzip(tf, files = fname2, exdir = td),
   sheet = "1. fwds, short end"
 )
+
 
 # Latest OIS data ----
 url3 <- "https://www.bankofengland.co.uk/-/media/boe/files/statistics/yield-curves/latest-yield-curve-data.zip?la=en&hash=89B8A093FA97EF7DD79382044E15867840E45204"
@@ -68,6 +72,7 @@ cleanOIS <- function(df) {
 
   return(df)
 }
+
 # Clean the 3 downloaded dataframes
 for (dfn in c("df1", "df2", "df3")) {
   assign(dfn, cleanOIS(get(dfn)))
@@ -79,17 +84,20 @@ dfxts <- as.xts(df)
 df_m <- as.data.frame(apply.monthly(dfxts, mean))
 df_m$date = as_date(rownames(df_m))
 # Dates from maturities
+# Replace this line in your fwcv creation:
 fwcv <- pivot_longer(df_m, !date, names_to = "tau", values_to = "yield") %>%
   mutate(
     month = month(date),
     tau = as.numeric(tau),
-    date2 = ymd(as.Date(date) %m+% months(tau) - 1)
+    date2 = ceiling_date(as.Date(date) %m+% months(tau), unit = "month") -
+      days(1)
   )
+
 
 # Bank Rate from Bank of England ----
 url <- 'https://www.bankofengland.co.uk/-/media/boe/files/monetary-policy/baserate.xls'
 temp <- tempfile()
-download.file(url, temp)
+download.file(url, temp, mode = "wb") # Added binary mode for Excel files
 # read the data
 bankrate <- read_excel(temp, sheet = "HISTORICAL SINCE 1694", skip = 995) %>%
   rename(year = 1, day = 2, month = 3, bankrate = 4) |>
@@ -97,17 +105,22 @@ bankrate <- read_excel(temp, sheet = "HISTORICAL SINCE 1694", skip = 995) %>%
   fill(year, .direction = "down") |>
   fill(year, .direction = "up")
 
+
 # Date variable
-bankrate <- bankrate |>
+# Create date variable
+bankrate <- bankrate %>%
   mutate(
     date_str = paste(day, month, year, sep = " "),
     date = as.Date(date_str, format = "%d %b %Y"),
     date2 = ceiling_date(date, unit = 'month') - days(1)
-  ) |>
-  dplyr::select(date2, bankrate) |>
-  dplyr::filter(date2 >= as.Date('2007-01-01'))
+  ) %>%
+  dplyr::filter(!is.na(date)) %>% # Remove rows with invalid dates
+  dplyr::select(date2, bankrate) %>%
+  dplyr::filter(date2 >= as.Date('2007-01-01')) %>%
+  arrange(date2) # Ensure proper ordering
 
 # monthly data frame
+# Create monthly data frame
 start_date <- floor_date(min(bankrate$date2, na.rm = TRUE), unit = "month")
 end_date <- ceiling_date(Sys.Date(), unit = "month") - days(1)
 eom_dates <- seq.Date(from = start_date, to = end_date, by = "month") %>%
@@ -117,11 +130,12 @@ eom_df <- tibble(date2 = eom_dates)
 
 # Add the most recent rate as of each month
 dat <- eom_df %>%
-  left_join(bankrate) %>%
+  left_join(bankrate, by = "date2") %>% # Explicit join column
+  arrange(date2) %>% # Ensure proper ordering for fill
   fill(bankrate, .direction = "down")
 
+# Join with forward curve data
 fwcv <- left_join(fwcv, dat, by = 'date2', relationship = "many-to-many")
-fwcv <- left_join(fwcv, bankrate, by = 'date2', relationship = "many-to-many")
 
 
 # Figure 1: Evolving Forwards----
@@ -137,7 +151,7 @@ ois1 <- ggplot(fwcv, aes(x = date2, y = yield, group = date)) +
     lty = 2,
     linewidth = 1.2
   ) +
-  geom_line(aes(y = bankrate.x)) +
+  geom_line(aes(y = bankrate)) +
   geom_hline(yintercept = 0.0, lty = 4) +
   theme(legend.position = "none") +
   scale_x_date(date_breaks = "2 years", date_labels = "%Y") +
@@ -149,7 +163,7 @@ ois1 <- ggplot(fwcv, aes(x = date2, y = yield, group = date)) +
     caption = "Source: Bank of England data"
   )
 ggsave(
-  filename = file.path("gbp_ois", "plots", "1.GBP-OIS.png"),
+  filename = here::here("gbp_ois/plots", "1.GBP-OIS.png"),
   plot = ois1,
   width = 9,
   height = 5,
@@ -160,15 +174,19 @@ ggsave(
 
 # Figure 2: Recent data, 12m lookback----
 #========================================
-comp.date <- last(fwcv$date) %m-% months(12)
+last_12m <- fwcv |>
+  distinct(date) |>
+  arrange(desc(date)) |>
+  slice_head(n = 12) |>
+  pull(date)
 
 ois2 <- ggplot(
-  subset(fwcv, date >= as.Date(comp.date)),
+  subset(fwcv, date %in% last_12m),
   aes(x = date2, y = yield, group = date)
 ) +
   geom_line(aes(colour = as.factor(date)), linewidth = 1.4) +
   geom_point(
-    data = subset(fwcv, date == last(date)),
+    data = subset(fwcv, date == max(date)),
     aes(x = date2, y = yield),
     color = "red",
     size = 3
@@ -184,7 +202,7 @@ ois2 <- ggplot(
     caption = "Source: Bank of England data"
   )
 ggsave(
-  filename = file.path("gbp_ois", "plots", "2.GBP-OIS_12m.png"),
+  filename = here::here("gbp_ois/plots", "2.GBP-OIS_12m.png"),
   plot = ois2,
   width = 9,
   height = 5,
