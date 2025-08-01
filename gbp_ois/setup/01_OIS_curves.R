@@ -16,7 +16,6 @@ lapply(
   character.only = TRUE
 )
 
-here::here()
 # Settings: ggplot2 ----
 font_add_google("Roboto Condensed", "Roboto Condensed")
 theme_set(
@@ -84,7 +83,7 @@ dfxts <- as.xts(df)
 df_m <- as.data.frame(apply.monthly(dfxts, mean))
 df_m$date = as_date(rownames(df_m))
 # Dates from maturities
-# Replace this line in your fwcv creation:
+# dates2 is eom
 fwcv <- pivot_longer(df_m, !date, names_to = "tau", values_to = "yield") %>%
   mutate(
     month = month(date),
@@ -92,7 +91,6 @@ fwcv <- pivot_longer(df_m, !date, names_to = "tau", values_to = "yield") %>%
     date2 = ceiling_date(as.Date(date) %m+% months(tau), unit = "month") -
       days(1)
   )
-
 
 # Bank Rate from Bank of England ----
 url <- 'https://www.bankofengland.co.uk/-/media/boe/files/monetary-policy/baserate.xls'
@@ -105,8 +103,6 @@ bankrate <- read_excel(temp, sheet = "HISTORICAL SINCE 1694", skip = 995) %>%
   fill(year, .direction = "down") |>
   fill(year, .direction = "up")
 
-
-# Date variable
 # Create date variable
 bankrate <- bankrate %>%
   mutate(
@@ -120,15 +116,14 @@ bankrate <- bankrate %>%
   arrange(date2) # Ensure proper ordering
 
 # monthly data frame
-# Create monthly data frame
 start_date <- floor_date(min(bankrate$date2, na.rm = TRUE), unit = "month")
-end_date <- ceiling_date(Sys.Date(), unit = "month") - days(1)
+end_date <- ceiling_date(Sys.Date(), unit = "month") - days(1) # end of this month
 eom_dates <- seq.Date(from = start_date, to = end_date, by = "month") %>%
   ceiling_date(unit = "month") -
   days(1)
 eom_df <- tibble(date2 = eom_dates)
 
-# Add the most recent rate as of each month
+# make monthly Bank rate df [dat] from dates of rate changes [bankrate]
 dat <- eom_df %>%
   left_join(bankrate, by = "date2") %>% # Explicit join column
   arrange(date2) %>% # Ensure proper ordering for fill
@@ -163,7 +158,7 @@ ois1 <- ggplot(fwcv, aes(x = date2, y = yield, group = date)) +
     caption = "Source: Bank of England data"
   )
 ggsave(
-  filename = here::here("gbp_ois/plots", "1.GBP-OIS.png"),
+  filename = "../gbp_ois/plots/1.GBP-OIS.png",
   plot = ois1,
   width = 9,
   height = 5,
@@ -202,7 +197,7 @@ ois2 <- ggplot(
     caption = "Source: Bank of England data"
   )
 ggsave(
-  filename = here::here("gbp_ois/plots", "2.GBP-OIS_12m.png"),
+  filename = file.path("../gbp_ois/plots", "2.GBP-OIS_12m.png"),
   plot = ois2,
   width = 9,
   height = 5,
@@ -212,4 +207,4 @@ ggsave(
 )
 
 # save data
-save(fwcv, file = file.path("gbp_ois", "data", "data.Rda"))
+save(fwcv, file = file.path("../gbp_ois/data", "data.Rda"))
