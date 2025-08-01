@@ -1,41 +1,21 @@
 ---
-title: |
+title: | 
    | GBP Report: 
    | OIS Rates and Bank Rate
-author: Andrew Benito
+author: "Andrew Benito"
 date: last-modified
-date-format: long
 format: pdf
-execute: 
-  dir: project
+execute:
+  warning: false
+  message: false
+  echo: false    
 ---
-
-
-```{r setup}
-#| include: false
-
-lapply(
-  c(
-    'tidyverse',
-    'readxl',
-    'lubridate',
-    'xts',
-    'showtext',
-    'here',
-    'knitr'
-  ),
-  require,
-  character.only = TRUE
-)
-```
 
 The first chart shows how GBP OIS curves have evolved over time, alongside Bank Rate.
 
-
 ```{r}
 #| include: false
-source(file.path("../gbp_ois/setup", "01_OIS_curves.R"))
-
+source(here::here("setup", "01_OIS_curves.R"))
 ```
 
 ```{r}
@@ -45,15 +25,15 @@ source(file.path("../gbp_ois/setup", "01_OIS_curves.R"))
 #| out-width: "100%"
 
 ois1
-
 ```
-
-
 
 The second chart zooms in on experience in the past year. It shows how OIS curves and Bank Rate have evolved over the past year. 
 
-
 ```{r}
-ois2
+#| label: fig-rates-recent
+#| fig-cap: "Recent Evolution of GBP OIS"
+#| fig-pos: 'H'
+#| out-width: "100%"
 
+ois2
 ```

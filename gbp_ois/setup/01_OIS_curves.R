@@ -19,9 +19,9 @@ lapply(
 # Settings: ggplot2 ----
 font_add_google("Roboto Condensed", "Roboto Condensed")
 theme_set(
-  theme_bw(base_size = 15, base_family = "Roboto Condensed") +
+  theme_bw(base_size = 12, base_family = "Roboto Condensed") +
     theme(
-      text = element_text(family = "Roboto Condensed", size = 15),
+      text = element_text(family = "Roboto Condensed", size = 12),
       panel.background = element_rect(fill = "white"),
       panel.grid.major = element_line(linewidth = .5),
       panel.grid.minor = element_blank(),
@@ -157,15 +157,7 @@ ois1 <- ggplot(fwcv, aes(x = date2, y = yield, group = date)) +
     y = "rate %",
     caption = "Source: Bank of England data"
   )
-ggsave(
-  filename = "../gbp_ois/plots/1.GBP-OIS.png",
-  plot = ois1,
-  width = 9,
-  height = 5,
-  dpi = 90,
-  units = "in",
-  device = 'png'
-)
+ois1
 
 # Figure 2: Recent data, 12m lookback----
 #========================================
@@ -196,15 +188,4 @@ ois2 <- ggplot(
     y = "rate %",
     caption = "Source: Bank of England data"
   )
-ggsave(
-  filename = file.path("../gbp_ois/plots", "2.GBP-OIS_12m.png"),
-  plot = ois2,
-  width = 9,
-  height = 5,
-  dpi = 90,
-  units = "in",
-  device = 'png'
-)
-
-# save data
-save(fwcv, file = file.path("../gbp_ois/data", "data.Rda"))
+ois2
