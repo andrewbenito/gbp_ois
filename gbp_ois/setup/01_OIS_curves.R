@@ -31,6 +31,7 @@ theme_set(
 showtext_auto()
 
 # Data: Download and Tidy  ----
+#==============================
 url <- "https://www.bankofengland.co.uk/-/media/boe/files/statistics/yield-curves/oisddata.zip"
 td <- tempdir()
 tf <- tempfile(tmpdir = td, fileext = ".zip")
@@ -44,8 +45,7 @@ df2 <- read_xlsx(
   sheet = "1. fwds, short end"
 )
 
-
-# Latest OIS data ----
+# Add Latest OIS data ----
 url3 <- "https://www.bankofengland.co.uk/-/media/boe/files/statistics/yield-curves/latest-yield-curve-data.zip?la=en&hash=89B8A093FA97EF7DD79382044E15867840E45204"
 tf3 <- tempfile(tmpdir = td, fileext = ".zip")
 download.file(url3, tf3, mode = "wb")
@@ -56,6 +56,7 @@ df3 <- read_xlsx(
 )
 
 # Tidy Historic Forward Curve data ----
+#======================================
 cleanOIS <- function(df) {
   # Round the months row (excl date column)
   df[2, -1] <- round(df[2, -1], digits = 0)
