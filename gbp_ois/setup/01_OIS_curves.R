@@ -179,6 +179,14 @@ ois1 <- ggplot(fwcv, aes(x = date2, y = yield, group = date)) +
     caption = "Source: Bank of England data"
   )
 ois1
+# save
+ggsave(
+  here("plots", "1.GBP_OIS.png"),
+  plot = ois1,
+  width = 10,
+  height = 6,
+  dpi = 300
+)
 
 # Figure 2: Recent data, 12m lookback----
 #========================================
@@ -210,6 +218,15 @@ ois2 <- ggplot(
     caption = "Source: Bank of England data"
   )
 ois2
+# save
+ggsave(
+  here("plots", "2.GBP_OIS_12m.png"),
+  plot = ois2,
+  width = 10,
+  height = 6,
+  dpi = 300
+)
+
 
 # Figure 3: Daily data -  ----
 #========================================
@@ -236,4 +253,24 @@ delta.d |>
     x = "Date",
     y = paste0("daily change ", opt.h, "days (bps)")
   )
-# Save figures ----
+
+
+# scrape MPC and Fed announcement days
+library(rvest)
+library(stringi)
+
+url_boe <- "https://www.bankofengland.co.uk/monetary-policy/upcoming-mpc-dates"
+url_fed <- "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"
+
+
+page <- read_html(url_boe) |>
+  html_nodes("table")
+
+mpc_dates <- mpc_table |>
+  html_table() |>
+  rename(date_text = 1) |>
+  mutate(
+    date = dmy(paste0(date_text, " 2025")),
+    date = if_else(is.na(date), dmy(paste0(date_text, " 2026")), date)
+  ) |>
+  filter(!is.na(date))
