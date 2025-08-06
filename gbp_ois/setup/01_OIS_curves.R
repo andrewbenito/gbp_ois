@@ -20,8 +20,6 @@ lapply(
 )
 
 # Inputs and functions----
-url_boe <- "https://www.bankofengland.co.uk/monetary-policy/upcoming-mpc-dates"
-url_fed <- "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"
 source(here("functions", "functions.R"))
 
 # Settings: ggplot2 ----
@@ -218,26 +216,15 @@ opt.M2 <- 120 # 10y rate
 opt.h <- 60 # past 60d
 
 # scraped MPC and Fed announcement days [in functions.R]
+url_boe <- "https://www.bankofengland.co.uk/monetary-policy/upcoming-mpc-dates"
+url_fed <- "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"
 
-fed_page <- read_html(url_fed)
+# Now call the function to get the actual data
+recent_mpc_dates <- get_mpc_dates(url_boe)
 
-fed_text <- fed_page |>
-  html_text() |>
-  str_split("\n") |>
-  unlist() |>
-  str_trim()
-
-# Look for lines containing 2025 dates
-fed_date_lines <- fed_text[str_detect(fed_text, "2025")] |>
-  str_subset(
-    "January|February|March|April|May|June|July|August|September|October|November|December"
-  )
-
-fed_dates_extracted <- fed_date_lines |>
-  str_extract_all(date_pattern) |>
-  unlist() |>
-  unique()
-
+# Same for Fed dates
+recent_fomc_dates <- get_fomc_dates(url_fed)
+# ERROR: date_pattern not found
 
 # DAILY OIS DATA
 #================
@@ -273,6 +260,23 @@ plot.daily.60d <- delta.d |>
     y = 7,
     label = "MPC",
     color = "darkblue",
+    size = 5,
+    angle = 0,
+    vjust = 0.5,
+    hjust = 0
+  ) +
+  geom_vline(
+    xintercept = recent_fomc_dates,
+    linetype = "dashed",
+    color = "darkgreen",
+    linewidth = 0.5
+  ) +
+  annotate(
+    "text",
+    x = recent_fomc_dates,
+    y = 7,
+    label = "MPC",
+    color = "darkgreen",
     size = 5,
     angle = 0,
     vjust = 0.5,

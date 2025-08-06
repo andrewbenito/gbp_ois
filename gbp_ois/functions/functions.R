@@ -68,24 +68,3 @@ cleanOIS <- function(df) {
 
   return(df)
 }
-
-# Scrape FOMC meeting dates
-get_fed_dates <- function(url = url_fed) {
-  fed_page <- read_html(url) |>
-    html_nodes("table")
-
-  fed_table <- fed_page[[1]]
-  fed_dates <- fed_table |>
-    html_table() |>
-    rename(date_text = 1) |>
-    mutate(
-      # Clean up the date text to extract just the date part
-      date_clean = str_extract(date_text, "\\d{1,2} [A-Za-z]+"),
-      # Parse dates assuming 2025
-      date = dmy(paste0(date_clean, " 2025"))
-    ) |>
-    filter(!is.na(date)) |>
-    select(date_text, date_clean, date)
-
-  return(fed_dates)
-}
