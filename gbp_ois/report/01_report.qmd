@@ -37,3 +37,15 @@ The second chart zooms in on experience in the past year. It shows how OIS curve
 
 ois2
 ```
+
+# Daily Data
+
+
+## 2y5y spreads
+
+## 2y10y spreads
+
+## 10y30y spreads
+
+
+# Monetary Policy Shocks database

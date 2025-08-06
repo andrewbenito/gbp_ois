@@ -10,6 +10,7 @@ lapply(
     'readxl',
     'lubridate',
     'xts',
+    'ggsci',
     'rvest',
     'stringi',
     'showtext',
@@ -182,7 +183,7 @@ ois2 <- ggplot(
   subset(fwcv, date %in% last_12m),
   aes(x = date2, y = yield, group = date)
 ) +
-  geom_line(aes(colour = as.factor(date)), linewidth = 1.4) +
+  geom_line(color = "gray70", linewidth = 1.4) +
   geom_point(
     data = subset(fwcv, date == max(date)),
     aes(x = date2, y = yield),
@@ -212,32 +213,73 @@ ggsave(
 # Figure 3: Daily data   ----
 #========================================
 opt.M <- 24 # 2y rate
-opt.M2 <- 120 # 10y rate
+opt.M2 <- 60 # 5y rate
+opt.M3 <- 120 # 10y rate
 opt.h <- 60 # past 60d
+opt.start.cumul <- 30 # cumulative changes from start of prior month
 
 # scraped MPC and Fed announcement days [in functions.R]
 url_boe <- "https://www.bankofengland.co.uk/monetary-policy/upcoming-mpc-dates"
 url_fed <- "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"
 
-# Now call the function to get the actual data
 recent_mpc_dates <- get_mpc_dates(url_boe)
-
-# Same for Fed dates
 recent_fomc_dates <- get_fomc_dates(url_fed)
-# ERROR: date_pattern not found
+
+# select dates within 60d of max date
+recent_mpc_dates <- recent_mpc_dates[
+  recent_mpc_dates >= max(df$date) - days(opt.h) &
+    recent_mpc_dates <= max(df$date) + 7
+]
+recent_fomc_dates <- recent_fomc_dates[
+  recent_fomc_dates >= max(df$date) - days(opt.h) &
+    recent_fomc_dates <= max(df$date) + 7
+]
 
 # DAILY OIS DATA
 #================
+# 1: delta.d
+# 2: delta.cumul.d
+# 3: spreads.d
+
 df <- df |> tibble::rownames_to_column("date")
 df$date <- as.Date(df$date)
 
-# create dataframe for daily changes in OIS rates
+# 1: delta.d, create dataframes for daily changes in OIS rates
 delta.d <- df |> #
   janitor::clean_names() |>
   mutate(across(-date, ~ (. - lag(.)) * 100)) |> # daily changes in bp
   filter(!is.na(date))
 
+# 2: delta.cumul.d, cumulative changes from start of prior month
+delta.cumul.d <- df |>
+  janitor::clean_names() |>
+  mutate(
+    # Create a month-year grouping variable
+    month_group = floor_date(date - months(1), "month")
+  ) |>
+  group_by(month_group) |>
+  mutate(
+    # Calculate cumulative changes since start of prior month
+    across(where(is.numeric), ~ cumsum(c(0, diff(.))) * 100)
+  ) |>
+  ungroup() |>
+  select(-month_group) |>
+  filter(!is.na(date))
+
+# 3: spreads.d - need file with LT rates
+spreads.d <- df |>
+  janitor::clean_names() |>
+  mutate(
+    # Calculate spreads between different maturities
+    x2y5y = x60 - x24
+  ) |>
+  select(date, x2y5y) |>
+  filter(!is.na(date))
+
+plot(spreads.d)
+
 # PLOT - past 60d
+#=================
 plot.daily.60d <- delta.d |>
   filter(date >= max(date) - days(opt.h)) |> # filter final opt.h observations
   ggplot(aes(x = date, y = .data[[paste0("x", opt.M)]])) +
@@ -275,15 +317,13 @@ plot.daily.60d <- delta.d |>
     "text",
     x = recent_fomc_dates,
     y = 7,
-    label = "MPC",
+    label = "FOMC",
     color = "darkgreen",
     size = 5,
     angle = 0,
     vjust = 0.5,
     hjust = 0
   )
-
-
 plot.daily.60d
 ggsave(
   here("plots", "3.OIS_2y_daily.png"),
@@ -293,21 +333,48 @@ ggsave(
   dpi = 300
 )
 
-
-plot.daily.60d <- plot.daily.60d +
-
-  # Extract Fed dates
-  fed_page <- read_html(url_fed) |>
-  html_nodes("table")
-fed_table <- fed_page[[1]]
-fed_dates <- fed_table |>
-  html_table() |>
-  rename(date_text = 1) |>
-  mutate(
-    # Clean up the date text to extract just the date part
-    date_clean = str_extract(date_text, "\\d{1,2} [A-Za-z]+"),
-    # Parse dates assuming 2025
-    date = dmy(paste0(date_clean, " 2025"))
-  ) |>
-  filter(!is.na(date)) |>
-  select(date_text, date_clean, date)
+# PLOT - cumulative changes
+plot.cumul.60d <- delta.cumul.d |>
+  filter(date >= max(date) - days(opt.h)) |> # filter final opt.h observations
+  ggplot(aes(x = date, y = .data[[paste0("x", opt.M)]])) +
+  geom_col() +
+  labs(
+    title = paste0("GBP 2y OIS"),
+    subtitle = paste0(opt.h, " days, cumulative change (bp)"),
+    x = "Date",
+    y = paste0("cumulative change ", opt.h, "days (bps)")
+  ) +
+  geom_vline(
+    xintercept = recent_mpc_dates,
+    linetype = "dashed",
+    color = "darkblue",
+    linewidth = 0.5
+  ) +
+  annotate(
+    "text",
+    x = recent_mpc_dates,
+    y = 7,
+    label = "MPC",
+    color = "darkblue",
+    size = 5,
+    angle = 0,
+    vjust = 0.5,
+    hjust = 0
+  ) +
+  geom_vline(
+    xintercept = recent_fomc_dates,
+    linetype = "dashed",
+    color = "darkgreen",
+    linewidth = 0.5
+  ) +
+  annotate(
+    "text",
+    x = recent_fomc_dates,
+    y = 7,
+    label = "FOMC",
+    color = "darkgreen",
+    size = 5,
+    angle = 0,
+    vjust = 0.5,
+    hjust = 0
+  )

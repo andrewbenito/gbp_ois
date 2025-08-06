@@ -1,7 +1,5 @@
 # Mon Pol Shocks using Braun et al data
 
-rm(list = ls())
-
 lapply(
   c(
     'here',
@@ -11,10 +9,8 @@ lapply(
     'patchwork',
     'ggbeeswarm',
     'sysfonts',
-    'readxl',
     'ggExtra',
     'showtext',
-    'hrbrthemes',
     'gt',
     'gtExtras',
     'janitor',
@@ -33,8 +29,8 @@ source(here('functions', 'chartFormat.R'))
 # DATA: Braun et al 2024
 event.factors <- read_excel(
   here::here(
-    'inputs',
-    'measuring-monetary-policy-in-the-uk-the-ukmpesd_feb_2025.xlsx'
+    'data',
+    'measuring-monetary-policy-in-the-uk-the-ukmpesd_may_2025.xlsx'
   ),
   sheet = "factors"
 ) |>

@@ -17,10 +17,13 @@ get_mpc_dates <- function(url = url_boe) {
     filter(!is.na(date)) |>
     select(date_text, date_clean, date)
 
-  return(mpc_dates)
+  return(mpc_dates$date)
 }
 
 get_fomc_dates <- function(url = url_fed) {
+  # Define the date pattern inside the function
+  date_pattern <- "\\b(January|February|March|April|May|June|July|August|September|October|November|December)\\s+\\d{1,2}([-–]\\d{1,2})?\\s*,?\\s*2025"
+
   fed_page <- read_html(url_fed)
 
   fed_text <- fed_page |>
