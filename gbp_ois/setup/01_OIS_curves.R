@@ -19,7 +19,7 @@ lapply(
   character.only = TRUE
 )
 
-# functions----
+# Inputs and functions----
 url_boe <- "https://www.bankofengland.co.uk/monetary-policy/upcoming-mpc-dates"
 url_fed <- "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"
 source(here("functions", "functions.R"))
@@ -27,9 +27,9 @@ source(here("functions", "functions.R"))
 # Settings: ggplot2 ----
 font_add_google("Roboto Condensed", "Roboto Condensed")
 theme_set(
-  theme_bw(base_size = 12, base_family = "Roboto Condensed") +
+  theme_bw(base_size = 14, base_family = "Roboto Condensed") +
     theme(
-      text = element_text(family = "Roboto Condensed", size = 12),
+      text = element_text(family = "Roboto Condensed", size = 14),
       panel.background = element_rect(fill = "white"),
       panel.grid.major = element_line(linewidth = .5),
       panel.grid.minor = element_blank(),
@@ -211,19 +211,33 @@ ggsave(
   dpi = 300
 )
 
-
 # Figure 3: Daily data -  ----
 #========================================
 opt.M <- 24 # 2y rate
+opt.M2 <- 120 # 10y rate
 opt.h <- 60 # past 60d
 
-# scrape MPC and Fed announcement days
-# MPC and Fed dates from functions.R
-
-# scrape Fed dates
+# scraped MPC and Fed announcement days [in functions.R]
 
 fed_page <- read_html(url_fed) |>
   html_nodes("table")
+
+
+fed_page <- read_html(url) |>
+  html_nodes("table")
+
+fed_table <- fed_page[[1]]
+fed_dates <- fed_table |>
+  html_table() |>
+  rename(date_text = 1) |>
+  mutate(
+    # Clean up the date text to extract just the date part
+    date_clean = str_extract(date_text, "\\d{1,2} [A-Za-z]+"),
+    # Parse dates assuming 2025
+    date = dmy(paste0(date_clean, " 2025"))
+  ) |>
+  filter(!is.na(date)) |>
+  select(date_text, date_clean, date)
 
 
 # DAILY OIS DATA
