@@ -20,6 +20,33 @@ get_mpc_dates <- function(url = url_boe) {
   return(mpc_dates)
 }
 
+get_fomc_dates <- function(url = url_fed) {
+  fed_page <- read_html(url_fed)
+
+  fed_text <- fed_page |>
+    html_text() |>
+    str_split("\n") |>
+    unlist() |>
+    str_trim()
+
+  # Look for lines containing 2025 dates
+  fed_date_lines <- fed_text[str_detect(fed_text, "2025")] |>
+    str_subset(
+      "January|February|March|April|May|June|July|August|September|October|November|December"
+    )
+
+  fed_dates_extracted <- fed_date_lines |>
+    str_extract_all(date_pattern) |>
+    unlist() |>
+    unique()
+
+  recent_fed_dates <- fed_dates_extracted |>
+    mdy()
+
+  return(recent_fed_dates)
+}
+
+
 # Clean Downloaded OIS data from BoE website
 cleanOIS <- function(df) {
   # Convert all but first column to numeric

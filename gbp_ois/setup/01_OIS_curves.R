@@ -37,7 +37,7 @@ theme_set(
     )
 )
 showtext_auto()
-
+#==============================
 # Data: Download and Tidy  ----
 #==============================
 url <- "https://www.bankofengland.co.uk/-/media/boe/files/statistics/yield-curves/oisddata.zip"
@@ -67,7 +67,7 @@ df4 <- read_xlsx(
   unzip(tf4, files = fname4, exdir = td),
   sheet = "1. fwds, short end"
 )
-
+#======================================
 # Tidy Historic Forward Curve data ----
 #======================================
 # Clean the 3 downloaded dataframes
@@ -137,7 +137,7 @@ dat <- eom_df %>%
 # Join with forward curve data
 fwcv <- left_join(fwcv, dat, by = 'date2', relationship = "many-to-many")
 
-
+#================================
 # Figure 1: Evolving Forwards----
 #================================
 latest <- fwcv |> dplyr::filter(date == max(date))
@@ -171,7 +171,7 @@ ggsave(
   height = 6,
   dpi = 300
 )
-
+#========================================
 # Figure 2: Recent data, 12m lookback----
 #========================================
 last_12m <- fwcv |>
@@ -210,8 +210,8 @@ ggsave(
   height = 6,
   dpi = 300
 )
-
-# Figure 3: Daily data -  ----
+#========================================
+# Figure 3: Daily data   ----
 #========================================
 opt.M <- 24 # 2y rate
 opt.M2 <- 120 # 10y rate
@@ -219,25 +219,24 @@ opt.h <- 60 # past 60d
 
 # scraped MPC and Fed announcement days [in functions.R]
 
-fed_page <- read_html(url_fed) |>
-  html_nodes("table")
+fed_page <- read_html(url_fed)
 
+fed_text <- fed_page |>
+  html_text() |>
+  str_split("\n") |>
+  unlist() |>
+  str_trim()
 
-fed_page <- read_html(url) |>
-  html_nodes("table")
+# Look for lines containing 2025 dates
+fed_date_lines <- fed_text[str_detect(fed_text, "2025")] |>
+  str_subset(
+    "January|February|March|April|May|June|July|August|September|October|November|December"
+  )
 
-fed_table <- fed_page[[1]]
-fed_dates <- fed_table |>
-  html_table() |>
-  rename(date_text = 1) |>
-  mutate(
-    # Clean up the date text to extract just the date part
-    date_clean = str_extract(date_text, "\\d{1,2} [A-Za-z]+"),
-    # Parse dates assuming 2025
-    date = dmy(paste0(date_clean, " 2025"))
-  ) |>
-  filter(!is.na(date)) |>
-  select(date_text, date_clean, date)
+fed_dates_extracted <- fed_date_lines |>
+  str_extract_all(date_pattern) |>
+  unlist() |>
+  unique()
 
 
 # DAILY OIS DATA
