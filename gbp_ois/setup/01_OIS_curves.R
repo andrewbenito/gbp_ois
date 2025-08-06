@@ -1,5 +1,7 @@
 # GBP OIS Forward Curves and How they have Evolved
 # Download BoE data from url, Tidy and Plot incl Bank Rate
+# Produce (i) 'Evolving Forward Curves' (ii) 'Recent OIS Curves'
+# (iii) Daily OIS
 
 # Packages ----
 lapply(
@@ -37,47 +39,58 @@ td <- tempdir()
 tf <- tempfile(tmpdir = td, fileext = ".zip")
 download.file(url, tf, mode = "wb") # Added binary mode for Excel files
 
-fname1 <- unzip(tf, list = TRUE)$Name[1]
-fname2 <- unzip(tf, list = TRUE)$Name[2]
+fname1 <- unzip(tf, list = TRUE)$Name[1] # 2009-2015
+fname2 <- unzip(tf, list = TRUE)$Name[2] # 2016-2024
+fname3 <- unzip(tf, list = TRUE)$Name[3] # 2025
 df1 <- read_xlsx(unzip(tf, files = fname1, exdir = td), sheet = "1. fwd curve")
 df2 <- read_xlsx(
   unzip(tf, files = fname2, exdir = td),
   sheet = "1. fwds, short end"
 )
+df3 <- read_xlsx(
+  unzip(tf, files = fname3, exdir = td),
+  sheet = "1. fwds, short end"
+)
 
 # Add Latest OIS data ----
-url3 <- "https://www.bankofengland.co.uk/-/media/boe/files/statistics/yield-curves/latest-yield-curve-data.zip?la=en&hash=89B8A093FA97EF7DD79382044E15867840E45204"
-tf3 <- tempfile(tmpdir = td, fileext = ".zip")
-download.file(url3, tf3, mode = "wb")
-fname3 <- unzip(tf3, list = TRUE)$Name[4]
-df3 <- read_xlsx(
-  unzip(tf3, files = fname3, exdir = td),
+url4 <- "https://www.bankofengland.co.uk/-/media/boe/files/statistics/yield-curves/latest-yield-curve-data.zip?la=en&hash=89B8A093FA97EF7DD79382044E15867840E45204"
+tf4 <- tempfile(tmpdir = td, fileext = ".zip")
+download.file(url4, tf4, mode = "wb")
+fname4 <- unzip(tf4, list = TRUE)$Name[4]
+df4 <- read_xlsx(
+  unzip(tf4, files = fname4, exdir = td),
   sheet = "1. fwds, short end"
 )
 
 # Tidy Historic Forward Curve data ----
 #======================================
 cleanOIS <- function(df) {
-  # Round the months row (excl date column)
-  df[2, -1] <- round(df[2, -1], digits = 0)
+  # Convert all but first column to numeric
+  df <- df %>% mutate(across(-1, as.numeric))
 
+  # Round the second row (months row, excl. date column)
+  months_rounded <- round(as.numeric(df[2, -1]), digits = 0)
+  colnames(df)[-1] <- as.character(months_rounded) # set as column names
+
+  # Clean up - remove rows, set column names, etc.
   df <- df %>%
-    set_names(slice(., 2)) %>%
     tail(-5) %>%
     type.convert(as.is = TRUE) %>%
     rename(date = 1) %>%
-    mutate(date = as.Date(date, origin = "1899-12-30")) %>% # Convert Excel dates
-    drop_na() %>%
+    mutate(date = as.Date(as.numeric(date), origin = "1899-12-30")) %>%
+    janitor::clean_names() %>%
+    drop_na(date) %>%
     column_to_rownames(var = "date")
 
   return(df)
 }
 
 # Clean the 3 downloaded dataframes
-for (dfn in c("df1", "df2", "df3")) {
+for (dfn in c("df1", "df2", "df3", "df4")) {
   assign(dfn, cleanOIS(get(dfn)))
 }
-df <- bind_rows(df1, df2, df3) # Daily OIS data for inst fwds 1-60m
+
+df <- bind_rows(df1, df2, df3, df4) # Daily OIS data for inst fwds 1-60m
 
 # Convert Daily Data to Monthly; pivot----
 dfxts <- as.xts(df)
@@ -85,13 +98,20 @@ df_m <- as.data.frame(apply.monthly(dfxts, mean))
 df_m$date = as_date(rownames(df_m))
 # Dates from maturities
 # dates2 is eom
-fwcv <- pivot_longer(df_m, !date, names_to = "tau", values_to = "yield") %>%
+fwcv <- df_m %>%
+  pivot_longer(
+    !date,
+    names_to = "tau",
+    values_to = "yield",
+    names_prefix = "x"
+  ) %>%
   mutate(
     month = month(date),
     tau = as.numeric(tau),
     date2 = ceiling_date(as.Date(date) %m+% months(tau), unit = "month") -
       days(1)
   )
+
 
 # Bank Rate from Bank of England ----
 url <- 'https://www.bankofengland.co.uk/-/media/boe/files/monetary-policy/baserate.xls'
@@ -190,3 +210,30 @@ ois2 <- ggplot(
     caption = "Source: Bank of England data"
   )
 ois2
+
+# Figure 3: Daily data -  ----
+#========================================
+opt.M <- 24 # 2y rate
+opt.h <- 60 # past 60d
+
+df <- df |> tibble::rownames_to_column("date")
+df$date <- as.Date(df$date)
+
+# create dataframe for daily changes in OIS rates
+delta.d <- df |>
+  janitor::clean_names() |>
+  mutate(across(-date, ~ (. - lag(.)) * 100)) |> # daily changes in bp
+  filter(!is.na(date))
+
+# PLOT - past 60d
+delta.d |>
+  filter(date >= max(date) - days(opt.h)) |> # filter final opt.h observations
+  ggplot(aes(x = date, y = .data[[paste0("x", opt.M)]])) +
+  geom_col() +
+  labs(
+    title = paste0("GBP 2y OIS"),
+    subtitle = paste0(opt.h, " days, daily change (bp)"),
+    x = "Date",
+    y = paste0("daily change ", opt.h, "days (bps)")
+  )
+# Save figures ----
