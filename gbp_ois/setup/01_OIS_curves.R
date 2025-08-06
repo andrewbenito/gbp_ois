@@ -233,6 +233,35 @@ ggsave(
 opt.M <- 24 # 2y rate
 opt.h <- 60 # past 60d
 
+# scrape MPC and Fed announcement days
+library(rvest)
+library(stringi)
+
+url_boe <- "https://www.bankofengland.co.uk/monetary-policy/upcoming-mpc-dates"
+url_fed <- "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"
+
+page <- read_html(url_boe) |>
+  html_nodes("table")
+
+mpc_table <- page[[2]]
+
+mpc_dates <- mpc_table |>
+  html_table() |>
+  rename(date_text = 1) |>
+  mutate(
+    # Clean up the date text to extract just the date part
+    date_clean = str_extract(date_text, "\\d{1,2} [A-Za-z]+"),
+    # Parse dates assuming 2025
+    date = dmy(paste0(date_clean, " 2025"))
+  ) |>
+  filter(!is.na(date)) |>
+  select(date_text, date_clean, date)
+
+recent_mpc_dates <- mpc_dates |>
+  filter(date >= max(delta.d$date) - days(opt.h)) |>
+  pull(date)
+
+# DAILY DATA
 df <- df |> tibble::rownames_to_column("date")
 df$date <- as.Date(df$date)
 
@@ -252,8 +281,22 @@ plot.daily.60d <- delta.d |>
     subtitle = paste0(opt.h, " days, daily change (bp)"),
     x = "Date",
     y = paste0("daily change ", opt.h, "days (bps)")
+  ) +
+  geom_vline(
+    xintercept = recent_mpc_dates,
+    linetype = "dashed",
+    color = "darkblue",
+    linewidth = 0.5
+  ) +
+  annotate(
+    "text",
+    x = max(delta.d$date) - days(),
+    y = max(delta.d[[paste0("x", opt.M)]]),
+    label = "MPC",
+    color = "darkblue",
+    size = 4,
+    hjust = 0
   )
-# save
 plot.daily.60d
 ggsave(
   here("plots", "3.OIS_2y_daily.png"),
@@ -264,21 +307,20 @@ ggsave(
 )
 
 
-# scrape MPC and Fed announcement days
-library(rvest)
-library(stringi)
+plot.daily.60d <- plot.daily.60d +
 
-url_boe <- "https://www.bankofengland.co.uk/monetary-policy/upcoming-mpc-dates"
-url_fed <- "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"
-
-page <- read_html(url_boe) |>
+  # Extract Fed dates
+  fed_page <- read_html(url_fed) |>
   html_nodes("table")
-
-mpc_dates <- mpc_table |>
+fed_table <- fed_page[[1]]
+fed_dates <- fed_table |>
   html_table() |>
   rename(date_text = 1) |>
   mutate(
-    date = dmy(paste0(date_text, " 2025")),
-    date = if_else(is.na(date), dmy(paste0(date_text, " 2026")), date)
+    # Clean up the date text to extract just the date part
+    date_clean = str_extract(date_text, "\\d{1,2} [A-Za-z]+"),
+    # Parse dates assuming 2025
+    date = dmy(paste0(date_clean, " 2025"))
   ) |>
-  filter(!is.na(date))
+  filter(!is.na(date)) |>
+  select(date_text, date_clean, date)
