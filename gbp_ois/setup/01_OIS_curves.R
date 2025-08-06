@@ -10,13 +10,17 @@ lapply(
     'readxl',
     'lubridate',
     'xts',
+    'rvest',
+    'stringi',
     'showtext',
-    "data.table",
     'here'
   ),
   require,
   character.only = TRUE
 )
+
+# functions
+source(here("functions", "functions.R"))
 
 # Settings: ggplot2 ----
 font_add_google("Roboto Condensed", "Roboto Condensed")
@@ -64,27 +68,6 @@ df4 <- read_xlsx(
 
 # Tidy Historic Forward Curve data ----
 #======================================
-cleanOIS <- function(df) {
-  # Convert all but first column to numeric
-  df <- df %>% mutate(across(-1, as.numeric))
-
-  # Round the second row (months row, excl. date column)
-  months_rounded <- round(as.numeric(df[2, -1]), digits = 0)
-  colnames(df)[-1] <- as.character(months_rounded) # set as column names
-
-  # Clean up - remove rows, set column names, etc.
-  df <- df %>%
-    tail(-5) %>%
-    type.convert(as.is = TRUE) %>%
-    rename(date = 1) %>%
-    mutate(date = as.Date(as.numeric(date), origin = "1899-12-30")) %>%
-    janitor::clean_names() %>%
-    drop_na(date) %>%
-    column_to_rownames(var = "date")
-
-  return(df)
-}
-
 # Clean the 3 downloaded dataframes
 for (dfn in c("df1", "df2", "df3", "df4")) {
   assign(dfn, cleanOIS(get(dfn)))
@@ -111,7 +94,6 @@ fwcv <- df_m %>%
     date2 = ceiling_date(as.Date(date) %m+% months(tau), unit = "month") -
       days(1)
   )
-
 
 # Bank Rate from Bank of England ----
 url <- 'https://www.bankofengland.co.uk/-/media/boe/files/monetary-policy/baserate.xls'
@@ -234,32 +216,14 @@ opt.M <- 24 # 2y rate
 opt.h <- 60 # past 60d
 
 # scrape MPC and Fed announcement days
-library(rvest)
-library(stringi)
+# MPC and Fed dates from functions.R
+# url_boe <- "https://www.bankofengland.co.uk/monetary-policy/upcoming-mpc-dates"
+# url_fed <- "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"
 
-url_boe <- "https://www.bankofengland.co.uk/monetary-policy/upcoming-mpc-dates"
-url_fed <- "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"
-
-page <- read_html(url_boe) |>
+# scrape Fed dates
+fed_page <- read_html(url_fed) |>
   html_nodes("table")
 
-mpc_table <- page[[2]]
-
-mpc_dates <- mpc_table |>
-  html_table() |>
-  rename(date_text = 1) |>
-  mutate(
-    # Clean up the date text to extract just the date part
-    date_clean = str_extract(date_text, "\\d{1,2} [A-Za-z]+"),
-    # Parse dates assuming 2025
-    date = dmy(paste0(date_clean, " 2025"))
-  ) |>
-  filter(!is.na(date)) |>
-  select(date_text, date_clean, date)
-
-recent_mpc_dates <- mpc_dates |>
-  filter(date >= max(delta.d$date) - days(opt.h)) |>
-  pull(date)
 
 # DAILY DATA
 df <- df |> tibble::rownames_to_column("date")
@@ -290,13 +254,17 @@ plot.daily.60d <- delta.d |>
   ) +
   annotate(
     "text",
-    x = max(delta.d$date) - days(),
-    y = max(delta.d[[paste0("x", opt.M)]]),
+    x = recent_mpc_dates,
+    y = 7,
     label = "MPC",
     color = "darkblue",
-    size = 4,
+    size = 5,
+    angle = 0,
+    vjust = 0.5,
     hjust = 0
   )
+
+
 plot.daily.60d
 ggsave(
   here("plots", "3.OIS_2y_daily.png"),
