@@ -243,7 +243,7 @@ delta.d <- df |>
   filter(!is.na(date))
 
 # PLOT - past 60d
-delta.d |>
+plot.daily.60d <- delta.d |>
   filter(date >= max(date) - days(opt.h)) |> # filter final opt.h observations
   ggplot(aes(x = date, y = .data[[paste0("x", opt.M)]])) +
   geom_col() +
@@ -253,6 +253,15 @@ delta.d |>
     x = "Date",
     y = paste0("daily change ", opt.h, "days (bps)")
   )
+# save
+plot.daily.60d
+ggsave(
+  here("plots", "3.OIS_2y_daily.png"),
+  plot = plot.daily.60d,
+  width = 10,
+  height = 6,
+  dpi = 300
+)
 
 
 # scrape MPC and Fed announcement days
@@ -261,7 +270,6 @@ library(stringi)
 
 url_boe <- "https://www.bankofengland.co.uk/monetary-policy/upcoming-mpc-dates"
 url_fed <- "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"
-
 
 page <- read_html(url_boe) |>
   html_nodes("table")
