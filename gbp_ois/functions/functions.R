@@ -1,5 +1,6 @@
 # functions used in this project
 
+# webscrape MPC mtg dates from BoE website
 get_mpc_dates <- function(url = url_boe) {
   page <- read_html(url) |>
     html_nodes("table")
@@ -19,6 +20,7 @@ get_mpc_dates <- function(url = url_boe) {
   return(mpc_dates)
 }
 
+# Clean Downloaded OIS data from BoE website
 cleanOIS <- function(df) {
   # Convert all but first column to numeric
   df <- df %>% mutate(across(-1, as.numeric))
@@ -38,4 +40,25 @@ cleanOIS <- function(df) {
     column_to_rownames(var = "date")
 
   return(df)
+}
+
+# Scrape FOMC meeting dates
+get_fed_dates <- function(url = url_fed) {
+  fed_page <- read_html(url) |>
+    html_nodes("table")
+
+  fed_table <- fed_page[[1]]
+  fed_dates <- fed_table |>
+    html_table() |>
+    rename(date_text = 1) |>
+    mutate(
+      # Clean up the date text to extract just the date part
+      date_clean = str_extract(date_text, "\\d{1,2} [A-Za-z]+"),
+      # Parse dates assuming 2025
+      date = dmy(paste0(date_clean, " 2025"))
+    ) |>
+    filter(!is.na(date)) |>
+    select(date_text, date_clean, date)
+
+  return(fed_dates)
 }

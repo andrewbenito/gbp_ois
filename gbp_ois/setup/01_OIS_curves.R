@@ -19,7 +19,9 @@ lapply(
   character.only = TRUE
 )
 
-# functions
+# functions----
+url_boe <- "https://www.bankofengland.co.uk/monetary-policy/upcoming-mpc-dates"
+url_fed <- "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"
 source(here("functions", "functions.R"))
 
 # Settings: ggplot2 ----
@@ -217,20 +219,20 @@ opt.h <- 60 # past 60d
 
 # scrape MPC and Fed announcement days
 # MPC and Fed dates from functions.R
-# url_boe <- "https://www.bankofengland.co.uk/monetary-policy/upcoming-mpc-dates"
-# url_fed <- "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"
 
 # scrape Fed dates
+
 fed_page <- read_html(url_fed) |>
   html_nodes("table")
 
 
-# DAILY DATA
+# DAILY OIS DATA
+#================
 df <- df |> tibble::rownames_to_column("date")
 df$date <- as.Date(df$date)
 
 # create dataframe for daily changes in OIS rates
-delta.d <- df |>
+delta.d <- df |> #
   janitor::clean_names() |>
   mutate(across(-date, ~ (. - lag(.)) * 100)) |> # daily changes in bp
   filter(!is.na(date))
