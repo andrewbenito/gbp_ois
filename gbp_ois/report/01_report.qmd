@@ -4,7 +4,7 @@ title: |
    | OIS Rates and Bank Rate
 author: "Andrew Benito"
 date: last-modified
-format: pdf
+format: html
 execute:
   warning: false
   message: false
