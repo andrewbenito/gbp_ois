@@ -4,7 +4,7 @@ title: |
    | OIS Rates and Bank Rate
 author: "Andrew Benito"
 date: last-modified
-format: html
+format: pdf
 execute:
   warning: false
   message: false
@@ -21,8 +21,7 @@ source(here::here("setup", "01_OIS_curves.R"))
 ```{r}
 #| label: fig-rates-historical
 #| fig-cap: "Evolution of GBP OIS"
-#| fig-pos: 'H'
-#| out-width: "100%"
+#| out-width: "90%"
 
 ois1
 ```
@@ -31,14 +30,22 @@ The second chart zooms in on experience in the past year. It shows how OIS curve
 
 ```{r}
 #| label: fig-rates-recent
-#| fig-cap: "Recent Evolution of GBP OIS"
-#| fig-pos: 'H'
-#| out-width: "100%"
+#| fig-cap: "More Recent Evolution of GBP OIS"
+#| out-width: "90%"
 
 ois2
 ```
 
-# Daily Data
+# Recent OIS data 
+
+```{r}
+#| label: fig-2y-daily
+#| fig-cap: "2y OIS, changes"
+#| out-width: "90%"
+
+plot.daily.60d
+```
+
 
 
 ## 2y5y spreads

@@ -378,3 +378,8 @@ plot.cumul.60d <- delta.cumul.d |>
     vjust = 0.5,
     hjust = 0
   )
+
+# TODO
+# cumulative changes
+# spreads from other BoE data
+# mon pol shocks database
