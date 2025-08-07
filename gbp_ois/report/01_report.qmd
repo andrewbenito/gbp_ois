@@ -1,9 +1,10 @@
 ---
 title: | 
-   | GBP Report: 
-   | OIS Rates and Bank Rate
+   | GBP Report 
+#subtitle: 
 author: "Andrew Benito"
 date: last-modified
+toc: true
 format: pdf
 execute:
   warning: false
@@ -11,32 +12,13 @@ execute:
   echo: false    
 ---
 
-The first chart shows how GBP OIS curves have evolved over time, alongside Bank Rate.
-
 ```{r}
 #| include: false
 source(here::here("setup", "01_OIS_curves.R"))
 ```
 
-```{r}
-#| label: fig-rates-historical
-#| fig-cap: "Evolution of GBP OIS"
-#| out-width: "90%"
-
-ois1
-```
-
-The second chart zooms in on experience in the past year. It shows how OIS curves and Bank Rate have evolved over the past year. 
-
-```{r}
-#| label: fig-rates-recent
-#| fig-cap: "More Recent Evolution of GBP OIS"
-#| out-width: "90%"
-
-ois2
-```
-
-# Recent OIS data 
+# Recent market developments
+## Latest developments
 
 ```{r}
 #| label: fig-2y-daily
@@ -47,12 +29,42 @@ plot.daily.60d
 ```
 
 
-
-## 2y5y spreads
-
-## 2y10y spreads
-
-## 10y30y spreads
+## Evolving market pricing and OIS
+To provide some context for those latest developments, @fig-rates-historical shows how GBP OIS curves have evolved over time, alongside Bank Rate.
 
 
-# Monetary Policy Shocks database
+```{r}
+#| label: fig-rates-historical
+#| fig-cap: "Evolution of GBP OIS"
+#| out-width: "90%"
+
+ois1
+```
+
+@fig-rates-recent zooms in on how OIS curves and Bank Rate have evolved over the past year. 
+
+```{r}
+#| label: fig-rates-recent
+#| fig-cap: "More Recent Evolution of GBP OIS"
+#| out-width: "90%"
+
+ois2
+```
+
+## Term spreads: latest developments
+2y5y spreads
+2y10y spreads
+10y30y spreads
+
+
+# Market reactions and macro news at BoE policy events
+## Analysing monetary policy shocks
+
+
+
+# Evolving macro forecasts and macro news
+
+
+# MPC preferences and forecasts
+## lambda update
+
