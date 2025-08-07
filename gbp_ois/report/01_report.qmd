@@ -20,6 +20,8 @@ source(here::here("setup", "01_OIS_curves.R"))
 # Recent market developments
 ## Latest developments
 
+@fig-2y-daily shows the (cumulative) changes in 2y, 5y and 10y OIS rates over the past 60 days. 
+
 ```{r}
 #| label: fig-2y-daily
 #| fig-cap: "2y OIS, changes"
@@ -29,29 +31,29 @@ plot.daily.60d
 ```
 
 
-## Evolving market pricing and OIS
-To provide some context for those latest developments, @fig-rates-historical shows how GBP OIS curves have evolved over time, alongside Bank Rate.
+## Evolving market pricing and OIS curves
+Providing some context for those latest developments, @fig-rates-historical shows how GBP OIS curves have evolved over time, alongside Bank Rate.
 
 
 ```{r}
 #| label: fig-rates-historical
-#| fig-cap: "Evolution of GBP OIS"
+#| fig-cap: "Evolution of GBP OIS curves"
 #| out-width: "90%"
 
 ois1
 ```
 
-@fig-rates-recent zooms in on how OIS curves and Bank Rate have evolved over the past year. 
+@fig-rates-recent zooms-in on how OIS curves and Bank Rate have evolved over the past year. 
 
 ```{r}
 #| label: fig-rates-recent
-#| fig-cap: "More Recent Evolution of GBP OIS"
+#| fig-cap: "More Recent Evolution of GBP OIS curves"
 #| out-width: "90%"
 
 ois2
 ```
 
-## Term spreads: latest developments
+## Term spreads
 2y5y spreads
 2y10y spreads
 10y30y spreads
@@ -60,11 +62,34 @@ ois2
 # Market reactions and macro news at BoE policy events
 ## Analysing monetary policy shocks
 
+In this section, we review market reactions to BoE policy events, and how these reactions relate to macro news digested by markets at those BoE policy events. 
+
+
+
+#```{r}
+#| include: false
+source(here::here("setup", "03_mon_pol_shocks.R"))
+#```
+
 
 
 # Evolving macro forecasts and macro news
 
+How has the MPC's own assessment of the macro outlook evolved? 
 
-# MPC preferences and forecasts
-## lambda update
+**Medium-term** Over the past decade or more, the MPC has tended to revise higher its forecasts for inflation, revise its outlook for unemployment lower, without an obvious bias in its forecasts for GDP growth. This points points to a pattern of the BoE having had to respond to negative supply shocks, updating its assessments in the light of that repeated pattern. 
+
+The weakness of productivity growth, negative terms of trade shocks (e.g. Brexit, Covid, Ukraine), and the impact of these on real incomes, have all contributed to this pattern of revisions and evolving macro forecasts.
+
+**Recent updates** Looking over the past six MPC forecasts...
+
+
+# MPC preferences and macro forecasts
+## A Lambda update
+
+As past BoE Governor Carney clarified, the MPC's preferences over inflation and unemployment can be inferred from the MPC's macro forecasts. 
+
+
+
+# Taylor-type policy rules and the latest macro outlook
 

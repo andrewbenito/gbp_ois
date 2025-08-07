@@ -251,20 +251,34 @@ delta.d <- df |> #
   filter(!is.na(date))
 
 # 2: delta.cumul.d, cumulative changes from start of prior month
+# 2: delta.cumul.d, cumulative changes over past 60 days using cumsum
 delta.cumul.d <- df |>
   janitor::clean_names() |>
+  arrange(date) |>
   mutate(
-    # Create a month-year grouping variable
-    month_group = floor_date(date - months(1), "month")
+    # Calculate daily changes first
+    across(where(is.numeric), ~ (. - lag(.)) * 100)
   ) |>
-  group_by(month_group) |>
+  # Apply cumsum over a rolling 60-day window
   mutate(
-    # Calculate cumulative changes since start of prior month
-    across(where(is.numeric), ~ cumsum(c(0, diff(.))) * 100)
+    across(
+      where(is.numeric),
+      ~ {
+        # Calculate rolling cumulative sum for past 60 days
+        zoo::rollapplyr(., width = 60, FUN = sum, fill = NA, na.rm = TRUE)
+      }
+    )
   ) |>
-  ungroup() |>
-  select(-month_group) |>
   filter(!is.na(date))
+
+# Long format for cumulative changes
+delta.cumul.long <- delta.cumul.d |>
+  pivot_longer(
+    cols = starts_with("x"),
+    names_to = "maturity",
+    values_to = "cumulative_change"
+  ) |>
+  mutate(maturity = as.numeric(str_remove(maturity, "x")))
 
 # 3: spreads.d - need file with LT rates
 spreads.d <- df |>
@@ -283,10 +297,10 @@ plot(spreads.d)
 plot.daily.60d <- delta.d |>
   filter(date >= max(date) - days(opt.h)) |> # filter final opt.h observations
   ggplot(aes(x = date, y = .data[[paste0("x", opt.M)]])) +
-  geom_col() +
+  geom_col(fill = "blue") +
   labs(
     title = paste0("GBP 2y OIS"),
-    subtitle = paste0(opt.h, " days, daily change (bp)"),
+    subtitle = paste0("daily changes (bp), past ", opt.h, " days"),
     x = "Date",
     y = paste0("daily change ", opt.h, "days (bps)")
   ) +
@@ -379,7 +393,50 @@ plot.cumul.60d <- delta.cumul.d |>
     hjust = 0
   )
 
-# TODO
-# cumulative changes
-# spreads from other BoE data
-# mon pol shocks database
+
+# PLOT - cumulative changes 2y, 5y
+plot.cumul.60d <- delta.cumul.long |>
+  filter(date >= max(date) - days(opt.h)) |> # filter final opt.h observations
+  filter(maturity == opt.M | maturity == opt.M2) |> # filter for 2y, 5y maturity
+  ggplot(aes(x = date)) +
+  geom_line(y = cumulative_change, color = as.factor(maturity)) +
+  labs(
+    title = "GBP 2y and 5y OIS",
+    subtitle = paste0(opt.h, " days, cumulative change (bp)"),
+    x = "Date",
+    y = paste0("cumulative change ", opt.h, "days (bps)")
+  ) +
+  geom_vline(
+    xintercept = recent_mpc_dates,
+    linetype = "dashed",
+    color = "darkblue",
+    linewidth = 0.5
+  ) +
+  annotate(
+    "text",
+    x = recent_mpc_dates,
+    y = 7,
+    label = "MPC",
+    color = "darkblue",
+    size = 5,
+    angle = 0,
+    vjust = 0.5,
+    hjust = 0
+  ) +
+  geom_vline(
+    xintercept = recent_fomc_dates,
+    linetype = "dashed",
+    color = "darkgreen",
+    linewidth = 0.5
+  ) +
+  annotate(
+    "text",
+    x = recent_fomc_dates,
+    y = 7,
+    label = "FOMC",
+    color = "darkgreen",
+    size = 5,
+    angle = 0,
+    vjust = 0.5,
+    hjust = 0
+  )
