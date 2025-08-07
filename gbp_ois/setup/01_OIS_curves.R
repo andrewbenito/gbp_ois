@@ -47,6 +47,9 @@ download.file(url, tf, mode = "wb") # Added binary mode for Excel files
 fname1 <- unzip(tf, list = TRUE)$Name[1] # 2009-2015
 fname2 <- unzip(tf, list = TRUE)$Name[2] # 2016-2024
 fname3 <- unzip(tf, list = TRUE)$Name[3] # 2025
+fname4 <- unzip(tf, list = TRUE)$Name[4] # 2025
+
+
 df1 <- read_xlsx(unzip(tf, files = fname1, exdir = td), sheet = "1. fwd curve")
 df2 <- read_xlsx(
   unzip(tf, files = fname2, exdir = td),
@@ -214,7 +217,6 @@ ggsave(
 #========================================
 opt.M <- 24 # 2y rate
 opt.M2 <- 60 # 5y rate
-opt.M3 <- 120 # 10y rate
 opt.h <- 60 # past 60d
 opt.start.cumul <- 30 # cumulative changes from start of prior month
 
@@ -250,7 +252,6 @@ delta.d <- df |> #
   mutate(across(-date, ~ (. - lag(.)) * 100)) |> # daily changes in bp
   filter(!is.na(date))
 
-# 2: delta.cumul.d, cumulative changes from start of prior month
 # 2: delta.cumul.d, cumulative changes over past 60 days using cumsum
 delta.cumul.d <- df |>
   janitor::clean_names() |>
@@ -399,7 +400,13 @@ plot.cumul.60d <- delta.cumul.long |>
   filter(date >= max(date) - days(opt.h)) |> # filter final opt.h observations
   filter(maturity == opt.M | maturity == opt.M2) |> # filter for 2y, 5y maturity
   ggplot(aes(x = date)) +
-  geom_line(y = cumulative_change, color = as.factor(maturity)) +
+  geom_line(aes(y = cumulative_change, color = as.factor(maturity))) +
+  geom_hline(yintercept = 0.0, lty = 4) +
+  scale_color_manual(
+    values = c("24" = "blue", "60" = "red"),
+    labels = c("24" = "2-year", "60" = "5-year"),
+    name = ""
+  ) +
   labs(
     title = "GBP 2y and 5y OIS",
     subtitle = paste0(opt.h, " days, cumulative change (bp)"),
@@ -418,10 +425,7 @@ plot.cumul.60d <- delta.cumul.long |>
     y = 7,
     label = "MPC",
     color = "darkblue",
-    size = 5,
-    angle = 0,
-    vjust = 0.5,
-    hjust = 0
+    size = 5
   ) +
   geom_vline(
     xintercept = recent_fomc_dates,
@@ -435,8 +439,6 @@ plot.cumul.60d <- delta.cumul.long |>
     y = 7,
     label = "FOMC",
     color = "darkgreen",
-    size = 5,
-    angle = 0,
-    vjust = 0.5,
-    hjust = 0
+    size = 5
   )
+plot.cumul.60d
