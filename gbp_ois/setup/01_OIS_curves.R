@@ -140,26 +140,47 @@ fwcv <- left_join(fwcv, dat, by = 'date2', relationship = "many-to-many")
 #===================================
 # GLC data (Gilt yields)
 #===================================
-
 # historical Gilt yields from Bank of England
+# https://www.bankofengland.co.uk/statistics/yield-curves
 url <- "https://www.bankofengland.co.uk/-/media/boe/files/statistics/yield-curves/glcnominalddata.zip"
 td <- tempdir()
 tf <- tempfile(tmpdir = td, fileext = ".zip")
 download.file(url, tf, mode = "wb") # Added binary mode for Excel files
 
-fname1 <- unzip(tf, list = TRUE)$Name[1] # 2009-2015
-fname2 <- unzip(tf, list = TRUE)$Name[2] # 2016-2024
-fname3 <- unzip(tf, list = TRUE)$Name[3] # 2025
+# count files in zip
+N <- length(unzip(tf, list = TRUE)$Name)
+fname1 <- unzip(tf, list = TRUE)$Name[N - 2]
+fname2 <- unzip(tf, list = TRUE)$Name[N - 1]
+fname3 <- unzip(tf, list = TRUE)$Name[N]
 
-df1 <- read_xlsx(unzip(tf, files = fname1, exdir = td), sheet = "1. fwd curve")
-df2 <- read_xlsx(
+glc1 <- read_xlsx(
+  unzip(tf, files = fname1, exdir = td),
+  sheet = "2. fwd curve"
+)
+glc2 <- read_xlsx(
   unzip(tf, files = fname2, exdir = td),
-  sheet = "1. fwds, short end"
+  sheet = "2. fwd curve"
 )
-df3 <- read_xlsx(
+glc3 <- read_xlsx(
   unzip(tf, files = fname3, exdir = td),
-  sheet = "1. fwds, short end"
+  sheet = "2. fwd curve"
 )
+# Add Latest GLC data ----
+url_latest <- "https://www.bankofengland.co.uk/-/media/boe/files/statistics/yield-curves/latest-yield-curve-data.zip"
+td <- tempdir()
+tf <- tempfile(tmpdir = td, fileext = ".zip")
+download.file(url_latest, tf, mode = "wb")
+fname1 <- unzip(tf, list = TRUE)$Name[2]
+glc_latest <- read_xlsx(
+  unzip(tf, files = fname1, exdir = td),
+  sheet = "2. fwd curve"
+)
+
+# Clean the 3 downloaded dataframes
+for (dfn in c("glc1", "glc2", "glc3", "glc_latest")) {
+  assign(dfn, cleanGLC(get(dfn)))
+}
+glc <- bind_rows(glc1, glc2, glc3, glc_latest) # Daily GLC data
 
 
 #================================

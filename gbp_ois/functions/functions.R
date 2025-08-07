@@ -71,3 +71,23 @@ cleanOIS <- function(df) {
 
   return(df)
 }
+
+# Clean Downloaded GLC data from BoE website
+cleanGLC <- function(df) {
+  # Convert all but first column to numeric
+  df <- df %>% mutate(across(-1, as.numeric))
+
+  # Clean up - remove rows, set column names, etc.
+  df <- df %>%
+    tail(-3) %>%
+    type.convert(as.is = TRUE) %>%
+    rename(date = 1) %>%
+    mutate(date = as.Date(as.numeric(date), origin = "1899-12-30")) %>%
+    janitor::clean_names() %>%
+    drop_na(date) %>%
+    # Remove any existing row names first
+    `rownames<-`(NULL) %>% # Add this line to clear row names
+    column_to_rownames(var = "date")
+
+  return(df)
+}
