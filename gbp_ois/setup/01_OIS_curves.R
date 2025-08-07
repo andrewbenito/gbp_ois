@@ -47,8 +47,6 @@ download.file(url, tf, mode = "wb") # Added binary mode for Excel files
 fname1 <- unzip(tf, list = TRUE)$Name[1] # 2009-2015
 fname2 <- unzip(tf, list = TRUE)$Name[2] # 2016-2024
 fname3 <- unzip(tf, list = TRUE)$Name[3] # 2025
-fname4 <- unzip(tf, list = TRUE)$Name[4] # 2025
-
 
 df1 <- read_xlsx(unzip(tf, files = fname1, exdir = td), sheet = "1. fwd curve")
 df2 <- read_xlsx(
@@ -138,6 +136,31 @@ dat <- eom_df %>%
 
 # Join with forward curve data
 fwcv <- left_join(fwcv, dat, by = 'date2', relationship = "many-to-many")
+
+#===================================
+# GLC data (Gilt yields)
+#===================================
+
+# historical Gilt yields from Bank of England
+url <- "https://www.bankofengland.co.uk/-/media/boe/files/statistics/yield-curves/glcnominalddata.zip"
+td <- tempdir()
+tf <- tempfile(tmpdir = td, fileext = ".zip")
+download.file(url, tf, mode = "wb") # Added binary mode for Excel files
+
+fname1 <- unzip(tf, list = TRUE)$Name[1] # 2009-2015
+fname2 <- unzip(tf, list = TRUE)$Name[2] # 2016-2024
+fname3 <- unzip(tf, list = TRUE)$Name[3] # 2025
+
+df1 <- read_xlsx(unzip(tf, files = fname1, exdir = td), sheet = "1. fwd curve")
+df2 <- read_xlsx(
+  unzip(tf, files = fname2, exdir = td),
+  sheet = "1. fwds, short end"
+)
+df3 <- read_xlsx(
+  unzip(tf, files = fname3, exdir = td),
+  sheet = "1. fwds, short end"
+)
+
 
 #================================
 # Figure 1: Evolving Forwards----
