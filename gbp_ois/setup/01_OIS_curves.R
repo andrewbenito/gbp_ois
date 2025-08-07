@@ -153,18 +153,23 @@ fname1 <- unzip(tf, list = TRUE)$Name[N - 2]
 fname2 <- unzip(tf, list = TRUE)$Name[N - 1]
 fname3 <- unzip(tf, list = TRUE)$Name[N]
 
-glc1 <- read_xlsx(
-  unzip(tf, files = fname1, exdir = td),
-  sheet = "2. fwd curve"
-)
-glc2 <- read_xlsx(
-  unzip(tf, files = fname2, exdir = td),
-  sheet = "2. fwd curve"
-)
-glc3 <- read_xlsx(
-  unzip(tf, files = fname3, exdir = td),
-  sheet = "2. fwd curve"
-)
+# Read all files using a loop or map function
+sheet_name <- "2. fwd curve"
+file_names <- c(fname1, fname2, fname3)
+
+glc_list <- list()
+for (i in seq_along(file_names)) {
+  glc_list[[i]] <- read_xlsx(
+    unzip(tf, files = file_names[i], exdir = td),
+    sheet = sheet_name
+  )
+}
+
+# Assign to individual variables if needed
+glc1 <- glc_list[[1]]
+glc2 <- glc_list[[2]]
+glc3 <- glc_list[[3]]
+
 # Add Latest GLC data ----
 url_latest <- "https://www.bankofengland.co.uk/-/media/boe/files/statistics/yield-curves/latest-yield-curve-data.zip"
 td <- tempdir()
@@ -176,12 +181,13 @@ glc_latest <- read_xlsx(
   sheet = "2. fwd curve"
 )
 
-# Clean the 3 downloaded dataframes
+# Clean the 4 downloaded dataframes
 for (dfn in c("glc1", "glc2", "glc3", "glc_latest")) {
   assign(dfn, cleanGLC(get(dfn)))
 }
 glc <- bind_rows(glc1, glc2, glc3, glc_latest) # Daily GLC data
 
+# spreads: 2y5y, 2y10y, 5y10, 10y30y
 
 #================================
 # Figure 1: Evolving Forwards----

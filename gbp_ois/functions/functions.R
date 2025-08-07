@@ -74,19 +74,45 @@ cleanOIS <- function(df) {
 
 # Clean Downloaded GLC data from BoE website
 cleanGLC <- function(df) {
-  # Convert all but first column to numeric
-  df <- df %>% mutate(across(-1, as.numeric))
+  # First, handle any NA or empty column names by giving them temporary names
+  col_names <- names(df)
+  col_names[is.na(col_names) | col_names == ""] <- paste0(
+    "temp_col_",
+    seq_along(col_names[is.na(col_names) | col_names == ""])
+  )
+  names(df) <- col_names
 
-  # Clean up - remove rows, set column names, etc.
+  # Get the original column names from the first row of data
+  # Skip the first column (which will be dates) and take the rest as column names
+  first_row_names <- as.character(unlist(df[1, -1]))
+  # Handle any NA values in the first row
+  first_row_names[is.na(first_row_names)] <- paste0(
+    "col_",
+    seq_along(first_row_names[is.na(first_row_names)])
+  )
+
+  new_col_names <- c("date", first_row_names)
+
+  # Remove rows with all NA values and the header row
   df <- df %>%
-    tail(-3) %>%
-    type.convert(as.is = TRUE) %>%
-    rename(date = 1) %>%
-    mutate(date = as.Date(as.numeric(date), origin = "1899-12-30")) %>%
+    # Set proper column names
+    setNames(new_col_names) %>%
+    # Remove the header row (now that we've used it for names)
+    slice(-1) %>%
+    # Remove any completely empty rows
+    filter(!if_all(-date, is.na)) %>%
+    # Convert date column to proper Date format (Excel dates)
+    mutate(
+      date = as.Date(as.numeric(date), origin = "1899-12-30")
+    ) %>%
+    # Convert all other columns to numeric
+    mutate(across(-date, as.numeric)) %>%
+    # Clean up column names
     janitor::clean_names() %>%
+    # Remove rows with invalid dates
     drop_na(date) %>%
-    # Remove any existing row names first
-    `rownames<-`(NULL) %>% # Add this line to clear row names
+    # Remove any existing row names and convert date to row names
+    `rownames<-`(NULL) %>%
     column_to_rownames(var = "date")
 
   return(df)

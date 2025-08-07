@@ -1,5 +1,6 @@
 ---
 title: "GBP Report"
+#subtitle: 
 author: Andrew Benito
 date: last-modified
 format: beamer
