@@ -1,6 +1,6 @@
 ---
 title: | 
-   | GBP Report 
+   | GBP Rates Report 
 #subtitle: 
 author: "Andrew Benito"
 date: last-modified
@@ -16,7 +16,7 @@ execute:
 #| include: false
 source(here::here("setup", "01_create_data.R"))
 source(here::here("setup", "02_plots_ois_gilts.R"))
-source(here::here("setup", "04_Rigobon.R"))
+#source(here::here("setup", "04_Rigobon.R"))
 
 ```
 
@@ -31,29 +31,6 @@ source(here::here("setup", "04_Rigobon.R"))
 #| out-width: "90%"
 
 plot.cumul.60d
-```
-
-
-## Evolving market pricing and OIS curves
-Providing some context for those latest developments, @fig-rates-historical shows how GBP OIS curves have evolved over time, alongside the MPC's Bank Rate decisions.
-
-
-```{r}
-#| label: fig-rates-historical
-#| fig-cap: "Evolution of GBP OIS curves"
-#| out-width: "90%"
-
-ois1
-```
-
-@fig-rates-recent zooms-in on how OIS curves and Bank Rate have evolved over the past year. 
-
-```{r}
-#| label: fig-rates-recent
-#| fig-cap: "More Recent Evolution of GBP OIS curves"
-#| out-width: "90%"
-
-ois2
 ```
 
 ## Term spreads
@@ -71,23 +48,45 @@ plot2y_v_10y
 
 The 10s25s term spread has widened in recent weeks, and by more than the 2s5s and 5s10s spreads (@fig-spreads).  
 
-
 ```{r}
 #| label: fig-spreads
 #| fig-cap: "Term spreads in Gilt yields"
-#| out-width: "90%"
+#| out-width: "110%"
 
 plot2s5s + plot5s10s + plot10s25s
 ```
 
 
-## International spillovers
+# Evolving market pricing and OIS curves
+Providing some context for those latest developments, @fig-rates-historical shows how GBP OIS curves have evolved over time, alongside the MPC's Bank Rate decisions.
+
+
+```{r}
+#| label: fig-ois-historical
+#| fig-cap: "Evolution of GBP OIS curves"
+#| out-width: "90%"
+
+ois1
+```
+
+@fig-rates-recent zooms-in on how OIS curves and Bank Rate have evolved over the past year. 
+
+```{r}
+#| label: fig-ois-recent
+#| fig-cap: "More Recent Evolution of GBP OIS curves"
+#| out-width: "90%"
+
+ois2
+```
+
+
+# International spillovers
 
 What of international spillovers? Using the Rigobon (2003) methodology, we can estimate the extent to which international spillovers have contributed to the recent sell-off in GBP 10y Gilt yields.  
 
 
 ```{r}
-#| label: fig-spreads
+#| label: fig-rigobon
 #| fig-cap: "Term spreads in Gilt yields"
 #| out-width: "90%"
 
@@ -120,18 +119,9 @@ The weakness of productivity growth, negative terms of trade shocks (e.g. Brexit
 **Recent updates** Looking over the past six MPC forecasts...
 
 
-# MPC preferences and macro forecasts
-## A Lambda update
-
-As past BoE Governor Carney clarified, the MPC's preferences over inflation and unemployment can be inferred from the MPC's macro forecasts. 
-
-
-
-# Taylor-type policy rules and the latest macro outlook
-
-
-
 
 # MPC Voting 
+
+We inspect MPC voting patterns to assess two points. First, the current extent of disagreement among MPC members versus history. Second, MPC voting among the current MPC members. 
 
 
