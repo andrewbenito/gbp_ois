@@ -1,0 +1,321 @@
+# plots for OIS and Gilts data
+
+#================================
+# Figure 1: Evolving Forwards----
+#================================
+
+ois1 <- ggplot(fwcv, aes(x = date2, y = yield, group = date)) +
+  geom_line(aes(colour = as.factor(date))) +
+  geom_line(
+    data = latest,
+    aes(x = date2, y = yield),
+    color = "black",
+    lty = 2,
+    linewidth = 1.2
+  ) +
+  geom_line(aes(y = bankrate)) +
+  geom_hline(yintercept = 0.0, lty = 4) +
+  theme(legend.position = "none") +
+  scale_x_date(date_breaks = "2 years", date_labels = "%Y") +
+  labs(
+    title = "Bank Rate and GBP OIS Curves",
+    subtitle = "monthly averages of end-of-day daily data",
+    x = "date",
+    y = "rate %",
+    caption = "Source: Bank of England data"
+  )
+ois1
+# save
+ggsave(
+  here("plots", "1.GBP_OIS.png"),
+  plot = ois1,
+  width = 10,
+  height = 6,
+  dpi = 300
+)
+#========================================
+# Figure 2: Recent data, 12m lookback----
+#========================================
+last_12m <- fwcv |>
+  distinct(date) |>
+  arrange(desc(date)) |>
+  slice_head(n = 12) |>
+  pull(date)
+
+ois2 <- ggplot(
+  subset(fwcv, date %in% last_12m),
+  aes(x = date2, y = yield, group = date)
+) +
+  geom_line(color = "gray70", linewidth = 1.4) +
+  geom_point(
+    data = subset(fwcv, date == max(date)),
+    aes(x = date2, y = yield),
+    color = "red",
+    size = 2
+  ) +
+  geom_line(aes(y = bankrate), linewidth = 1.25) +
+  theme(legend.position = "none") +
+  scale_x_date(date_breaks = "1 year", date_labels = "%Y") +
+  labs(
+    title = "GBP OIS Curves: The past 12 months",
+    subtitle = "monthly averages of end-of-day daily data",
+    x = "date",
+    y = "rate %",
+    caption = "Source: Bank of England data"
+  )
+ois2
+# save
+ggsave(
+  here("plots", "2.GBP_OIS_12m.png"),
+  plot = ois2,
+  width = 10,
+  height = 6,
+  dpi = 300
+)
+
+#=================
+# PLOT - past 60d
+#=================
+plot.daily.60d <- delta.d |>
+  filter(date >= max(date) - days(opt.h)) |> # filter final opt.h observations
+  ggplot(aes(x = date, y = .data[[paste0("x", opt.M)]])) +
+  geom_col(fill = "blue") +
+  labs(
+    title = paste0("GBP 2y OIS"),
+    subtitle = paste0("daily changes (bp), past ", opt.h, " days"),
+    x = "Date",
+    y = paste0("daily change ", opt.h, "days (bps)")
+  ) +
+  geom_vline(
+    xintercept = recent_mpc_dates,
+    linetype = "dashed",
+    color = "darkblue",
+    linewidth = 0.5
+  ) +
+  annotate(
+    "text",
+    x = recent_mpc_dates,
+    y = 7,
+    label = "MPC",
+    color = "darkblue",
+    size = 5,
+    angle = 0,
+    vjust = 0.5,
+    hjust = 0
+  ) +
+  geom_vline(
+    xintercept = recent_fomc_dates,
+    linetype = "dashed",
+    color = "darkgreen",
+    linewidth = 0.5
+  ) +
+  annotate(
+    "text",
+    x = recent_fomc_dates,
+    y = 7,
+    label = "FOMC",
+    color = "darkgreen",
+    size = 5,
+    angle = 0,
+    vjust = 0.5,
+    hjust = 0
+  )
+plot.daily.60d
+ggsave(
+  here("plots", "3.OIS_2y_daily.png"),
+  plot = plot.daily.60d,
+  width = 10,
+  height = 6,
+  dpi = 300
+)
+
+#=================#=================
+# PLOT - cumulative changes
+#=================#=================
+plot.cumul.60d <- delta.cumul.d |>
+  filter(date >= max(date) - days(opt.h)) |> # filter final opt.h observations
+  ggplot(aes(x = date, y = .data[[paste0("x", opt.M)]])) +
+  geom_col() +
+  labs(
+    title = paste0("GBP 2y OIS"),
+    subtitle = paste0(opt.h, " days, cumulative change (bp)"),
+    x = "Date",
+    y = paste0("cumulative change ", opt.h, "days (bps)")
+  ) +
+  geom_vline(
+    xintercept = recent_mpc_dates,
+    linetype = "dashed",
+    color = "darkblue",
+    linewidth = 0.5
+  ) +
+  annotate(
+    "text",
+    x = recent_mpc_dates,
+    y = 7,
+    label = "MPC",
+    color = "darkblue",
+    size = 5,
+    angle = 0,
+    vjust = 0.5,
+    hjust = 0
+  ) +
+  geom_vline(
+    xintercept = recent_fomc_dates,
+    linetype = "dashed",
+    color = "darkgreen",
+    linewidth = 0.5
+  ) +
+  annotate(
+    "text",
+    x = recent_fomc_dates,
+    y = 7,
+    label = "FOMC",
+    color = "darkgreen",
+    size = 5,
+    angle = 0,
+    vjust = 0.5,
+    hjust = 0
+  )
+
+
+# PLOT - cumulative changes 2y, 5y
+plot.cumul.60d <- delta.cumul.long |>
+  filter(date >= max(date) - days(opt.h)) |> # filter final opt.h observations
+  filter(maturity == opt.M | maturity == opt.M2) |> # filter for 2y, 5y maturity
+  ggplot(aes(x = date)) +
+  geom_line(aes(y = cumulative_change, color = as.factor(maturity))) +
+  geom_hline(yintercept = 0.0, lty = 4) +
+  scale_color_manual(
+    values = c("24" = "blue", "60" = "red"),
+    labels = c("24" = "2-year", "60" = "5-year"),
+    name = ""
+  ) +
+  labs(
+    title = "GBP 2y and 5y OIS",
+    subtitle = paste0(opt.h, " days, cumulative change (bp)"),
+    x = "Date",
+    y = paste0("cumulative change ", opt.h, "days (bps)")
+  ) +
+  geom_vline(
+    xintercept = recent_mpc_dates,
+    linetype = "dashed",
+    color = "darkblue",
+    linewidth = 0.5
+  ) +
+  annotate(
+    "text",
+    x = recent_mpc_dates,
+    y = 7,
+    label = "MPC",
+    color = "darkblue",
+    size = 5
+  ) +
+  geom_vline(
+    xintercept = recent_fomc_dates,
+    linetype = "dashed",
+    color = "darkgreen",
+    linewidth = 0.5
+  ) +
+  annotate(
+    "text",
+    x = recent_fomc_dates,
+    y = 7,
+    label = "FOMC",
+    color = "darkgreen",
+    size = 5
+  )
+plot.cumul.60d
+
+#=================#=================
+# Plot Spreads
+#=================#=================
+
+plot_spread <- function(dataf, spread_col) {
+  # Extract the maturity parts and format with hyphen
+  maturity_part <- gsub("spread", "", spread_col) # Remove "spread" prefix
+  formatted_title <- gsub("(\\d+)s(\\d+)s", "\\1-\\2", maturity_part) # Convert "2s5s" to "2-5"
+
+  dataf |>
+    filter(date >= max(date) - days(opt.h)) |>
+    ggplot(aes(x = date, y = .data[[spread_col]])) +
+    geom_point() +
+    geom_hline(yintercept = 0, lty = 4) +
+    labs(
+      title = paste0(formatted_title, "y spread"),
+      subtitle = "percentage points",
+      x = "Date",
+      y = "Spread (pp)"
+    )
+}
+
+# Plot 2y-5y spread
+plot2s5s <- plot_spread(glcspreads, "spread2s5s")
+
+# Plot 2y-10y spread
+plot2s10s <- plot_spread(glcspreads, "spread2s10s")
+
+# Plot 5y-10y spread
+plot5s10s <- plot_spread(glcspreads, "spread5s10s")
+
+# Plot 10y-25y spread and 10y-30y
+plot10s25s <- plot_spread(glcspreads, "spread10s25s")
+plot10s30s <- plot_spread(glcspreads, "spread10s30s")
+
+#=================
+# plot 2y v 10y,
+#=================
+# plot 2y v 10y with color coding for 2-year periods
+plot2y_v_10y <- glc |>
+  filter(date >= max(date) - years(10)) |>
+  mutate(
+    # Create 2-year period groupings
+    period = case_when(
+      date >= max(date) - years(2) ~ "2023-2025",
+      date >= max(date) - years(4) ~ "2021-2023",
+      date >= max(date) - years(6) ~ "2019-2021",
+      date >= max(date) - years(8) ~ "2017-2019",
+      date >= max(date) - years(10) ~ "2015-2017"
+    ),
+    # Ensure proper factor ordering (oldest to newest)
+    period = factor(
+      period,
+      levels = c(
+        "2015-2017",
+        "2017-2019",
+        "2019-2021",
+        "2021-2023",
+        "2023-2025"
+      )
+    )
+  ) |>
+  ggplot(aes(x = col_4, y = col_20, color = period)) +
+  geom_point(alpha = 0.7) +
+  geom_point(
+    data = glc |>
+      filter(date >= max(date) - years(10)) |>
+      slice_tail(n = 10),
+    aes(x = col_4, y = col_20),
+    shape = 4,
+    color = "black", # Highlight last 10 observations
+    size = 3,
+    inherit.aes = FALSE # Don't inherit the color aesthetic
+  ) +
+  geom_hline(yintercept = 0, lty = 4) +
+  geom_vline(xintercept = 0, lty = 4) +
+  geom_abline(intercept = 0, slope = 1, lty = 2) +
+  scale_color_aaas() + # Use ggsci color palette
+  labs(
+    title = "2y vs 10y Gilt yields",
+    subtitle = "sample: last 10 years, daily data",
+    x = "2y Gilt yield (%)",
+    y = "10y Gilt yield (%)"
+  ) +
+  theme(legend.position = "right")
+# save
+ggsave(
+  here("plots", "4.Gilt_2y_v_10y.png"),
+  plot = plot2y_v_10y,
+  width = 10,
+  height = 6,
+  dpi = 300
+)
