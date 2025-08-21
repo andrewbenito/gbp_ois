@@ -1,6 +1,6 @@
 # GBP OIS Forward Curves and How they have Evolved
 # Download BoE data from url, Tidy and Plot incl Bank Rate
-# Produce (i) 'Evolving Forward Curves' (ii) 'Recent OIS Curves'
+# Produce (i) 'Evolving Forward Curves' (ii) 'Recent OIS Curves', both monthly data
 # (iii) Daily OIS
 
 # Packages ----
@@ -14,6 +14,7 @@ lapply(
     'rvest',
     'stringi',
     'showtext',
+    'patchwork',
     'here'
   ),
   require,
@@ -149,9 +150,9 @@ download.file(url, tf, mode = "wb") # Added binary mode for Excel files
 
 # count files in zip
 N <- length(unzip(tf, list = TRUE)$Name)
-fname1 <- unzip(tf, list = TRUE)$Name[N - 2]
-fname2 <- unzip(tf, list = TRUE)$Name[N - 1]
-fname3 <- unzip(tf, list = TRUE)$Name[N]
+fname1 <- unzip(tf, list = TRUE)$Name[N - 2] # 2005-15; 6m-25y
+fname2 <- unzip(tf, list = TRUE)$Name[N - 1] # 2016-24; 6m-40y
+fname3 <- unzip(tf, list = TRUE)$Name[N] # 2025-      ; 6m-40y
 
 # Read all files using a loop or map function
 sheet_name <- "2. fwd curve"
@@ -164,7 +165,6 @@ for (i in seq_along(file_names)) {
     sheet = sheet_name
   )
 }
-
 # Assign to individual variables if needed
 glc1 <- glc_list[[1]]
 glc2 <- glc_list[[2]]
@@ -175,19 +175,32 @@ url_latest <- "https://www.bankofengland.co.uk/-/media/boe/files/statistics/yiel
 td <- tempdir()
 tf <- tempfile(tmpdir = td, fileext = ".zip")
 download.file(url_latest, tf, mode = "wb")
-fname1 <- unzip(tf, list = TRUE)$Name[2]
+fname1 <- unzip(tf, list = TRUE)$Name[2] # GLC Nominal daily data current month.xlsx
 glc_latest <- read_xlsx(
   unzip(tf, files = fname1, exdir = td),
   sheet = "2. fwd curve"
 )
 
-# Clean the 4 downloaded dataframes
+# Clean GLC downloaded dataframes
 for (dfn in c("glc1", "glc2", "glc3", "glc_latest")) {
   assign(dfn, cleanGLC(get(dfn)))
 }
 glc <- bind_rows(glc1, glc2, glc3, glc_latest) # Daily GLC data
+# add date column from rownames
+glc <- glc |>
+  tibble::rownames_to_column("date") |>
+  mutate(date = as.Date(date)) |>
+  select(date, everything()) # Ensure date is the first column
 
 # spreads: 2y5y, 2y10y, 5y10, 10y30y
+glcspreads <- glc |>
+  mutate(
+    spread2s5s = col_10 - col_4,
+    spread2s10s = col_20 - col_4,
+    spread5s10s = col_20 - col_10,
+    spread10s25s = col_50 - col_20,
+    spread10s30s = col_60 - col_20
+  )
 
 #================================
 # Figure 1: Evolving Forwards----
@@ -276,16 +289,6 @@ url_fed <- "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"
 
 recent_mpc_dates <- get_mpc_dates(url_boe)
 recent_fomc_dates <- get_fomc_dates(url_fed)
-
-# select dates within 60d of max date
-recent_mpc_dates <- recent_mpc_dates[
-  recent_mpc_dates >= max(df$date) - days(opt.h) &
-    recent_mpc_dates <= max(df$date) + 7
-]
-recent_fomc_dates <- recent_fomc_dates[
-  recent_fomc_dates >= max(df$date) - days(opt.h) &
-    recent_fomc_dates <= max(df$date) + 7
-]
 
 # DAILY OIS DATA
 #================
@@ -492,3 +495,84 @@ plot.cumul.60d <- delta.cumul.long |>
     size = 5
   )
 plot.cumul.60d
+
+# Plot Spreads
+plot_spread <- function(dataf, spread_col) {
+  # Extract the maturity parts and format with hyphen
+  maturity_part <- gsub("spread", "", spread_col) # Remove "spread" prefix
+  formatted_title <- gsub("(\\d+)s(\\d+)s", "\\1-\\2", maturity_part) # Convert "2s5s" to "2-5"
+
+  dataf |>
+    filter(date >= max(date) - days(opt.h)) |>
+    ggplot(aes(x = date, y = .data[[spread_col]])) +
+    geom_point() +
+    geom_hline(yintercept = 0, lty = 4) +
+    labs(
+      title = paste0(formatted_title, "y spread"),
+      subtitle = "percentage points",
+      x = "Date",
+      y = "Spread (pp)"
+    )
+}
+
+# Plot 2y-5y spread
+plot2s5s <- plot_spread(glcspreads, "spread2s5s")
+
+# Plot 2y-10y spread
+plot2s10s <- plot_spread(glcspreads, "spread2s10s")
+
+# Plot 5y-10y spread
+plot5s10s <- plot_spread(glcspreads, "spread5s10s")
+
+# Plot 10y-25y spread and 10y-30y
+plot10s25s <- plot_spread(glcspreads, "spread10s25s")
+plot10s30s <- plot_spread(glcspreads, "spread10s30s")
+
+# plot 2y v 10y, highlight last 10 obs
+# plot 2y v 10y with color coding for 2-year periods
+plot2y_v_10y <- glc |>
+  filter(date >= max(date) - years(10)) |>
+  mutate(
+    # Create 2-year period groupings
+    period = case_when(
+      date >= max(date) - years(2) ~ "2023-2025",
+      date >= max(date) - years(4) ~ "2021-2023",
+      date >= max(date) - years(6) ~ "2019-2021",
+      date >= max(date) - years(8) ~ "2017-2019",
+      date >= max(date) - years(10) ~ "2015-2017"
+    ),
+    # Ensure proper factor ordering (oldest to newest)
+    period = factor(
+      period,
+      levels = c(
+        "2015-2017",
+        "2017-2019",
+        "2019-2021",
+        "2021-2023",
+        "2023-2025"
+      )
+    )
+  ) |>
+  ggplot(aes(x = col_4, y = col_20, color = period)) +
+  geom_point(alpha = 0.7) +
+  geom_point(
+    data = glc |>
+      filter(date >= max(date) - years(10)) |>
+      slice_tail(n = 10),
+    aes(x = col_4, y = col_20),
+    shape = 4,
+    color = "black", # Highlight last 10 observations
+    size = 3,
+    inherit.aes = FALSE # Don't inherit the color aesthetic
+  ) +
+  geom_hline(yintercept = 0, lty = 4) +
+  geom_vline(xintercept = 0, lty = 4) +
+  geom_abline(intercept = 0, slope = 1, lty = 2) +
+  scale_color_aaas() + # Use ggsci color palette
+  labs(
+    title = "2y vs 10y Gilt yields",
+    subtitle = "sample: last 10 years, daily data",
+    x = "2y Gilt yield (%)",
+    y = "10y Gilt yield (%)"
+  ) +
+  theme(legend.position = "right")

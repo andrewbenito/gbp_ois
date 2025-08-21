@@ -54,9 +54,34 @@ ois2
 ```
 
 ## Term spreads
-2y5y spreads
-2y10y spreads
-10y30y spreads
+
+```{r}
+#| label: fig-2yv10y
+#| fig-cap: "Gilt yields: 2y v 10y"
+#| out-width: "90%"
+
+plot2y_v_10y
+```
+
+
+
+
+
+```{r}
+#| label: fig-spreads
+#| fig-cap: "Term spreads in Gilt yields"
+#| out-width: "90%"
+
+plot2s5s + plot5s10s + plot10s25s
+```
+
+
+
+
+
+
+
+
 
 
 # Market reactions and macro news at BoE policy events
