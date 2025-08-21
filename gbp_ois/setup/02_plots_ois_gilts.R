@@ -78,6 +78,7 @@ ggsave(
 #=================
 plot.daily.60d <- delta.d |>
   filter(date >= max(date) - days(opt.h)) |> # filter final opt.h observations
+  filter(!is.na(x24)) |>
   ggplot(aes(x = date, y = .data[[paste0("x", opt.M)]])) +
   geom_col(fill = "blue") +
   labs(
@@ -85,41 +86,8 @@ plot.daily.60d <- delta.d |>
     subtitle = paste0("daily changes (bp), past ", opt.h, " days"),
     x = "Date",
     y = paste0("daily change ", opt.h, "days (bps)")
-  ) +
-  geom_vline(
-    xintercept = recent_mpc_dates,
-    linetype = "dashed",
-    color = "darkblue",
-    linewidth = 0.5
-  ) +
-  annotate(
-    "text",
-    x = recent_mpc_dates,
-    y = 7,
-    label = "MPC",
-    color = "darkblue",
-    size = 5,
-    angle = 0,
-    vjust = 0.5,
-    hjust = 0
-  ) +
-  geom_vline(
-    xintercept = recent_fomc_dates,
-    linetype = "dashed",
-    color = "darkgreen",
-    linewidth = 0.5
-  ) +
-  annotate(
-    "text",
-    x = recent_fomc_dates,
-    y = 7,
-    label = "FOMC",
-    color = "darkgreen",
-    size = 5,
-    angle = 0,
-    vjust = 0.5,
-    hjust = 0
   )
+
 plot.daily.60d
 ggsave(
   here("plots", "3.OIS_2y_daily.png"),
@@ -141,47 +109,13 @@ plot.cumul.60d <- delta.cumul.d |>
     subtitle = paste0(opt.h, " days, cumulative change (bp)"),
     x = "Date",
     y = paste0("cumulative change ", opt.h, "days (bps)")
-  ) +
-  geom_vline(
-    xintercept = recent_mpc_dates,
-    linetype = "dashed",
-    color = "darkblue",
-    linewidth = 0.5
-  ) +
-  annotate(
-    "text",
-    x = recent_mpc_dates,
-    y = 7,
-    label = "MPC",
-    color = "darkblue",
-    size = 5,
-    angle = 0,
-    vjust = 0.5,
-    hjust = 0
-  ) +
-  geom_vline(
-    xintercept = recent_fomc_dates,
-    linetype = "dashed",
-    color = "darkgreen",
-    linewidth = 0.5
-  ) +
-  annotate(
-    "text",
-    x = recent_fomc_dates,
-    y = 7,
-    label = "FOMC",
-    color = "darkgreen",
-    size = 5,
-    angle = 0,
-    vjust = 0.5,
-    hjust = 0
   )
-
+plot.cumul.60d
 
 # PLOT - cumulative changes 2y, 5y
 plot.cumul.60d <- delta.cumul.long |>
   filter(date >= max(date) - days(opt.h)) |> # filter final opt.h observations
-  filter(maturity == opt.M | maturity == opt.M2) |> # filter for 2y, 5y maturity
+  filter(maturity == opt.M | maturity == opt.M2 | maturity == opt.M3) |> # filter for 2y, 5y maturity
   ggplot(aes(x = date)) +
   geom_line(aes(y = cumulative_change, color = as.factor(maturity))) +
   geom_hline(yintercept = 0.0, lty = 4) +
@@ -195,34 +129,6 @@ plot.cumul.60d <- delta.cumul.long |>
     subtitle = paste0(opt.h, " days, cumulative change (bp)"),
     x = "Date",
     y = paste0("cumulative change ", opt.h, "days (bps)")
-  ) +
-  geom_vline(
-    xintercept = recent_mpc_dates,
-    linetype = "dashed",
-    color = "darkblue",
-    linewidth = 0.5
-  ) +
-  annotate(
-    "text",
-    x = recent_mpc_dates,
-    y = 7,
-    label = "MPC",
-    color = "darkblue",
-    size = 5
-  ) +
-  geom_vline(
-    xintercept = recent_fomc_dates,
-    linetype = "dashed",
-    color = "darkgreen",
-    linewidth = 0.5
-  ) +
-  annotate(
-    "text",
-    x = recent_fomc_dates,
-    y = 7,
-    label = "FOMC",
-    color = "darkgreen",
-    size = 5
   )
 plot.cumul.60d
 

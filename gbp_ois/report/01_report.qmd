@@ -14,25 +14,28 @@ execute:
 
 ```{r}
 #| include: false
-source(here::here("setup", "01_OIS_curves.R"))
+source(here::here("setup", "01_create_data.R"))
+source(here::here("setup", "02_plots_ois_gilts.R"))
+source(here::here("setup", "04_Rigobon.R"))
+
 ```
 
 # Recent market developments
 ## Latest developments
 
-@fig-2y-daily shows the (cumulative) changes in 2y, 5y and 10y OIS rates over the past 60 days. 
+@fig-2y-daily shows the (cumulative) changes in 2y, 5y and 10y OIS rates over the past two months. A sell-off in rates has been more pronounced among 10year rates than 2year rates. It also coincided 
 
 ```{r}
 #| label: fig-2y-daily
 #| fig-cap: "2y OIS, changes"
 #| out-width: "90%"
 
-plot.daily.60d
+plot.cumul.60d
 ```
 
 
 ## Evolving market pricing and OIS curves
-Providing some context for those latest developments, @fig-rates-historical shows how GBP OIS curves have evolved over time, alongside Bank Rate.
+Providing some context for those latest developments, @fig-rates-historical shows how GBP OIS curves have evolved over time, alongside the MPC's Bank Rate decisions.
 
 
 ```{r}
@@ -55,6 +58,9 @@ ois2
 
 ## Term spreads
 
+Setting some context for the recent spread of 10y Gilt yields relative to 2y Gilts yields is @fig-2yv10y. This shows how a term spread has been restored relative to different periods over the past 10 years.  
+
+
 ```{r}
 #| label: fig-2yv10y
 #| fig-cap: "Gilt yields: 2y v 10y"
@@ -63,8 +69,7 @@ ois2
 plot2y_v_10y
 ```
 
-
-
+The 10s25s term spread has widened in recent weeks, and by more than the 2s5s and 5s10s spreads (@fig-spreads).  
 
 
 ```{r}
@@ -76,18 +81,24 @@ plot2s5s + plot5s10s + plot10s25s
 ```
 
 
+## International spillovers
+
+What of international spillovers? Using the Rigobon (2003) methodology, we can estimate the extent to which international spillovers have contributed to the recent sell-off in GBP 10y Gilt yields.  
 
 
+```{r}
+#| label: fig-spreads
+#| fig-cap: "Term spreads in Gilt yields"
+#| out-width: "90%"
 
-
-
-
+#plot.rigobon
+```
 
 
 # Market reactions and macro news at BoE policy events
 ## Analysing monetary policy shocks
 
-In this section, we review market reactions to BoE policy events, and how these reactions relate to macro news digested by markets at those BoE policy events. 
+In this section, we review market reactions to BoE policy events, and how these reactions relate to macro news digested by markets at those BoE policy events. This provides further context to recent market and macro developments.
 
 
 

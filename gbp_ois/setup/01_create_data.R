@@ -210,8 +210,9 @@ glcspreads <- glc |>
 #========================================
 opt.M <- 24 # 2y rate
 opt.M2 <- 60 # 5y rate
+opt.M3 <- 120 # 10y rate
 opt.h <- 60 # past 60d
-opt.start.cumul <- 30 # cumulative changes from start of prior month
+opt.start.cumul <- 30
 
 # scraped MPC and Fed announcement days [in functions.R]
 url_boe <- "https://www.bankofengland.co.uk/monetary-policy/upcoming-mpc-dates"
@@ -224,7 +225,7 @@ recent_fomc_dates <- get_fomc_dates(url_fed)
 #================
 # 1: delta.d
 # 2: delta.cumul.d
-# 3: spreads.d
+# 3: spreads -> glc and glcspreads
 
 df <- df |> tibble::rownames_to_column("date")
 df$date <- as.Date(df$date)
@@ -236,24 +237,19 @@ delta.d <- df |> #
   filter(!is.na(date))
 
 # 2: delta.cumul.d, cumulative changes over past 60 days using cumsum
+opt.h <- 60
+
 delta.cumul.d <- df |>
   janitor::clean_names() |>
   arrange(date) |>
+  # Take only the last opt.h rows
+  slice_tail(n = opt.h) |>
   mutate(
-    # Calculate daily changes first
-    across(where(is.numeric), ~ (. - lag(.)) * 100)
-  ) |>
-  # Apply cumsum over a rolling 60-day window
-  mutate(
-    across(
-      where(is.numeric),
-      ~ {
-        # Calculate rolling cumulative sum for past 60 days
-        zoo::rollapplyr(., width = 60, FUN = sum, fill = NA, na.rm = TRUE)
-      }
-    )
+    # Calculate daily changes and cumulative sum in one step
+    across(where(is.numeric), ~ cumsum((. - lag(., default = first(.))) * 100))
   ) |>
   filter(!is.na(date))
+
 
 # Long format for cumulative changes
 delta.cumul.long <- delta.cumul.d |>
