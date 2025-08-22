@@ -33,9 +33,9 @@ source(here::here("setup", "02_plots_ois_gilts.R"))
 plot.cumul.60d
 ```
 
-## Term spreads
+## Spreads
 
-Setting some context for the recent spread of 10y Gilt yields relative to 2y Gilts yields is @fig-2yv10y. This shows how a term spread has been restored relative to different periods over the past 10 years.  
+**Term spreads** Setting some context for the recent spread of 10y Gilt yields relative to 2y Gilts yields is @fig-2yv10y. This shows how a term spread has been restored relative to different periods over the past 10 years.  
 
 
 ```{r}
@@ -55,6 +55,13 @@ The 10s25s term spread has widened in recent weeks, and by more than the 2s5s an
 
 plot2s5s + plot5s10s + plot10s25s
 ```
+
+**Swap spreads** have also widened in recent weeks, as shown in @fig-swap-spreads. This reflects both the rise in Gilt yields, and a fall in swap rates. Swap spreads have been volatile over the past decade or more, reflecting changes in market liquidity, risk premia, and other factors.
+
+Fiscal developments have likely played a role in the rise in term spreads and widening of swap spreads. 
+
+**Neutral rates** We limit our discussion of neutral rates. @fig-neutral shows estimates based on a survey of market participants. I simulate individual responses based on the reported summary statistics published by the BoE in its Market Participants Survey.  
+
 
 
 # Evolving market pricing and OIS curves
