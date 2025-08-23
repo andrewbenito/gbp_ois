@@ -11,3 +11,18 @@ download.file(url_voting, tf, mode = "wb")
 voting <- read_xlsx(tf, sheet = "Bank Rate Decisions")
 
 # Clean MPC voting data ----
+clean_mpc_voting <- function(df) {
+  df_clean <- df |>
+    janitor::clean_names() |>
+    mutate(
+      date = as.Date(date),
+      decision = as.numeric(decision),
+      vote_for = as.numeric(vote_for),
+      vote_against = as.numeric(vote_against),
+      total_votes = as.numeric(total_votes),
+      dissenters = as.numeric(dissenters)
+    ) |>
+    filter(!is.na(date)) |>
+    arrange(date)
+  return(df_clean)
+}

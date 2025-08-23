@@ -53,7 +53,18 @@ The 10s25s term spread has widened in recent weeks, and by more than the 2s5s an
 #| fig-cap: "Term spreads in Gilt yields"
 #| out-width: "110%"
 
-plot2s5s + plot5s10s + plot10s25s
+plot2s5s + plot5s10s + plot10s25s plot2s5s +
+  plot5s10s +
+  plot10s25s +
+  plot_layout(
+    axis_titles = "collect",
+    ncol = 3,
+    heights = 1,
+    widths = 1,
+    guides = "collect"
+  ) &
+  theme(plot.margin = margin(2, 2, 2, 2)) &
+  ylim(range(c(layer_data(plot2s5s)$y, layer_data(plot5s10s)$y, layer_data(plot10s25s)$y), na.rm = TRUE))
 ```
 
 **Swap spreads** have also widened in recent weeks, as shown in @fig-swap-spreads. This reflects both the rise in Gilt yields, and a fall in swap rates. Swap spreads have been volatile over the past decade or more, reflecting changes in market liquidity, risk premia, and other factors.

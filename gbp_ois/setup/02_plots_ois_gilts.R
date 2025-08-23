@@ -135,7 +135,6 @@ plot.cumul.60d
 #=================#=================
 # Plot Spreads
 #=================#=================
-
 plot_spread <- function(dataf, spread_col) {
   # Extract the maturity parts and format with hyphen
   maturity_part <- gsub("spread", "", spread_col) # Remove "spread" prefix
@@ -148,7 +147,7 @@ plot_spread <- function(dataf, spread_col) {
     geom_hline(yintercept = 0, lty = 4) +
     labs(
       title = paste0(formatted_title, "y spread"),
-      subtitle = "percentage points",
+      #      subtitle = "percentage points",
       x = "Date",
       y = "Spread (pp)"
     )
@@ -166,6 +165,27 @@ plot5s10s <- plot_spread(glcspreads, "spread5s10s")
 # Plot 10y-25y spread and 10y-30y
 plot10s25s <- plot_spread(glcspreads, "spread10s25s")
 plot10s30s <- plot_spread(glcspreads, "spread10s30s")
+
+# combined plot
+plot2s5s +
+  plot5s10s +
+  plot10s25s +
+  plot_layout(
+    axis_titles = "collect",
+    ncol = 3,
+    heights = 1,
+    widths = 1,
+    guides = "collect"
+  ) &
+  theme(plot.margin = margin(2, 2, 2, 2)) &
+  ylim(range(
+    c(
+      layer_data(plot2s5s)$y,
+      layer_data(plot5s10s)$y,
+      layer_data(plot10s25s)$y
+    ),
+    na.rm = TRUE
+  ))
 
 #=================
 # plot 2y v 10y,
