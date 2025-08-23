@@ -329,12 +329,14 @@ clean_mpc_voting <- function(df) {
 
   # Convert Excel date serial numbers to proper dates
   df_votes <- df_votes |>
-    rename(date = 1) |>
+    rename(date = 1, bank_rate = 2) |>
     mutate(
       date = as.Date(as.numeric(date), origin = "1899-12-30"),
-      across(-date, as.numeric)
+      across(-c(date, bank_rate), as.numeric),
+      # replace values excl date and bank_rate with x100
+      across(-c(date, bank_rate), ~ . * 100),
+      bank_rate = as.numeric(bank_rate) * 100
     ) |>
-    rename(bank_rate = 2) |>
     select(-contains("Past")) |> # remove past members column
     filter(!is.na(date))
 
