@@ -308,3 +308,35 @@ scrape_macro_headlines <- function() {
 }
 
 headlines <- scrape_macro_headlines()
+
+# Clean MPC voting data ----
+clean_mpc_voting <- function(df) {
+  # Find where the actual meeting data starts (look for "Meetings" in column 2)
+  meetings_row <- which(df[[2]] == "Meetings")[1]
+
+  if (is.na(meetings_row)) {
+    stop("Could not find 'Meetings' row in the data")
+  }
+
+  # Extract the voting data starting from the row after "Meetings"
+  df_votes <- df |>
+    slice((meetings_row + 2):n()) |>
+    select(-1)
+
+  # colnames in row 2, MPC member names excl first column
+  mpcnames <- df[2, -1]
+  colnames(df_votes) <- mpcnames
+
+  # Convert Excel date serial numbers to proper dates
+  df_votes <- df_votes |>
+    rename(date = 1) |>
+    mutate(
+      date = as.Date(as.numeric(date), origin = "1899-12-30"),
+      across(-date, as.numeric)
+    ) |>
+    rename(bank_rate = 2) |>
+    select(-contains("Past")) |> # remove past members column
+    filter(!is.na(date))
+
+  return(df_votes)
+}
