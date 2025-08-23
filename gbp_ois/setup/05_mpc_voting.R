@@ -13,6 +13,8 @@ voting <- read_xlsx(tf, sheet = "Bank Rate Decisions")
 # Clean raw voting data on Bank Rate
 mpc <- clean_mpc_voting(voting)
 
+current_members <- names(mpc)[3:11] # Current MPC members (9 columns)
+
 # MPC votes - pivot to long format
 mpc.long <- mpc |>
   pivot_longer(
@@ -22,7 +24,13 @@ mpc.long <- mpc |>
   ) |>
   mutate(
     member = str_remove_all(member, "\\r\\n"), # Clean the member names
-    dissent = if_else(vote != bank_rate, 1, 0)
+    current_member = case_when(
+      member %in% current_members ~ "Current MPC",
+      TRUE ~ "Past Member"
+    ),
+    dissent = if_else(vote != bank_rate, 1, 0),
+    dissent_hawk = if_else(vote > bank_rate, 1, 0),
+    dissent_dove = if_else(vote < bank_rate, 1, 0)
   ) |>
   filter(!is.na(vote)) # MPC member present at the vote
 
@@ -96,11 +104,10 @@ ggplot(disagreement_trends, aes(x = date, y = meeting_dissent_rate)) +
   geom_line(alpha = 0.3) +
   geom_smooth(method = "loess", span = 0.3) +
   labs(
-    title = "MPC Disagreement Over Time",
+    title = "MPC Disagreement",
     y = "Dissent Rate per Meeting",
     x = "Date"
   )
-
 
 # Scatter plot of hawkish vs dissent tendencies
 library(ggrepel)
@@ -112,3 +119,66 @@ ggplot(member_patterns, aes(x = hawkish_bias, y = dissent_rate)) +
     x = "Hawkish Tendency (% votes above bank rate)",
     y = "Dissent Rate"
   )
+
+member_patterns_net <- member_patterns |>
+  mutate(
+    net_bias = hawkish_bias - dovish_bias,
+    bias_direction = case_when(
+      net_bias > 0.1 ~ "Hawkish",
+      net_bias < -0.1 ~ "Dovish",
+      TRUE ~ "Neutral"
+    )
+  )
+
+ggplot(
+  member_patterns_net,
+  aes(x = reorder(member, net_bias), y = net_bias, fill = bias_direction)
+) +
+  geom_col(alpha = 0.8) +
+  coord_flip() +
+  scale_fill_manual(
+    values = c(
+      "Hawkish" = "#d73027",
+      "Dovish" = "#4575b4",
+      "Neutral" = "#756bb1"
+    )
+  ) +
+  labs(
+    title = "MPC Member Net Bias (Hawkish - Dovish)",
+    x = "Member",
+    y = "Net Bias Rate",
+    fill = "Overall Tendency"
+  ) +
+  theme_minimal()
+
+ggplot(member_patterns_net, aes(x = net_bias, y = dissent_rate)) +
+  geom_point(size = 3) +
+  geom_text_repel(aes(label = member)) +
+  scale_color_manual(
+    values = c("Current MPC" = "#d73027", "Past Member" = "#756bb1")
+  ) +
+  geom_vline(xintercept = 0, lty = 4) +
+  labs(
+    title = "MPC Member Voting Patterns",
+    x = "Hawkish Tendency (% votes above bank rate)",
+    y = "Dissent Rate"
+  )
+
+ggplot(
+  member_patterns_net,
+  aes(x = net_bias, y = dissent_rate, color = current_member)
+) +
+  geom_point(size = 3) +
+  geom_text_repel(aes(label = member), max.overlaps = 20) +
+  scale_color_manual(
+    values = c("Current MPC" = "#d73027", "Past Member" = "#756bb1")
+  ) +
+  geom_vline(xintercept = 0, lty = 4) +
+  labs(
+    title = "MPC Member Voting Patterns",
+    x = "Net Bias (Hawkish - Dovish Tendency)",
+    y = "Dissent Rate",
+    color = "Member Status"
+  )
+
+# need to fix current_member in mpc.long
