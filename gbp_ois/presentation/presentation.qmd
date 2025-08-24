@@ -1,5 +1,5 @@
 ---
-title: "GBP Report"
+title: "GBP Rates Report"
 #subtitle: 
 author: Andrew Benito
 date: last-modified

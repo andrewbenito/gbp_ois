@@ -11,11 +11,118 @@ download.file(url_voting, tf, mode = "wb")
 voting <- read_xlsx(tf, sheet = "Bank Rate Decisions")
 
 # Clean raw voting data on Bank Rate
+# Clean raw voting data on Bank Rate
 mpc <- clean_mpc_voting(voting)
+current_members <- names(mpc)[3:11]
 
-current_members <- names(mpc)[3:11] # Current MPC members (9 columns)
 
-# MPC votes - pivot to long format
+# Calculate member column range dynamically
+member_cols <- 3:ncol(mpc) # All member columns (everything after date and bank_rate)
+
+mpc$votes_for <- rowSums(mpc[, member_cols] == mpc$bank_rate, na.rm = TRUE)
+mpc$votes_above <- rowSums(mpc[, member_cols] > mpc$bank_rate, na.rm = TRUE)
+mpc$votes_below <- rowSums(mpc[, member_cols] < mpc$bank_rate, na.rm = TRUE)
+mpc$votes_against <- mpc$votes_above + mpc$votes_below
+mpc$since_2020 <- if_else(mpc$date >= as.Date("2020-01-01"), 1, 0)
+
+# summarise proportions for votes_for for all meetings and since 2020
+# Calculate proportions for all periods
+voting_proportions <- mpc |>
+  # Create a combined dataset with "All meetings" category
+  bind_rows(
+    mpc |> mutate(period = "All Meetings"),
+    mpc |>
+      filter(date >= as.Date("2020-01-01")) |>
+      mutate(period = "Since 2020")
+  ) |>
+  group_by(period) |>
+  count(votes_for) |>
+  mutate(proportion = round(n / sum(n), 3)) |>
+  select(period, votes_for, proportion) |>
+  pivot_wider(names_from = period, values_from = proportion, values_fill = 0) |>
+  # Reorder columns
+  select(votes_for, `All Meetings`, `Since 2020`)
+
+
+table.voting.sum <- voting_proportions |>
+  arrange(desc(votes_for)) |>
+  gt() |>
+  tab_header(
+    title = "MPC Voting Summary",
+    subtitle = "Proportion of meetings by number of members voting for Bank Rate decision"
+  ) |>
+  cols_label(
+    votes_for = "Members Voting For",
+    `All Meetings` = "All Meetings",
+    `Since 2020` = "Since 2020"
+  ) |>
+  fmt_number(
+    columns = c(`All Meetings`, `Since 2020`),
+    decimals = 3
+  ) |>
+  tab_style(
+    style = list(
+      cell_fill(color = "#f0f0f0"),
+      cell_text(weight = "bold")
+    ),
+    locations = cells_column_labels()
+  ) |>
+  tab_style(
+    style = cell_text(align = "center"),
+    locations = cells_body()
+  ) |>
+  tab_footnote(
+    footnote = "In 1998, two MPC votes were split 4-4, with an 8 member MPC.",
+    locations = cells_column_labels(columns = votes_for)
+  )
+
+# Histogram
+
+# Create the data for the histogram with period split
+mpc_histogram_data <- mpc |>
+  # Create a period indicator
+  mutate(
+    period = if_else(
+      date >= as.Date("2020-01-01"),
+      "Since 2020",
+      "All meetings"
+    )
+  ) |>
+  # Count votes_for by period
+  count(votes_for, period) |>
+  # Calculate proportions within each period
+  group_by(period) |>
+  mutate(proportion = n / sum(n)) |>
+  ungroup()
+
+# histogram---
+hist.votes <- ggplot(
+  mpc_histogram_data,
+  aes(x = votes_for, y = proportion, fill = period)
+) +
+  geom_col(position = "dodge", alpha = 0.8, width = 0.8) +
+  scale_fill_manual(
+    values = c("All meetings" = "#4575b4", "Since 2020" = "#d73027")
+  ) +
+  scale_x_continuous(breaks = 4:9) +
+  labs(
+    title = "MPC Voting Consensus: Historical vs Recent Patterns",
+    subtitle = "Distribution of number of members voting for Bank Rate decision",
+    x = "Number of Members Voting For Bank Rate Decision",
+    y = "Proportion of Meetings",
+    fill = "Period"
+  ) +
+  theme_minimal() +
+  theme(
+    legend.position = "bottom",
+    panel.grid.minor.x = element_blank()
+  )
+hist.votes
+
+
+#==================================
+# MPC voter-level data [pivot long]
+#==================================
 mpc.long <- mpc |>
   pivot_longer(
     cols = -c(date, bank_rate),
@@ -33,6 +140,12 @@ mpc.long <- mpc |>
     dissent_dove = if_else(vote < bank_rate, 1, 0)
   ) |>
   filter(!is.na(vote)) # MPC member present at the vote
+print(paste0("number of MPC meetings: ", nrow(mpc)))
+print(paste0("number of MPC members: ", n_distinct(mpc.long$member)))
+
+#==============================
+# Some Disagreement Metrics ----
+#==============================
 
 # Calculate disagreement metrics per meeting
 meeting_disagreement <- mpc.long |>

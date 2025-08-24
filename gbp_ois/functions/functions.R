@@ -319,6 +319,15 @@ clean_mpc_voting <- function(df) {
   }
 
   # Extract the voting data starting from the row after "Meetings"
+ clean_mpc_voting <- function(df) {
+  # Find where the actual meeting data starts (look for "Meetings" in column 2)
+  meetings_row <- which(df[[2]] == "Meetings")[1]
+
+  if (is.na(meetings_row)) {
+    stop("Could not find 'Meetings' row in the data")
+  }
+
+  # Extract the voting data starting from the row after "Meetings"
   df_votes <- df |>
     slice((meetings_row + 2):n()) |>
     select(-1)
@@ -330,12 +339,21 @@ clean_mpc_voting <- function(df) {
   # Convert Excel date serial numbers to proper dates
   df_votes <- df_votes |>
     rename(date = 1, bank_rate = 2) |>
+    # First convert bank_rate to numeric for the recoding logic
+    mutate(bank_rate = as.numeric(bank_rate) * 100) |>
+    # Recode "Increase" to bank_rate +25bp; "Decrease" to bank_rate -25bp
     mutate(
-      date = as.Date(as.numeric(date), origin = "1899-12-30"),
-      across(-c(date, bank_rate), as.numeric),
-      # replace values excl date and bank_rate with x100
-      across(-c(date, bank_rate), ~ . * 100),
-      bank_rate = as.numeric(bank_rate) * 100
+      across(
+        -c(date, bank_rate),
+        ~ case_when(
+          . == "Increase" ~ bank_rate + 0.25,
+          . == "Decrease" ~ bank_rate - 0.25,
+          TRUE ~ as.numeric(.) * 100 # Convert other numeric values and multiply by 100
+        )
+      )
+    ) |>
+    mutate(
+      date = as.Date(as.numeric(date), origin = "1899-12-30")
     ) |>
     select(-contains("Past")) |> # remove past members column
     filter(!is.na(date))

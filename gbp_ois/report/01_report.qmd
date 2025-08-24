@@ -23,7 +23,7 @@ source(here::here("setup", "02_plots_ois_gilts.R"))
 # Recent market developments
 ## Latest developments
 
-@fig-2y-daily shows the (cumulative) changes in 2y, 5y and 10y OIS rates over the past two months. A sell-off in rates has been more pronounced among 10year rates than 2year rates. It also coincided 
+@fig-2y-daily shows the (cumulative) changes in 2y, 5y and 10y OIS rates over the past two months. The sell-off in rates has been more pronounced among 10year rates than 2year rates. 
 
 ```{r}
 #| label: fig-2y-daily
@@ -53,7 +53,8 @@ The 10s25s term spread has widened in recent weeks, and by more than the 2s5s an
 #| fig-cap: "Term spreads in Gilt yields"
 #| out-width: "110%"
 
-plot2s5s + plot5s10s + plot10s25s plot2s5s +
+plot2s5s + plot5s10s + plot10s25s
+plot2s5s +
   plot5s10s +
   plot10s25s +
   plot_layout(
@@ -64,16 +65,29 @@ plot2s5s + plot5s10s + plot10s25s plot2s5s +
     guides = "collect"
   ) &
   theme(plot.margin = margin(2, 2, 2, 2)) &
-  ylim(range(c(layer_data(plot2s5s)$y, layer_data(plot5s10s)$y, layer_data(plot10s25s)$y), na.rm = TRUE))
+  ylim(range(
+    c(
+      layer_data(plot2s5s)$y,
+      layer_data(plot5s10s)$y,
+      layer_data(plot10s25s)$y
+    ),
+    na.rm = TRUE
+  ))
 ```
 
 **Swap spreads** have also widened in recent weeks, as shown in @fig-swap-spreads. This reflects both the rise in Gilt yields, and a fall in swap rates. Swap spreads have been volatile over the past decade or more, reflecting changes in market liquidity, risk premia, and other factors.
 
-Fiscal developments have likely played a role in the rise in term spreads and widening of swap spreads. 
+Fiscal developments have likely played a role in the rise in term spreads and widening of swap spreads (see here for a discussio). 
 
-**Neutral rates** We limit our discussion of neutral rates. @fig-neutral shows estimates based on a survey of market participants. I simulate individual responses based on the reported summary statistics published by the BoE in its Market Participants Survey.  
+**Neutral rates** We limit our discussion of neutral rates. @fig-neutral shows estimates based on a survey of market participants. In principle, this should embody the impact on neutral rates of a broad set of influences. I simulate individual responses based on the reported summary statistics published by the BoE in its Market Participants Survey.  
 
+```{r}
+#| label: fig-neutral
+#| fig-cap: "Market Participants Survey: Neutral rates"
+#| out-width: "90%"
 
+boxplot.neutral
+```
 
 # Evolving market pricing and OIS curves
 Providing some context for those latest developments, @fig-rates-historical shows how GBP OIS curves have evolved over time, alongside the MPC's Bank Rate decisions.
@@ -115,7 +129,7 @@ What of international spillovers? Using the Rigobon (2003) methodology, we can e
 # Market reactions and macro news at BoE policy events
 ## Analysing monetary policy shocks
 
-In this section, we review market reactions to BoE policy events, and how these reactions relate to macro news digested by markets at those BoE policy events. This provides further context to recent market and macro developments.
+In this section, we review market reactions to BoE policy events, and how these reactions relate to macro news digested by markets at those BoE policy events.  
 
 
 
@@ -132,7 +146,7 @@ How has the MPC's own assessment of the macro outlook evolved?
 
 **Medium-term** Over the past decade or more, the MPC has tended to revise higher its forecasts for inflation, revise its outlook for unemployment lower, without an obvious bias in its forecasts for GDP growth. This points points to a pattern of the BoE having had to respond to negative supply shocks, updating its assessments in the light of that repeated pattern. 
 
-The weakness of productivity growth, negative terms of trade shocks (e.g. Brexit, Covid, Ukraine), and the impact of these on real incomes, have all contributed to this pattern of revisions and evolving macro forecasts.
+The weakness of productivity growth, negative terms of trade shocks (e.g. Brexit, pandemic, Ukraine), and the impact of these on real incomes, have all contributed to this pattern of revisions and evolving macro forecasts.
 
 **Recent updates** Looking over the past six MPC forecasts...
 
@@ -140,6 +154,12 @@ The weakness of productivity growth, negative terms of trade shocks (e.g. Brexit
 
 # MPC Voting 
 
-We inspect MPC voting patterns to assess two points. First, the current extent of disagreement among MPC members versus history. Second, MPC voting among the current MPC members. 
+We inspect MPC voting patterns to illustrate two points. First, the rising extent of disagreement among MPC members. Second, how current MPC member voting compares with that of past members. 
 
+Rising disagreement among MPC members culminated in the August 2025 MPC vote requiring a second vote among Committee members in order to secure a clear majority for the rate cut decision.  
 
+```{r}
+
+```
+
+We conclude by noting that finer macro judgements are likely leading to more finely-balanced votes and greater disagreement among MPC members. This places a premium on the quality of the macro forecasts and analysis underpinning MPC decisions. While such judgements increase the importance of making these judgements independent of day-to-day politics, the forecast errors shown earlier are a threat to the credibility of the MPC's process and its independence.
