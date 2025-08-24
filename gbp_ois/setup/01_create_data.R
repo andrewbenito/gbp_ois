@@ -9,6 +9,9 @@ lapply(
     'tidyverse',
     'readxl',
     'lubridate',
+    'zoo',
+    'ggrepel',
+    'gt',
     'xts',
     'ggsci',
     'rvest',
@@ -27,9 +30,9 @@ source(here("functions", "functions.R"))
 # Settings: ggplot2 ----
 font_add_google("Roboto Condensed", "Roboto Condensed")
 theme_set(
-  theme_bw(base_size = 13, base_family = "Roboto Condensed") +
+  theme_bw(base_size = 12, base_family = "Roboto Condensed") +
     theme(
-      text = element_text(family = "Roboto Condensed", size = 13),
+      text = element_text(family = "Roboto Condensed", size = 12),
       panel.background = element_rect(fill = "white"),
       panel.grid.major = element_line(linewidth = .5),
       panel.grid.minor = element_blank(),

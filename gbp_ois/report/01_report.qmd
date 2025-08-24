@@ -5,30 +5,49 @@ title: |
 author: "Andrew Benito"
 date: last-modified
 toc: true
-format: pdf
+format: 
+  pdf:
+    mainfont: "Source Sans Pro"
+    sansfont: "Source Sans Pro"
+    fontsize: 11pt
+    linestretch: 1.4
 execute:
   warning: false
   message: false
   echo: false    
 ---
 
+```{r setup}
+#| include: false
+knitr::opts_chunk$set(
+  fig.width = 6.5,
+  fig.height = 4,
+  fig.align = 'center',
+  out.width = '90%',
+  dpi = 300
+)
+
+```
+
+
 ```{r}
 #| include: false
 source(here::here("setup", "01_create_data.R"))
 source(here::here("setup", "02_plots_ois_gilts.R"))
-#source(here::here("setup", "04_Rigobon.R"))
+source(here::here("setup", "05_mpc_voting.R"))
 
 ```
 
-# Recent market developments
-## Latest developments
+\newpage
 
-@fig-2y-daily shows the (cumulative) changes in 2y, 5y and 10y OIS rates over the past two months. The sell-off in rates has been more pronounced among 10year rates than 2year rates. 
+# Market developments
+## Latest developments: the past three months
+
+@fig-2y-daily shows the (cumulative) changes in 2y, 5y and 10y OIS rates over the past three months. The sell-off in rates has been more pronounced among 10year rates than 2year rates. 
 
 ```{r}
 #| label: fig-2y-daily
-#| fig-cap: "2y OIS, changes"
-#| out-width: "90%"
+#| fig-cap: "OIS and Foreign exchange"
 
 plot.cumul.60d
 ```
@@ -41,7 +60,6 @@ plot.cumul.60d
 ```{r}
 #| label: fig-2yv10y
 #| fig-cap: "Gilt yields: 2y v 10y"
-#| out-width: "90%"
 
 plot2y_v_10y
 ```
@@ -51,9 +69,8 @@ The 10s25s term spread has widened in recent weeks, and by more than the 2s5s an
 ```{r}
 #| label: fig-spreads
 #| fig-cap: "Term spreads in Gilt yields"
-#| out-width: "110%"
+#| out-width: "100%"
 
-plot2s5s + plot5s10s + plot10s25s
 plot2s5s +
   plot5s10s +
   plot10s25s +
@@ -79,24 +96,22 @@ plot2s5s +
 
 Fiscal developments have likely played a role in the rise in term spreads and widening of swap spreads (see here for a discussio). 
 
-**Neutral rates** We limit our discussion of neutral rates. @fig-neutral shows estimates based on a survey of market participants. In principle, this should embody the impact on neutral rates of a broad set of influences. I simulate individual responses based on the reported summary statistics published by the BoE in its Market Participants Survey.  
+**Neutral rates** We limit our discussion of neutral rates. @fig-neutral shows estimates since the pandemic based on a survey of market participants in Sterling markets. In principle, this survey should embody informed assessments of the impact on neutral rates from a broad set of influences. I simulate individual responses based on the reported summary statistics published by the BoE in its Market Participants Survey (MaPS).  
 
 ```{r}
 #| label: fig-neutral
 #| fig-cap: "Market Participants Survey: Neutral rates"
-#| out-width: "90%"
 
-boxplot.neutral
+#boxplot.neutral
 ```
 
 # Evolving market pricing and OIS curves
-Providing some context for those latest developments, @fig-rates-historical shows how GBP OIS curves have evolved over time, alongside the MPC's Bank Rate decisions.
+Providing some context for those latest developments, @fig-ois-historical shows how GBP OIS curves have evolved over time, alongside the MPC's Bank Rate decisions.
 
 
 ```{r}
 #| label: fig-ois-historical
 #| fig-cap: "Evolution of GBP OIS curves"
-#| out-width: "90%"
 
 ois1
 ```
@@ -106,7 +121,6 @@ ois1
 ```{r}
 #| label: fig-ois-recent
 #| fig-cap: "More Recent Evolution of GBP OIS curves"
-#| out-width: "90%"
 
 ois2
 ```
@@ -114,13 +128,12 @@ ois2
 
 # International spillovers
 
-What of international spillovers? Using the Rigobon (2003) methodology, we can estimate the extent to which international spillovers have contributed to the recent sell-off in GBP 10y Gilt yields.  
+What of international spillovers? Using the Rigobon (2003) methodology, we can estimate the extent to which international spillovers have contributed to fluctuations in 10y Gilt yields.  
 
 
 ```{r}
 #| label: fig-rigobon
 #| fig-cap: "Term spreads in Gilt yields"
-#| out-width: "90%"
 
 #plot.rigobon
 ```
@@ -142,7 +155,7 @@ source(here::here("setup", "03_mon_pol_shocks.R"))
 
 # Evolving macro forecasts and macro news
 
-How has the MPC's own assessment of the macro outlook evolved? 
+How has the MPC's own assessment of the UK macro outlook evolved? 
 
 **Medium-term** Over the past decade or more, the MPC has tended to revise higher its forecasts for inflation, revise its outlook for unemployment lower, without an obvious bias in its forecasts for GDP growth. This points points to a pattern of the BoE having had to respond to negative supply shocks, updating its assessments in the light of that repeated pattern. 
 
@@ -152,14 +165,13 @@ The weakness of productivity growth, negative terms of trade shocks (e.g. Brexit
 
 
 
-# MPC Voting 
+# MPC Voting: increased disagreement 
 
 We inspect MPC voting patterns to illustrate two points. First, the rising extent of disagreement among MPC members. Second, how current MPC member voting compares with that of past members.   
 
 ```{r}
 #| label: hist-votes
-#| fig-cap: "A weaker Consensus behind MPC votes"
-#| out-width: "90%"
+#| fig-cap: "A weaker Consensus in MPC rate decisions"
 
 plot.disagreement.t + hist.votes
 ```
@@ -170,10 +182,10 @@ Rising disagreement among MPC members culminated in the August 2025 MPC vote req
 ```{r}
 #| label: member-patterns
 #| fig-cap: "MPC disagreement and preferences"
-#| out-width: "90%"
+#| out-width: "100%"
 
 plot.member_patterns
 ```
 
 
-We conclude by noting that finer macro judgements are likely leading to more finely-balanced votes and greater disagreement among MPC members. This places a premium on the quality of the macro forecasts and analysis underpinning MPC decisions. While such judgements increase the importance of making these judgements independent of day-to-day politics, the forecast errors shown earlier are a threat to the credibility of the MPC's process and its independence.
+We conclude by noting that increasingly nuanced macroeconomic assessments are producing more closely contested votes and heightened disagreement among MPC members. This development places greater emphasis on the quality of macroeconomic analysis and forecasts that underpin MPC decisions. While such complex judgements reinforce the importance of maintaining independence from political pressures, the forecast errors documented earlier pose a risk to both the credibility of the MPC's analytical process and public confidence in its institutional independence. This may leave Sterling markets more sensitive to international spillovers. 

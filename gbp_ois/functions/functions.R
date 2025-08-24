@@ -319,15 +319,6 @@ clean_mpc_voting <- function(df) {
   }
 
   # Extract the voting data starting from the row after "Meetings"
- clean_mpc_voting <- function(df) {
-  # Find where the actual meeting data starts (look for "Meetings" in column 2)
-  meetings_row <- which(df[[2]] == "Meetings")[1]
-
-  if (is.na(meetings_row)) {
-    stop("Could not find 'Meetings' row in the data")
-  }
-
-  # Extract the voting data starting from the row after "Meetings"
   df_votes <- df |>
     slice((meetings_row + 2):n()) |>
     select(-1)

@@ -110,7 +110,6 @@ hist.votes <- ggplot(
     y = "Proportion of Meetings",
     fill = " "
   ) +
-  theme_minimal() +
   theme(
     legend.position = "bottom",
     panel.grid.minor.x = element_blank()
@@ -248,8 +247,7 @@ ggplot(
     x = "Member",
     y = "Net Bias Rate",
     fill = "Overall Tendency"
-  ) +
-  theme_minimal()
+  )
 
 # Scatter plot of net bias vs dissent rate
 plot.member_patterns <- ggplot(
@@ -266,6 +264,7 @@ plot.member_patterns <- ggplot(
     title = "MPC Member Bank Rate Voting",
     x = "Net Hawkish Tendency (Hawkish - Dovish)",
     y = "Dissent Rate",
-    color = "Member Status"
-  )
+    color = ""
+  ) +
+  theme(legend.position = "bottom")
 plot.member_patterns
