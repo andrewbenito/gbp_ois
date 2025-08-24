@@ -154,12 +154,26 @@ The weakness of productivity growth, negative terms of trade shocks (e.g. Brexit
 
 # MPC Voting 
 
-We inspect MPC voting patterns to illustrate two points. First, the rising extent of disagreement among MPC members. Second, how current MPC member voting compares with that of past members. 
-
-Rising disagreement among MPC members culminated in the August 2025 MPC vote requiring a second vote among Committee members in order to secure a clear majority for the rate cut decision.  
+We inspect MPC voting patterns to illustrate two points. First, the rising extent of disagreement among MPC members. Second, how current MPC member voting compares with that of past members.   
 
 ```{r}
+#| label: hist-votes
+#| fig-cap: "A weaker Consensus behind MPC votes"
+#| out-width: "90%"
 
+plot.disagreement.t + hist.votes
 ```
+
+Rising disagreement among MPC members culminated in the August 2025 MPC vote requiring a second vote among Committee members in order to secure a clear majority for the rate cut decision.
+
+
+```{r}
+#| label: member-patterns
+#| fig-cap: "MPC disagreement and preferences"
+#| out-width: "90%"
+
+plot.member_patterns
+```
+
 
 We conclude by noting that finer macro judgements are likely leading to more finely-balanced votes and greater disagreement among MPC members. This places a premium on the quality of the macro forecasts and analysis underpinning MPC decisions. While such judgements increase the importance of making these judgements independent of day-to-day politics, the forecast errors shown earlier are a threat to the credibility of the MPC's process and its independence.

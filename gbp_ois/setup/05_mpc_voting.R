@@ -76,8 +76,6 @@ table.voting.sum <- voting_proportions |>
     locations = cells_column_labels(columns = votes_for)
   )
 
-# Histogram
-
 # Create the data for the histogram with period split
 mpc_histogram_data <- mpc |>
   # Create a period indicator
@@ -106,11 +104,11 @@ hist.votes <- ggplot(
   ) +
   scale_x_continuous(breaks = 4:9) +
   labs(
-    title = "MPC Voting Consensus: Historical vs Recent Patterns",
+    title = "MPC Voting: A weaker Consensus",
     subtitle = "Distribution of number of members voting for Bank Rate decision",
-    x = "Number of Members Voting For Bank Rate Decision",
+    x = "Number of MPC Members Voting For Bank Rate Decision",
     y = "Proportion of Meetings",
-    fill = "Period"
+    fill = " "
   ) +
   theme_minimal() +
   theme(
@@ -118,7 +116,6 @@ hist.votes <- ggplot(
     panel.grid.minor.x = element_blank()
   )
 hist.votes
-
 
 #==================================
 # MPC voter-level data [pivot long]
@@ -161,8 +158,16 @@ meeting_disagreement <- mpc.long |>
   )
 meeting_disagreement
 
-# Individual member voting behavior
+# Individual member voting behavior: dissent rates, hawkish/dovish tendencies
+#================================#================================
 member_patterns <- mpc.long |>
+  mutate(
+    current_member = if_else(
+      member %in% current_members,
+      "Current MPC",
+      "Past Member"
+    )
+  ) |>
   group_by(member) |>
   summarise(
     total_votes = n(),
@@ -170,12 +175,14 @@ member_patterns <- mpc.long |>
     avg_vote_deviation = mean(abs(vote - bank_rate)),
     hawkish_bias = mean(vote > bank_rate), # Tendency to vote higher
     dovish_bias = mean(vote < bank_rate), # Tendency to vote lower
+    net_bias = hawkish_bias - dovish_bias,
+    current_member = first(current_member),
     .groups = "drop"
   ) |>
   arrange(desc(dissent_rate))
-member_patterns
 
-# Rolling disagreement over time (e.g., 12-month windows)
+
+# Rolling disagreement over time (e.g., 8-mtg windows)
 disagreement_trends <- mpc.long |>
   arrange(date) |>
   group_by(date) |>
@@ -191,16 +198,6 @@ disagreement_trends <- mpc.long |>
   )
 disagreement_trends
 
-# Standard deviation of votes per meeting (higher = more disagreement)
-policy_uncertainty <- mpc.long |>
-  group_by(date, bank_rate) |>
-  summarise(
-    vote_std = sd(vote),
-    policy_uncertainty = vote_std / mean(vote), # Coefficient of variation
-    .groups = "drop"
-  )
-policy_uncertainty
-
 # Identify consistent voting pairs/groups
 voting_correlations <- mpc |>
   select(-date, -bank_rate) |>
@@ -213,7 +210,10 @@ voting_correlations <- mpc |>
 voting_correlations
 
 # Plot disagreement trends
-ggplot(disagreement_trends, aes(x = date, y = meeting_dissent_rate)) +
+plot.disagreement.t <- ggplot(
+  disagreement_trends,
+  aes(x = date, y = meeting_dissent_rate)
+) +
   geom_line(alpha = 0.3) +
   geom_smooth(method = "loess", span = 0.3) +
   labs(
@@ -221,30 +221,17 @@ ggplot(disagreement_trends, aes(x = date, y = meeting_dissent_rate)) +
     y = "Dissent Rate per Meeting",
     x = "Date"
   )
+plot.disagreement.t
 
+#===============================================
 # Scatter plot of hawkish vs dissent tendencies
+#===============================================
+
 library(ggrepel)
-ggplot(member_patterns, aes(x = hawkish_bias, y = dissent_rate)) +
-  geom_point(size = 3) +
-  geom_text_repel(aes(label = member)) +
-  labs(
-    title = "MPC Member Voting Patterns",
-    x = "Hawkish Tendency (% votes above bank rate)",
-    y = "Dissent Rate"
-  )
 
-member_patterns_net <- member_patterns |>
-  mutate(
-    net_bias = hawkish_bias - dovish_bias,
-    bias_direction = case_when(
-      net_bias > 0.1 ~ "Hawkish",
-      net_bias < -0.1 ~ "Dovish",
-      TRUE ~ "Neutral"
-    )
-  )
-
+# Bar-plot summary by MPC member
 ggplot(
-  member_patterns_net,
+  member_patterns,
   aes(x = reorder(member, net_bias), y = net_bias, fill = bias_direction)
 ) +
   geom_col(alpha = 0.8) +
@@ -264,34 +251,21 @@ ggplot(
   ) +
   theme_minimal()
 
-ggplot(member_patterns_net, aes(x = net_bias, y = dissent_rate)) +
-  geom_point(size = 3) +
-  geom_text_repel(aes(label = member)) +
-  scale_color_manual(
-    values = c("Current MPC" = "#d73027", "Past Member" = "#756bb1")
-  ) +
-  geom_vline(xintercept = 0, lty = 4) +
-  labs(
-    title = "MPC Member Voting Patterns",
-    x = "Hawkish Tendency (% votes above bank rate)",
-    y = "Dissent Rate"
-  )
-
-ggplot(
-  member_patterns_net,
+# Scatter plot of net bias vs dissent rate
+plot.member_patterns <- ggplot(
+  member_patterns,
   aes(x = net_bias, y = dissent_rate, color = current_member)
 ) +
   geom_point(size = 3) +
-  geom_text_repel(aes(label = member), max.overlaps = 20) +
+  geom_text_repel(aes(label = member), max.overlaps = 25) +
   scale_color_manual(
     values = c("Current MPC" = "#d73027", "Past Member" = "#756bb1")
   ) +
   geom_vline(xintercept = 0, lty = 4) +
   labs(
-    title = "MPC Member Voting Patterns",
-    x = "Net Bias (Hawkish - Dovish Tendency)",
+    title = "MPC Member Bank Rate Voting",
+    x = "Net Hawkish Tendency (Hawkish - Dovish)",
     y = "Dissent Rate",
     color = "Member Status"
   )
-
-# need to fix current_member in mpc.long
+plot.member_patterns
