@@ -46,14 +46,21 @@ ois2 <- ggplot(
   subset(fwcv, date %in% last_12m),
   aes(x = date2, y = yield, group = date)
 ) +
-  geom_line(color = "gray70", linewidth = 1.4) +
+  geom_line(color = "gray70", linewidth = 1.25) +
   geom_point(
     data = subset(fwcv, date == max(date)),
     aes(x = date2, y = yield),
     color = "red",
-    size = 2
+    size = 2,
+    inherit.aes = FALSE # Add this to avoid group conflicts
   ) +
-  geom_line(aes(y = bankrate), linewidth = 1.25) +
+  geom_line(
+    data = subset(fwcv, date %in% last_12m),
+    aes(x = date2, y = bankrate),
+    color = "black",
+    linewidth = 1.25,
+    inherit.aes = FALSE # Add this to avoid grouping by date
+  ) +
   theme(legend.position = "none") +
   scale_x_date(date_breaks = "1 year", date_labels = "%Y") +
   labs(
@@ -73,35 +80,11 @@ ggsave(
   dpi = 300
 )
 
-#=================
-# PLOT - past 60d
-#=================
-plot.daily.60d <- delta.d |>
-  filter(date >= max(date) - days(opt.h)) |> # filter final opt.h observations
-  filter(!is.na(x24)) |>
-  ggplot(aes(x = date, y = .data[[paste0("x", opt.M)]])) +
-  geom_col(fill = "blue") +
-  labs(
-    title = paste0("GBP 2y OIS"),
-    subtitle = paste0("daily changes (bp), past ", opt.h, " days"),
-    x = "Date",
-    y = paste0("daily change ", opt.h, "days (bps)")
-  )
-
-plot.daily.60d
-ggsave(
-  here("plots", "3.OIS_2y_daily.png"),
-  plot = plot.daily.60d,
-  width = 10,
-  height = 6,
-  dpi = 300
-)
 
 #=================#=================
 # PLOT - cumulative changes
 #=================#=================
-plot.cumul.60d <- delta.cumul.d |>
-  filter(date >= max(date) - days(opt.h)) |> # filter final opt.h observations
+plot.cumul.90d <- delta.cumul.d |>
   ggplot(aes(x = date, y = .data[[paste0("x", opt.M)]])) +
   geom_col() +
   labs(
@@ -110,11 +93,10 @@ plot.cumul.60d <- delta.cumul.d |>
     x = "Date",
     y = paste0("cumulative change ", opt.h, "days (bps)")
   )
-plot.cumul.60d
+plot.cumul.90d
 
 # PLOT - cumulative changes 2y, 5y
-plot.cumul.60d <- delta.cumul.long |>
-  filter(date >= max(date) - days(opt.h)) |> # filter final opt.h observations
+plot.cumul.90d <- delta.cumul.long |>
   filter(maturity == opt.M | maturity == opt.M2 | maturity == opt.M3) |> # filter for 2y, 5y maturity
   ggplot(aes(x = date)) +
   geom_line(aes(y = cumulative_change, color = as.factor(maturity))) +
@@ -130,7 +112,7 @@ plot.cumul.60d <- delta.cumul.long |>
     x = "Date",
     y = paste0("cumulative change ", opt.h, "days (bps)")
   )
-plot.cumul.60d
+plot.cumul.90d
 
 #=================#=================
 # Plot Spreads

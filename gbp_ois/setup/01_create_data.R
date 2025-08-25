@@ -8,6 +8,7 @@ lapply(
   c(
     'tidyverse',
     'readxl',
+    'rdbnomics',
     'lubridate',
     'zoo',
     'ggrepel',
@@ -240,16 +241,16 @@ delta.d <- df |> #
   filter(!is.na(date))
 
 # 2: delta.cumul.d, cumulative changes over past 60 days using cumsum
-opt.h <- 60
+opt.h <- 90
+start_date <- max(df$date, na.rm = TRUE) - days(opt.h)
 
 delta.cumul.d <- df |>
   janitor::clean_names() |>
   arrange(date) |>
-  # Take only the last opt.h rows
-  slice_tail(n = opt.h) |>
+  filter(date >= start_date) |>
   mutate(
-    # Calculate daily changes and cumulative sum in one step
-    across(where(is.numeric), ~ cumsum((. - lag(., default = first(.))) * 100))
+    # Calculate cumulative changes from the first value in the window
+    across(where(is.numeric), ~ (.x - first(.x)) * 100)
   ) |>
   filter(!is.na(date))
 
@@ -262,3 +263,5 @@ delta.cumul.long <- delta.cumul.d |>
     values_to = "cumulative_change"
   ) |>
   mutate(maturity = as.numeric(str_remove(maturity, "x")))
+
+# rdbnomics for GBPUSD, GBPTWI and 10y yields

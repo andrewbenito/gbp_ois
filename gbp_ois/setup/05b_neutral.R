@@ -2,6 +2,9 @@
 # Andrew Benito
 # Uses BoE Market Participants Survey
 
+library(glue)
+library(ggbeeswarm)
+
 # ==============================================================================
 #### SECTION 1: Preparing Data files ############
 set.seed(132)
@@ -143,15 +146,13 @@ df_simul <- dat.neutral.wide %>%
   unnest_longer(estimate) # Expand list into long format
 
 
-library(ggbeeswarm)
-
 # PLOT withSimulated Individual respnses
 boxplot.neutral <- ggplot(df_simul, aes(x = factor(source), y = estimate)) +
   geom_boxplot(outlier.shape = NA, fill = "dodgerblue", alpha = 0.5) + # Boxplot without outliers
   geom_beeswarm(color = "deeppink4", alpha = 0.5, size = 2.8) + # Beeswarm plot for individual points
   labs(
-    title = "R*: survey-based estimate",
-    subtitle = "median, IQR and simulated individual estimates",
+    title = "R*: survey-based estimates",
+    subtitle = "median, inter-quartile range and simulated individual estimates",
     x = "Date",
     y = "%",
     caption = "Source: BoE Market Participants Survey"

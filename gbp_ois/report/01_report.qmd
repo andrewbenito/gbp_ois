@@ -11,6 +11,13 @@ format:
     sansfont: "Source Sans Pro"
     fontsize: 11pt
     linestretch: 1.4
+    include-in-header: 
+      text: |
+        \usepackage{xcolor}
+        \usepackage{sectsty}
+        \definecolor{darkblue}{RGB}{0,51,102}        
+        \sectionfont{\color{darkblue}}  % sets colour of sections
+        \subsectionfont{\color{darkblue}}
 execute:
   warning: false
   message: false
@@ -26,7 +33,6 @@ knitr::opts_chunk$set(
   out.width = '90%',
   dpi = 300
 )
-
 ```
 
 
@@ -43,13 +49,15 @@ source(here::here("setup", "05_mpc_voting.R"))
 # Market developments
 ## Latest developments: the past three months
 
-@fig-2y-daily shows the (cumulative) changes in 2y, 5y and 10y OIS rates over the past three months. The sell-off in rates has been more pronounced among 10year rates than 2year rates. 
+@fig-2y-daily shows the (cumulative) changes in 2y and 5y OIS rates as well as the Sterling-Dollar exchange rate (GBPUSD) over the past three months. The sell-off in rates has been more pronounced for 5year than 2year OIS, and this has coincided with a [stronger/weaker] Sterling, at least against the US Dollar. 
+
+Over the period, 2y OIS have risen by xxxbp, 5y OIS by xxxbp, and GBPUSD has [strengthened/weakened] by x%.
 
 ```{r}
 #| label: fig-2y-daily
-#| fig-cap: "OIS and Foreign exchange"
+#| fig-cap: "OIS and Foreign Exchange, cumulative changes"
 
-plot.cumul.60d
+plot.cumul.90d
 ```
 
 ## Spreads
@@ -77,7 +85,7 @@ plot2s5s +
   plot_layout(
     axis_titles = "collect",
     ncol = 3,
-    heights = 1,
+    heights = 0.8,
     widths = 1,
     guides = "collect"
   ) &
@@ -100,9 +108,9 @@ Fiscal developments have likely played a role in the rise in term spreads and wi
 
 ```{r}
 #| label: fig-neutral
-#| fig-cap: "Market Participants Survey: Neutral rates"
-
-#boxplot.neutral
+#| fig-cap: "Market Participants Survey: Neutral rate estimates"
+source(here::here("setup", "05b_neutral.R"))
+boxplot.neutral
 ```
 
 # Evolving market pricing and OIS curves
@@ -116,7 +124,7 @@ Providing some context for those latest developments, @fig-ois-historical shows 
 ois1
 ```
 
-@fig-rates-recent zooms-in on how OIS curves and Bank Rate have evolved over the past year. 
+@fig-ois-recent zooms-in on how OIS curves and Bank Rate have evolved over the past year. [check this chart]
 
 ```{r}
 #| label: fig-ois-recent
@@ -188,4 +196,4 @@ plot.member_patterns
 ```
 
 
-We conclude by noting that increasingly nuanced macroeconomic assessments are producing more closely contested votes and heightened disagreement among MPC members. This development places greater emphasis on the quality of macroeconomic analysis and forecasts that underpin MPC decisions. While such complex judgements reinforce the importance of maintaining independence from political pressures, the forecast errors documented earlier pose a risk to both the credibility of the MPC's analytical process and public confidence in its institutional independence. This may leave Sterling markets more sensitive to international spillovers. 
+Increasingly nuanced macroeconomic assessments are producing more closely contested votes and heightened disagreement among MPC members. This development places greater emphasis on the quality of macroeconomic analysis and forecasts that underpin MPC decisions. While such complex judgements reinforce the importance of maintaining independence from political pressures, the forecast errors documented earlier pose a risk to both the credibility of the MPC's analytical process and public confidence in its institutional independence. This may leave Sterling markets more sensitive to international spillovers and to political and fiscal news. 
