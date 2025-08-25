@@ -28,8 +28,7 @@ plot.ois.gbp <- ggplot(dat, aes(x = date)) +
   # Reference lines
   geom_hline(yintercept = 0.0, linetype = 4) +
   # Color scales
-  scale_color_manual(
-    values = c("x24" = "blue", "x60" = "red"),
+  scale_color_jco(
     labels = c("x24" = "2y OIS", "x60" = "5y OIS")
   ) +
   # Fill scale for GBPUSD bars
@@ -82,16 +81,18 @@ plot.gilts.eq <- ggplot(dat, aes(x = date)) +
   # Reference lines
   geom_hline(yintercept = 0.0, linetype = 4) +
   # Color scales - control order with breaks parameter
-  scale_color_manual(
-    values = c("col_4" = "blue", "col_20" = "red"),
-    labels = c("col_4" = "2y Gilt", "col_20" = "10y Gilt"),
-    breaks = c("col_4", "col_20") # ADD THIS to control order
-  ) +
+  scale_color_jco(
+    labels = c(
+      "col_4" = "2y Gilt",
+      "col_20" = "10y Gilt"
+    ),
+    breaks = c("col_4", "col_20")
+  ) + # FIXED: Added missing closing parenthesis and +
   # Fill scale for FTSE bars - put it last in legend
   scale_fill_manual(
     values = c("ftse_all" = "gray70"),
     labels = c("ftse_all" = "FTSE All Share"),
-    breaks = c("ftse_all") # ADD THIS
+    breaks = c("ftse_all")
   ) +
   # Primary and Secondary Y-Axis
   scale_y_continuous(
@@ -109,7 +110,6 @@ plot.gilts.eq <- ggplot(dat, aes(x = date)) +
     fill = ""
   ) +
   theme(legend.position = "bottom")
-
 plot.gilts.eq
 
 #================================
