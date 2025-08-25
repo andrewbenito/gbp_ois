@@ -9,6 +9,7 @@ lapply(
     'tidyverse',
     'readxl',
     'ecb',
+    'quantmod',
     'lubridate',
     'zoo',
     'ggrepel',
@@ -41,9 +42,9 @@ theme_set(
     )
 )
 showtext_auto()
-#==============================
-# Data: Download and Tidy  ----
-#==============================
+#===============================
+# 1. OIS Data: Download and Tidy  ----
+#===============================
 url <- "https://www.bankofengland.co.uk/-/media/boe/files/statistics/yield-curves/oisddata.zip"
 td <- tempdir()
 tf <- tempfile(tmpdir = td, fileext = ".zip")
@@ -79,11 +80,11 @@ df4 <- read_xlsx(
 for (dfn in c("df1", "df2", "df3", "df4")) {
   assign(dfn, cleanOIS(get(dfn)))
 }
-
-df <- bind_rows(df1, df2, df3, df4) # Daily OIS data for inst fwds 1-60m
+# OIS total data----
+ois <- bind_rows(df1, df2, df3, df4) # Daily OIS data for inst fwds 1-60m
 
 # Convert Daily Data to Monthly; pivot----
-dfxts <- as.xts(df)
+dfxts <- as.xts(ois)
 df_m <- as.data.frame(apply.monthly(dfxts, mean))
 df_m$date = as_date(rownames(df_m))
 # Dates from maturities
@@ -144,9 +145,14 @@ fwcv <- left_join(fwcv, dat, by = 'date2', relationship = "many-to-many")
 
 latest <- fwcv |> dplyr::filter(date == max(date))
 
+# OIS: add date
+ois <- ois |> tibble::rownames_to_column("date")
+
+ois$date <- as.Date(ois$date)
+store_date <- as.Date(min(ois$date, na.rm = TRUE))
 
 #===================================
-# GLC data (Gilt yields)
+# 2. GLC data (Gilt yields)
 #===================================
 # historical Gilt yields from Bank of England
 # https://www.bankofengland.co.uk/statistics/yield-curves
@@ -192,12 +198,14 @@ glc_latest <- read_xlsx(
 for (dfn in c("glc1", "glc2", "glc3", "glc_latest")) {
   assign(dfn, cleanGLC(get(dfn)))
 }
+# GLC total data----
 glc <- bind_rows(glc1, glc2, glc3, glc_latest) # Daily GLC data
 # add date column from rownames
 glc <- glc |>
   tibble::rownames_to_column("date") |>
   mutate(date = as.Date(date)) |>
   select(date, everything()) # Ensure date is the first column
+glc <- filter(glc, date >= store_date)
 
 # spreads: 2y5y, 2y10y, 5y10, 10y30y
 glcspreads <- glc |>
@@ -209,63 +217,8 @@ glcspreads <- glc |>
     spread10s30s = col_60 - col_20
   )
 
-#========================================
-# Figure 3: Daily data   ----
-#========================================
-opt.M <- 24 # 2y rate
-opt.M2 <- 60 # 5y rate
-opt.M3 <- 120 # 10y rate
-opt.h <- 60 # past 60d
-opt.start.cumul <- 30
-
-# scraped MPC and Fed announcement days [in functions.R]
-url_boe <- "https://www.bankofengland.co.uk/monetary-policy/upcoming-mpc-dates"
-url_fed <- "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"
-
-recent_mpc_dates <- get_mpc_dates(url_boe)
-recent_fomc_dates <- get_fomc_dates(url_fed)
-
-# DAILY OIS DATA
-#================
-# 1: delta.d
-# 2: delta.cumul.d
-# 3: spreads -> glc and glcspreads
-
-df <- df |> tibble::rownames_to_column("date")
-df$date <- as.Date(df$date)
-
-# 1: delta.d, create dataframes for daily changes in OIS rates
-delta.d <- df |> #
-  janitor::clean_names() |>
-  mutate(across(-date, ~ (. - lag(.)) * 100)) |> # daily changes in bp
-  filter(!is.na(date))
-
-# 2: delta.cumul.d, cumulative changes over past 60 days using cumsum
-opt.h <- 90
-start_date <- max(df$date, na.rm = TRUE) - days(opt.h)
-
-delta.cumul.d <- df |>
-  janitor::clean_names() |>
-  arrange(date) |>
-  filter(date >= start_date) |>
-  mutate(
-    # Calculate cumulative changes from the first value in the window
-    across(where(is.numeric), ~ (.x - first(.x)) * 100)
-  ) |>
-  filter(!is.na(date))
-
-
-# Long format for cumulative changes
-delta.cumul.long <- delta.cumul.d |>
-  pivot_longer(
-    cols = starts_with("x"),
-    names_to = "maturity",
-    values_to = "cumulative_change"
-  ) |>
-  mutate(maturity = as.numeric(str_remove(maturity, "x")))
-
-# FX data [ECB Data Portal]
-#--------------------------
+# 3. FX data [ECB Data Portal]
+#------------------------------
 gbpeur <- get_data("EXR.D.GBP.EUR.SP00.A") |>
   mutate(date = convert_dates(obstime)) |>
   mutate(gbpeur = 1 / obsvalue) |>
@@ -275,40 +228,118 @@ eurusd <- get_data("EXR.D.USD.EUR.SP00.A") |>
   select(date, "eurusd" = obsvalue)
 fx_levels <- left_join(gbpeur, eurusd, by = "date") |>
   mutate(gbpusd = gbpeur * eurusd)
+fx_levels <- filter(fx_levels, date >= store_date)
 
-# convert fx to Cumul Percent changes
-fx_cumul <- fx_levels |>
+
+# 4. Equities data [Yahoo Finance via quantmod]
+#----------------------------------------------
+# FTSE All-Share symbol is ^FTAS
+ftse_all <- getSymbols(
+  "^FTAS",
+  src = "yahoo",
+  from = "2000-01-01",
+  auto.assign = FALSE
+)
+# Convert to data frame
+ftse <- data.frame(
+  date = index(ftse_all),
+  ftse_all = as.numeric(Cl(ftse_all)) # Closing prices
+)
+ftse <- filter(ftse, date >= store_date)
+
+
+#===============================================
+# Financial Market GBP data [Daily] - full_join
+#===============================================
+dat_gbp <- list(ois, glc, fx_levels, ftse) |>
+  reduce(full_join, by = "date") |>
+  arrange(date)
+
+# delta.gbp: daily ab.changes and pc changes
+delta.gbp <- dat_gbp |>
   arrange(date) |>
-  # Filter for the same 90-day window - but use the LEVELS data, not daily changes
-  filter(date >= start_date) |>
-  # Calculate cumulative PERCENT changes from first value in the window
   mutate(
-    across(c(gbpeur, eurusd, gbpusd), ~ (. - first(.)) / first(.) * 100
+    across(starts_with("x"), ~ (. - lag(.)) * 100), # OIS and Gilt yields in bp changes
+    across(starts_with("col_"), ~ (. - lag(.)) * 100), # OIS and Gilt yields in bp changes
+    across(c(gbpeur, eurusd, gbpusd), ~ (. - lag(.)) / lag(.) * 100), # FX in pct changes
+    ftse_all = (ftse_all - lag(ftse_all)) / lag(ftse_all) * 100 # FTSE in pct changes
   ) |>
-  select(date, gbpeur_cumul, eurusd_cumul, gbpusd_cumul) |>
   filter(!is.na(date))
 
-# THEN create daily changes separately if needed
-fx_daily_changes <- fx_levels |>
-  arrange(date) |>
-  mutate(
-    across(c(gbpeur, eurusd, gbpusd), ~ (. - lag(.)) / lag(.) * 100)
-  ) |>
-  filter(!is.na(date))
-
-fx_cumul.long <- fx_cumul |>
+# delta.gbp.long (for plotting)
+delta.gbp.long <- delta.gbp |>
+  select(date, x24, x60, col_4, col_20, gbpeur, eurusd, gbpusd, ftse_all) |>
   pivot_longer(
-    cols = starts_with("gbp") | starts_with("eur"),
-    names_to = "currency_pair",
-    values_to = "cumulative_change"
+    cols = starts_with("x") |
+      starts_with("col_") |
+      starts_with("gbp") |
+      starts_with("eur") |
+      starts_with("ftse"),
+    names_to = "variable",
+    values_to = "daily_change"
+  )
+
+# delta.gbp.cumul: handle NA values in baseline calculation
+opt.h <- 90
+start_date <- max(dat_gbp$date, na.rm = TRUE) - days(opt.h)
+
+delta.gbp.cumul <- dat_gbp |>
+  arrange(date) |>
+  filter(date >= start_date) |>
+  select(date, x24, x60, col_4, col_20, gbpeur, eurusd, gbpusd, ftse_all) |>
+  filter(!is.na(ftse_all)) |>
+  mutate(
+    # Handle NA values in baseline calculation for yield data
+    across(
+      starts_with("x"),
+      ~ {
+        first_non_na <- first(.[!is.na(.)])
+        if (is.na(first_non_na)) {
+          rep(NA_real_, length(.))
+        } else {
+          (. - first_non_na) * 100
+        }
+      }
+    ),
+    across(
+      starts_with("col_"),
+      ~ {
+        first_non_na <- first(.[!is.na(.)])
+        if (is.na(first_non_na)) {
+          rep(NA_real_, length(.))
+        } else {
+          (. - first_non_na) * 100
+        }
+      }
+    ),
+    # FX rates - percent changes (should be fine as FX data is more complete)
+    across(c(gbpeur, eurusd, gbpusd), ~ (. - first(.)) / first(.) * 100),
+    # FTSE - percent changes
+    ftse_all = (ftse_all - first(ftse_all)) / first(ftse_all) * 100
   ) |>
-  mutate(currency_pair = case_when(
-    currency_pair == "gbpeur_cumul" ~ "GBP/EUR",
-    currency_pair == "eurusd_cumul" ~ "EUR/USD",
-    currency_pair == "gbpusd_cumul" ~ "GBP/USD",
-    TRUE ~ currency_pair
-  ))
+  filter(!is.na(date))
 
-# join fx_cumul.long with delta.cumul.long by date
-delta.cumul.long <- left_join(delta.cumul.long, fx_cumul.long, by = "date", relationship = "many-to-many")
+delta.gbp.cumul.long <- delta.gbp.cumul |>
+  pivot_longer(
+    cols = starts_with("x") |
+      starts_with("col") |
+      starts_with("gbp") |
+      starts_with("eur") |
+      starts_with("ftse"),
+    names_to = "variable",
+    values_to = "cumulative_change"
+  )
 
+
+# Trash Below?
+
+#========================================
+# EVENTS
+#========================================
+
+# scraped MPC and Fed announcement days [in functions.R]
+url_boe <- "https://www.bankofengland.co.uk/monetary-policy/upcoming-mpc-dates"
+url_fed <- "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"
+
+recent_mpc_dates <- get_mpc_dates(url_boe)
+recent_fomc_dates <- get_fomc_dates(url_fed)

@@ -1,5 +1,116 @@
 # plots for OIS and Gilts data
 
+#=======================================
+# Fig: OIS, GBPUSD Cumul change, 90d----
+#=======================================
+dat <- delta.gbp.cumul.long
+scale_factor <- 20
+
+plot.ois.gbp <- ggplot(dat, aes(x = date)) +
+  # Primary Y-axis (Interest Rate Changes) - filter for OIS variables (x24, x60)
+  geom_line(
+    data = dat %>% filter(variable %in% c("x24", "x60")),
+    aes(y = cumulative_change, color = factor(variable)),
+    linewidth = 1.5
+  ) +
+  geom_point(
+    data = dat %>% filter(variable %in% c("x24", "x60")),
+    aes(y = cumulative_change, color = factor(variable)),
+    size = 1.5
+  ) +
+  # Secondary Y-axis (GBPUSD scaled)
+  geom_col(
+    data = dat %>% filter(variable == "gbpusd"),
+    aes(y = cumulative_change * scale_factor),
+    fill = 'deeppink4',
+    color = 'deeppink4',
+    alpha = 0.6
+  ) +
+  # Reference lines
+  geom_hline(yintercept = 0.0, linetype = 4) +
+  # Color scales
+  scale_color_manual(
+    values = c("x24" = "blue", "x60" = "red"),
+    labels = c("x24" = "2y OIS", "x60" = "5y OIS")
+  ) +
+  # Fill scale for GBPUSD bars
+  scale_fill_manual(
+    values = c("gbpusd" = "deeppink4"),
+    labels = c("gbpusd" = "GBPUSD")
+  ) +
+  # Primary and Secondary Y-Axis
+  scale_y_continuous(
+    name = "bp, cumulative change",
+    sec.axis = sec_axis(
+      ~ . / scale_factor,
+      name = "GBPUSD % change"
+    )
+  ) +
+  # Labels & Legends
+  labs(
+    title = "GBP OIS and GBPUSD",
+    subtitle = "cumulative change",
+    color = "",
+    fill = ""
+  ) +
+  theme(legend.position = "bottom")
+plot.ois.gbp
+
+#===========================================
+# Fig: Gilts, Equities Cumul change, 90d----
+#===========================================
+scale_factor <- 5
+
+plot.gilts.eq <- ggplot(dat, aes(x = date)) +
+  # Primary Y-axis (Interest Rate Changes) - filter for OIS variables (x24, x60)
+  geom_line(
+    data = dat %>% filter(variable %in% c("col_4", "col_20")),
+    aes(y = cumulative_change, color = factor(variable)),
+    linewidth = 1.5
+  ) +
+  geom_point(
+    data = dat %>% filter(variable %in% c("col_4", "col_20")),
+    aes(y = cumulative_change, color = factor(variable)),
+    size = 1.5
+  ) +
+  # Secondary Y-axis (GBPUSD scaled)
+  geom_col(
+    data = dat %>% filter(variable == "ftse_all"),
+    aes(y = cumulative_change * scale_factor),
+    fill = 'gray70',
+    color = 'gray70',
+    alpha = 0.6
+  ) +
+  # Reference lines
+  geom_hline(yintercept = 0.0, linetype = 4) +
+  # Color scales
+  scale_color_manual(
+    values = c("col_4" = "blue", "col_20" = "red"),
+    labels = c("col_4" = "2y Gilt", "col_20" = "10y Gilt")
+  ) +
+  # Fill scale for GBPUSD bars
+  scale_fill_manual(
+    values = c("ftse_all" = "gray70"),
+    labels = c("ftse_all" = "FTSE All Share")
+  ) +
+  # Primary and Secondary Y-Axis
+  scale_y_continuous(
+    name = "bp, cumulative change",
+    sec.axis = sec_axis(
+      ~ . / scale_factor,
+      name = "GBPUSD % change"
+    )
+  ) +
+  # Labels & Legends
+  labs(
+    title = "Gilt yields and FTSE-All share",
+    subtitle = "cumulative change",
+    color = "",
+    fill = ""
+  ) +
+  theme(legend.position = "bottom")
+plot.gilts.eq
+
 #================================
 # Figure 1: Evolving Forwards----
 #================================
@@ -80,30 +191,6 @@ ggsave(
   dpi = 300
 )
 
-
-#=================#=================
-# PLOT - cumulative changes
-#=================#=================
-# PLOT - 2y, 5y
-plot.cumul.90d <- delta.cumul.long |>
-  filter(maturity == opt.M | maturity == opt.M2 | maturity == opt.M3) |>
-  # Remove rows with NA values
-  filter(!is.na(cumulative_change)) |>
-  ggplot(aes(x = date)) +
-  geom_line(aes(y = cumulative_change, color = as.factor(maturity))) +
-  geom_hline(yintercept = 0.0, lty = 4) +
-  scale_color_manual(
-    values = c("24" = "blue", "60" = "red"),
-    labels = c("24" = "2-year", "60" = "5-year"),
-    name = ""
-  ) +
-  labs(
-    title = "GBP 2y and 5y OIS",
-    subtitle = paste0(opt.h, " days, cumulative change (bp)"),
-    x = "Date",
-    y = paste0("cumulative change ", opt.h, "days (bps)")
-  )
-plot.cumul.90d
 
 #=================#=================
 # Plot Spreads
@@ -218,11 +305,3 @@ ggsave(
   height = 6,
   dpi = 300
 )
-
-#========================
-# plot 2y, 5y OIS and FX
-#========================
-# PLOT1: OIS 2y, 5y and GBPUSD
-
-# PLOT2: Gilts 2y, 5y and GBPUSD
-# combined plot
