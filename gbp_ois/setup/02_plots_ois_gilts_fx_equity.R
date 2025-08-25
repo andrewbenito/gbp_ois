@@ -4,25 +4,24 @@
 # Fig: OIS, GBPUSD Cumul change, 90d----
 #=======================================
 dat <- delta.gbp.cumul.long
-scale_factor <- 20
+scale_factor <- 10
 
 plot.ois.gbp <- ggplot(dat, aes(x = date)) +
   # Primary Y-axis (Interest Rate Changes) - filter for OIS variables (x24, x60)
   geom_line(
     data = dat %>% filter(variable %in% c("x24", "x60")),
     aes(y = cumulative_change, color = factor(variable)),
-    linewidth = 1.5
+    linewidth = 1
   ) +
   geom_point(
     data = dat %>% filter(variable %in% c("x24", "x60")),
     aes(y = cumulative_change, color = factor(variable)),
-    size = 1.5
+    size = 1.1
   ) +
   # Secondary Y-axis (GBPUSD scaled)
   geom_col(
     data = dat %>% filter(variable == "gbpusd"),
-    aes(y = cumulative_change * scale_factor),
-    fill = 'deeppink4',
+    aes(y = cumulative_change * scale_factor, fill = variable),
     color = 'deeppink4',
     alpha = 0.6
   ) +
@@ -59,46 +58,47 @@ plot.ois.gbp
 #===========================================
 # Fig: Gilts, Equities Cumul change, 90d----
 #===========================================
-scale_factor <- 5
+scale_factor <- 10
 
 plot.gilts.eq <- ggplot(dat, aes(x = date)) +
-  # Primary Y-axis (Interest Rate Changes) - filter for OIS variables (x24, x60)
+  # Primary Y-axis (Interest Rate Changes) - filter for Gilt variables (col_4, col_20)
   geom_line(
     data = dat %>% filter(variable %in% c("col_4", "col_20")),
     aes(y = cumulative_change, color = factor(variable)),
-    linewidth = 1.5
+    linewidth = 1
   ) +
   geom_point(
     data = dat %>% filter(variable %in% c("col_4", "col_20")),
     aes(y = cumulative_change, color = factor(variable)),
-    size = 1.5
+    size = 1.1
   ) +
-  # Secondary Y-axis (GBPUSD scaled)
+  # Secondary Y-axis (FTSE scaled)
   geom_col(
     data = dat %>% filter(variable == "ftse_all"),
-    aes(y = cumulative_change * scale_factor),
-    fill = 'gray70',
+    aes(y = cumulative_change * scale_factor, fill = variable),
     color = 'gray70',
     alpha = 0.6
   ) +
   # Reference lines
   geom_hline(yintercept = 0.0, linetype = 4) +
-  # Color scales
+  # Color scales - control order with breaks parameter
   scale_color_manual(
     values = c("col_4" = "blue", "col_20" = "red"),
-    labels = c("col_4" = "2y Gilt", "col_20" = "10y Gilt")
+    labels = c("col_4" = "2y Gilt", "col_20" = "10y Gilt"),
+    breaks = c("col_4", "col_20") # ADD THIS to control order
   ) +
-  # Fill scale for GBPUSD bars
+  # Fill scale for FTSE bars - put it last in legend
   scale_fill_manual(
     values = c("ftse_all" = "gray70"),
-    labels = c("ftse_all" = "FTSE All Share")
+    labels = c("ftse_all" = "FTSE All Share"),
+    breaks = c("ftse_all") # ADD THIS
   ) +
   # Primary and Secondary Y-Axis
   scale_y_continuous(
     name = "bp, cumulative change",
     sec.axis = sec_axis(
       ~ . / scale_factor,
-      name = "GBPUSD % change"
+      name = "Equity index, % change"
     )
   ) +
   # Labels & Legends
@@ -109,6 +109,7 @@ plot.gilts.eq <- ggplot(dat, aes(x = date)) +
     fill = ""
   ) +
   theme(legend.position = "bottom")
+
 plot.gilts.eq
 
 #================================

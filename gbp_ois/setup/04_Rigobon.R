@@ -9,30 +9,64 @@ library(lubridate)
 library(xts)
 library(vars)
 library(svars)
-#library(Rblpapi)
-
-# This Project;
-here::here()
 
 # SETTINGS
-startDate <- as.Date("2019-01-01", format = "%Y-%m-%d")
+startDate <- as.Date("2015-01-01", format = "%Y-%m-%d")
+fredr_set_key("14447b2e57e05e5bde5dfc65dd0f5fd3")
 
-# Download BBG Data:
-dataSec <- c(
-  "USGG10YR Index", # US
-  "GTDEM10Y Govt", # GER
-  "GTGBP10Y Govt", # UK
-  "GTJPY10Y Govt" # JP
+# FRED series codes for 10-year government bond yields:
+bond_series <- c(
+  "US" = "GS10", # US 10-Year Treasury
+  "UK" = "IRLTLT01GBM156N", # UK 10-Year Gilt
+  "Germany" = "IRLTLT01DEM156N", # German 10-Year Bund
+  "Japan" = "IRLTLT01JPM156N" # Japan 10-Year Bond
 )
-k = length(dataSec)
 
-dfSec <- bdh(dataSec, "PX_LAST", startDate) # List
-xtsSec <- lapply(dfSec, function(d) xts(d[, -1], order.by = as.Date(d[, 1])))
-E1 <- do.call(merge.zoo, xtsSec)
-df_withDate <- data.frame(date = index(E1), coredata(E1)) %>%
-  drop_na()
-rownames(df_withDate) <- df_withDate$date
-df <- df_withDate %>% dplyr::select(-contains('date'))
+# Function to get bond data
+get_bond_yields <- function() {
+  map_dfr(
+    names(bond_series),
+    ~ {
+      fredr(
+        bond_series[.x],
+        frequency = "m", # Monthly frequency [highest for these codes]
+        observation_start = as.Date(startDate)
+      ) %>%
+        mutate(country = .x) %>%
+        select(date, country, yield = value)
+    }
+  )
+}
+
+# Get all bond yields
+bond_yields <- get_bond_yields()
+
+# View the data
+bond_yields %>%
+  group_by(country) %>%
+  summarise(
+    start_date = min(date, na.rm = TRUE),
+    end_date = max(date, na.rm = TRUE),
+    latest_yield = last(yield),
+    .groups = "drop"
+  )
+
+# Plot
+ggplot(bond_yields, aes(x = date, y = yield, color = country)) +
+  geom_line() +
+  geom_point() +
+  scale_color_jco() + # Add JCO color palette
+  labs(
+    title = "Government Bond Yields (10-year)",
+    #    subtitle = "Monthly data from FRED",
+    x = "Date",
+    y = "Yield (%)",
+    color = NULL
+  )
+
+df <- bond_yields |> select(-contains('date'))
+df_wide <- bond_yields |>
+  pivot_wider(!date, names_from = country, values_from = yield)
 
 # Plot Raw Data
 #================
@@ -118,103 +152,3 @@ ggplot(df_long4, aes(fill = shock, y = value, x = date)) +
   geom_bar(position = "stack", stat = "identity") +
   ggtitle("JP 10y Bond Decomposition") +
   theme(legend.title = element_blank(), legend.position = "bottom")
-
-
-#===== Scratch
-
-# 10y rate Labels
-# Store DFs in List
-dfList <- lapply(1:k, function(x) eval(parse(text = paste0("df_long", x)))) # Data
-names(dfList) <- lapply(1:k, function(x) paste0("df_long", x)) # DF names
-dfLabel <- c(
-  "df_long1" = "US 10Y TY",
-  "df_long2" = "GER 10Y Bund Yield",
-  "df_long3" = "10Y Gilt Yield",
-  "df_long4" = "JPY 10Y Yield"
-) # Chart Titles
-
-# plots
-for (i in seq(1, length(dfList))) {
-  df_i <- dfList[[i]]
-  g <- ggplot(df_i, aes(fill = shock, y = value, x = date)) +
-    geom_bar(position = "stack", stat = "identity") +
-    theme(legend.title = element_blank(), legend.position = "bottom")
-  ggsave(g, file = paste0(names(dfLabel)[i], "_g.png"))
-}
-
-
-library(fredr)
-library(tidyverse)
-
-# Set your free FRED API key (register at https://fred.stlouisfed.org/docs/api/api_key.html)
-fredr_set_key("YOUR_FREE_API_KEY")
-
-# FRED series codes for 10-year government bond yields:
-bond_series <- c(
-  "US" = "DGS10", # US 10-Year Treasury
-  "UK" = "IRLTLT01GBM156N", # UK 10-Year Gilt
-  "Germany" = "IRLTLT01DEM156N", # German 10-Year Bund
-  "Japan" = "IRLTLT01JPM156N" # Japan 10-Year Bond
-)
-
-# Function to get bond data
-get_bond_yields <- function() {
-  map_dfr(
-    names(bond_series),
-    ~ {
-      fredr(
-        bond_series[.x],
-        frequency = "d", # Daily frequency
-        observation_start = as.Date("2020-01-01")
-      ) %>%
-        mutate(country = .x) %>%
-        select(date, country, yield = value)
-    }
-  )
-}
-
-# Get all bond yields
-bond_yields <- get_bond_yields()
-
-# View the data
-bond_yields %>%
-  group_by(country) %>%
-  summarise(
-    start_date = min(date, na.rm = TRUE),
-    end_date = max(date, na.rm = TRUE),
-    latest_yield = last(yield),
-    .groups = "drop"
-  )
-
-# Complete function to get all four countries
-get_all_bond_yields <- function(start_date = "2020-01-01") {
-  # FRED series
-  fred_series <- c(
-    "DGS10", # US
-    "IRLTLT01GBM156N", # UK
-    "IRLTLT01DEM156N", # Germany
-    "IRLTLT01JPM156N" # Japan
-  )
-
-  country_names <- c("US", "UK", "Germany", "Japan")
-
-  # Get data
-  map2_dfr(
-    fred_series,
-    country_names,
-    ~ {
-      fredr(.x, observation_start = as.Date(start_date)) %>%
-        mutate(country = .y) %>%
-        select(date, country, yield = value)
-    }
-  ) %>%
-    pivot_wider(
-      names_from = country,
-      values_from = yield,
-      names_prefix = "yield_"
-    ) %>%
-    arrange(date)
-}
-
-# Usage
-daily_yields <- get_all_bond_yields("2020-01-01")

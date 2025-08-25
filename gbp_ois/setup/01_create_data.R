@@ -330,9 +330,6 @@ delta.gbp.cumul.long <- delta.gbp.cumul |>
     values_to = "cumulative_change"
   )
 
-
-# Trash Below?
-
 #========================================
 # EVENTS
 #========================================

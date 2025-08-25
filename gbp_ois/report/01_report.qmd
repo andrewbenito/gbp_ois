@@ -30,7 +30,7 @@ knitr::opts_chunk$set(
   fig.width = 6.5,
   fig.height = 4,
   fig.align = 'center',
-  out.width = '90%',
+  out.width = '100%',
   dpi = 300
 )
 ```
@@ -114,6 +114,8 @@ Fiscal developments have likely played a role in the rise in term spreads and wi
 ```{r}
 #| label: fig-neutral
 #| fig-cap: "Market Participants Survey: Neutral rate estimates"
+#| out-width: "100%""
+
 source(here::here("setup", "05b_neutral.R"))
 boxplot.neutral
 ```
