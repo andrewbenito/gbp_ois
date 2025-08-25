@@ -84,20 +84,11 @@ ggsave(
 #=================#=================
 # PLOT - cumulative changes
 #=================#=================
-plot.cumul.90d <- delta.cumul.d |>
-  ggplot(aes(x = date, y = .data[[paste0("x", opt.M)]])) +
-  geom_col() +
-  labs(
-    title = paste0("GBP 2y OIS"),
-    subtitle = paste0(opt.h, " days, cumulative change (bp)"),
-    x = "Date",
-    y = paste0("cumulative change ", opt.h, "days (bps)")
-  )
-plot.cumul.90d
-
-# PLOT - cumulative changes 2y, 5y
+# PLOT - 2y, 5y
 plot.cumul.90d <- delta.cumul.long |>
-  filter(maturity == opt.M | maturity == opt.M2 | maturity == opt.M3) |> # filter for 2y, 5y maturity
+  filter(maturity == opt.M | maturity == opt.M2 | maturity == opt.M3) |>
+  # Remove rows with NA values
+  filter(!is.na(cumulative_change)) |>
   ggplot(aes(x = date)) +
   geom_line(aes(y = cumulative_change, color = as.factor(maturity))) +
   geom_hline(yintercept = 0.0, lty = 4) +
@@ -227,3 +218,11 @@ ggsave(
   height = 6,
   dpi = 300
 )
+
+#========================
+# plot 2y, 5y OIS and FX
+#========================
+# PLOT1: OIS 2y, 5y and GBPUSD
+
+# PLOT2: Gilts 2y, 5y and GBPUSD
+# combined plot

@@ -8,7 +8,7 @@ lapply(
   c(
     'tidyverse',
     'readxl',
-    'rdbnomics',
+    'ecb',
     'lubridate',
     'zoo',
     'ggrepel',
@@ -264,4 +264,51 @@ delta.cumul.long <- delta.cumul.d |>
   ) |>
   mutate(maturity = as.numeric(str_remove(maturity, "x")))
 
-# rdbnomics for GBPUSD, GBPTWI and 10y yields
+# FX data [ECB Data Portal]
+#--------------------------
+gbpeur <- get_data("EXR.D.GBP.EUR.SP00.A") |>
+  mutate(date = convert_dates(obstime)) |>
+  mutate(gbpeur = 1 / obsvalue) |>
+  select(date, gbpeur)
+eurusd <- get_data("EXR.D.USD.EUR.SP00.A") |>
+  mutate(date = convert_dates(obstime)) |>
+  select(date, "eurusd" = obsvalue)
+fx_levels <- left_join(gbpeur, eurusd, by = "date") |>
+  mutate(gbpusd = gbpeur * eurusd)
+
+# convert fx to Cumul Percent changes
+fx_cumul <- fx_levels |>
+  arrange(date) |>
+  # Filter for the same 90-day window - but use the LEVELS data, not daily changes
+  filter(date >= start_date) |>
+  # Calculate cumulative PERCENT changes from first value in the window
+  mutate(
+    across(c(gbpeur, eurusd, gbpusd), ~ (. - first(.)) / first(.) * 100
+  ) |>
+  select(date, gbpeur_cumul, eurusd_cumul, gbpusd_cumul) |>
+  filter(!is.na(date))
+
+# THEN create daily changes separately if needed
+fx_daily_changes <- fx_levels |>
+  arrange(date) |>
+  mutate(
+    across(c(gbpeur, eurusd, gbpusd), ~ (. - lag(.)) / lag(.) * 100)
+  ) |>
+  filter(!is.na(date))
+
+fx_cumul.long <- fx_cumul |>
+  pivot_longer(
+    cols = starts_with("gbp") | starts_with("eur"),
+    names_to = "currency_pair",
+    values_to = "cumulative_change"
+  ) |>
+  mutate(currency_pair = case_when(
+    currency_pair == "gbpeur_cumul" ~ "GBP/EUR",
+    currency_pair == "eurusd_cumul" ~ "EUR/USD",
+    currency_pair == "gbpusd_cumul" ~ "GBP/USD",
+    TRUE ~ currency_pair
+  ))
+
+# join fx_cumul.long with delta.cumul.long by date
+delta.cumul.long <- left_join(delta.cumul.long, fx_cumul.long, by = "date", relationship = "many-to-many")
+

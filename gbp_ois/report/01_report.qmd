@@ -49,7 +49,7 @@ source(here::here("setup", "05_mpc_voting.R"))
 # Market developments
 ## Latest developments: the past three months
 
-@fig-2y-daily shows the (cumulative) changes in 2y and 5y OIS rates as well as the Sterling-Dollar exchange rate (GBPUSD) over the past three months. The sell-off in rates has been more pronounced for 5year than 2year OIS, and this has coincided with a [stronger/weaker] Sterling, at least against the US Dollar. 
+@fig-2y-daily shows the (cumulative) changes in 2y and 5y OIS rates as well as the Sterling-Dollar exchange rate (GBPUSD) over the past three months. OIS rates have been on a 'round-trip', rallying in June by 20bp and subsequently reversing. This has coincided with a [stronger/weaker] Sterling, at least against the US Dollar. 
 
 Over the period, 2y OIS have risen by xxxbp, 5y OIS by xxxbp, and GBPUSD has [strengthened/weakened] by x%.
 
