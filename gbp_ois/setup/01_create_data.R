@@ -32,13 +32,15 @@ source(here("functions", "functions.R"))
 # Settings: ggplot2 ----
 font_add_google("Roboto Condensed", "Roboto Condensed")
 theme_set(
-  theme_bw(base_size = 12, base_family = "Roboto Condensed") +
+  theme_bw(base_size = 11, base_family = "Roboto Condensed") +
     theme(
-      text = element_text(family = "Roboto Condensed", size = 12),
+      text = element_text(family = "Roboto Condensed", size = 11),
       panel.background = element_rect(fill = "white"),
       panel.grid.major = element_line(linewidth = .5),
       panel.grid.minor = element_blank(),
-      axis.text = element_text(color = "dodgerblue")
+      axis.text = element_text(color = "dodgerblue"),
+      plot.title = element_text(size = 10, face = "bold"), # ADD: Smaller title text
+      plot.subtitle = element_text(size = 9)
     )
 )
 showtext_auto()

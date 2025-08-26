@@ -49,21 +49,28 @@ source(here::here("setup", "05_mpc_voting.R"))
 # Market developments
 ## Latest developments: the past three months
 
-@fig-2y-daily shows the (cumulative) changes in OIS rates (2-year and 5-year), Gilt yields (2-year and 10-year), the Sterling-Dollar exchange rate (GBPUSD) and the FTSE-All share Equity index over the past three months. 
-- OIS rates have been on a 'round-trip', rallying in June by 20bp and subsequently reversing. This has coincided with a [stronger/weaker] Sterling, at least against the US Dollar. 
-- Gilt yields
-- Sterling has [strengthened/weakened] against the US Dollar, with GBPUSD rising/falling from xxx to xxx.
-- Equities
+We consider (cumulative) changes in OIS rates (2-year and 5-year), Gilt yields (2-year and 10-year), the Sterling-Dollar exchange rate (GBPUSD) and the FTSE-All share Equity index over the past three months.   
+- OIS rates have been on a 'round-trip', rallying in June by 20bp and subsequently reversing. This has coincided with a [stronger/weaker] Sterling, at least against the US Dollar.   
+- Gilt yields  
+- Sterling strengthened against the US Dollar in June to July, with this reversing subsequently.  
+- Equities rallied strongly, especially since July, and by a cumulative 6% over the period. 
 
-This combination points towards xxx shocks predominating in the past 3 months, based on a standard macro interpretation. 
+This combination points towards positive foreign growth shocks predominating in the past 3 months. While other shocks, including domestic shocks have likely applied based on a standard macro interpretation. 
 
 ```{r}
-#| label: fig-2y-daily
-#| fig-cap: "Interest rates, Foreign Exchange and Equities"
-#| out-width: "100%"
+#| label: fig-ois
+#| fig-cap: "OIS and Sterling"
 
-plot.ois.gbp + plot.gilts.eq
+plot.ois.gbp
 ```
+
+```{r}
+#| label: fig-gilts
+#| fig-cap: "Gilts and Equities"
+
+plot.gilts.eq
+```
+
 
 ## Spreads
 
@@ -114,7 +121,7 @@ Fiscal developments have likely played a role in the rise in term spreads and wi
 ```{r}
 #| label: fig-neutral
 #| fig-cap: "Market Participants Survey: Neutral rate estimates"
-#| out-width: "100%""
+#| out-width: "100%"
 
 source(here::here("setup", "05b_neutral.R"))
 boxplot.neutral
@@ -148,9 +155,10 @@ What of international spillovers? Using the Rigobon (2003) methodology, we can e
 
 ```{r}
 #| label: fig-rigobon
-#| fig-cap: "Term spreads in Gilt yields"
+#| fig-cap: "International spillovers to 10y Gilts yields"
+source(here::here("setup", "04_Rigobon.R"))
 
-#plot.rigobon
+plots_list[[3]]
 ```
 
 

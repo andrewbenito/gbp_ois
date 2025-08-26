@@ -6,12 +6,29 @@
 dat <- delta.gbp.cumul.long
 scale_factor <- 10
 
+# EVENTS
+events1 <- as.Date(c('2025-05-07', '2025-06-18', '2025-07-30', '2025-08-22'))
+events1.label <- 'FOMC'
+
+events2 <- as.Date(c('2025-05-08', '2025-06-19', '2025-08-07', '2025-09-18'))
+events2.label <- 'BoE'
+
+# limit dates to chosen data window
+date_range <- range(dat$date, na.rm = TRUE)
+events_list <- list(events1, events2)
+for (i in seq_along(events_list)) {
+  events_list[[i]] <- events_list[[i]][
+    events_list[[i]] >= date_range[1] & events_list[[i]] <= date_range[2]
+  ]
+}
+
+# Plot
 plot.ois.gbp <- ggplot(dat, aes(x = date)) +
   # Primary Y-axis (Interest Rate Changes) - filter for OIS variables (x24, x60)
   geom_line(
     data = dat %>% filter(variable %in% c("x24", "x60")),
     aes(y = cumulative_change, color = factor(variable)),
-    linewidth = 1
+    linewidth = 0.9
   ) +
   geom_point(
     data = dat %>% filter(variable %in% c("x24", "x60")),
@@ -24,6 +41,43 @@ plot.ois.gbp <- ggplot(dat, aes(x = date)) +
     aes(y = cumulative_change * scale_factor, fill = variable),
     color = 'deeppink4',
     alpha = 0.6
+  ) +
+  # ADD EVENT DATES - FOMC dates with labels
+  geom_vline(
+    xintercept = events_list[[1]],
+    linetype = "dashed",
+    color = "red",
+    alpha = 0.7
+  ) +
+  # ADD EVENT DATES - BoE dates with labels
+  geom_vline(
+    xintercept = events_list[[2]],
+    linetype = "dashed",
+    color = "blue",
+    alpha = 0.7
+  ) +
+  # Add text labels for the event lines
+  annotate(
+    "text",
+    x = events_list[[1]],
+    y = 10,
+    label = events1.label,
+    hjust = 0.5,
+    vjust = 1.2,
+    color = "red",
+    size = 3,
+    angle = 90
+  ) +
+  annotate(
+    "text",
+    x = events_list[[2]],
+    y = 10,
+    label = events2.label,
+    hjust = 0.5,
+    vjust = 1.2,
+    color = "blue",
+    size = 3,
+    angle = 90
   ) +
   # Reference lines
   geom_hline(yintercept = 0.0, linetype = 4) +
@@ -64,7 +118,7 @@ plot.gilts.eq <- ggplot(dat, aes(x = date)) +
   geom_line(
     data = dat %>% filter(variable %in% c("col_4", "col_20")),
     aes(y = cumulative_change, color = factor(variable)),
-    linewidth = 1
+    linewidth = 0.9
   ) +
   geom_point(
     data = dat %>% filter(variable %in% c("col_4", "col_20")),
@@ -77,6 +131,43 @@ plot.gilts.eq <- ggplot(dat, aes(x = date)) +
     aes(y = cumulative_change * scale_factor, fill = variable),
     color = 'gray70',
     alpha = 0.6
+  ) +
+  # ADD EVENT DATES - FOMC dates with labels
+  geom_vline(
+    xintercept = as.numeric(events_list[[1]]),
+    linetype = "dashed",
+    color = "red",
+    alpha = 0.7
+  ) +
+  # ADD EVENT DATES - BoE dates with labels
+  geom_vline(
+    xintercept = as.numeric(events_list[[2]]),
+    linetype = "dashed",
+    color = "blue",
+    alpha = 0.7
+  ) +
+  # Add text labels for the event lines
+  annotate(
+    "text",
+    x = events_list[[1]],
+    y = 10,
+    label = events1.label,
+    hjust = 0.5,
+    vjust = 1.2,
+    color = "red",
+    size = 3,
+    angle = 90
+  ) +
+  annotate(
+    "text",
+    x = events_list[[2]],
+    y = 10,
+    label = events2.label,
+    hjust = 0.5,
+    vjust = 1.2,
+    color = "blue",
+    size = 3,
+    angle = 90
   ) +
   # Reference lines
   geom_hline(yintercept = 0.0, linetype = 4) +
