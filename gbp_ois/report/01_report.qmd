@@ -121,7 +121,6 @@ Fiscal developments have likely played a role in the rise in term spreads and wi
 ```{r}
 #| label: fig-neutral
 #| fig-cap: "Market Participants Survey: Neutral rate estimates"
-#| out-width: "100%"
 
 source(here::here("setup", "05b_neutral.R"))
 boxplot.neutral
@@ -156,6 +155,7 @@ What of international spillovers? Using the Rigobon (2003) methodology, we can e
 ```{r}
 #| label: fig-rigobon
 #| fig-cap: "International spillovers to 10y Gilts yields"
+#| echo: false
 source(here::here("setup", "04_Rigobon.R"))
 
 plots_list[[3]]
@@ -165,7 +165,7 @@ plots_list[[3]]
 # Market reactions and macro news at BoE policy events
 ## Analysing monetary policy shocks
 
-In this section, we review market reactions to BoE policy events, and how these reactions relate to macro news digested by markets at those BoE policy events.  
+In this section, we review how a range of financial markets have reacted to BoE policy events, and how these reactions relate to macro news digested by markets at those BoE policy events.  
 
 
 
