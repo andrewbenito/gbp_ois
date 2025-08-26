@@ -49,11 +49,11 @@ source(here::here("setup", "05_mpc_voting.R"))
 # Market developments
 ## Latest developments: the past three months
 
-We consider (cumulative) changes in OIS rates (2-year and 5-year), Gilt yields (2-year and 10-year), the Sterling-Dollar exchange rate (GBPUSD) and the FTSE-All share Equity index over the past three months.   
-- OIS rates have been on a 'round-trip', rallying in June by 20bp and subsequently reversing. This has coincided with a [stronger/weaker] Sterling, at least against the US Dollar.   
-- Gilt yields  
-- Sterling strengthened against the US Dollar in June to July, with this reversing subsequently.  
-- Equities rallied strongly, especially since July, and by a cumulative 6% over the period. 
+Focusing initially on the past 3 months, changes in OIS rates (2-year and 5-year), Gilt yields (2-year and 10-year), the Sterling-Dollar exchange rate (GBPUSD) and the FTSE-All share Equity index shows the following.   
+- **OIS rates** have been on a 'round-trip', rallying in June by 20bp and subsequently reversing. This has coincided with a [stronger/weaker] Sterling, at least against the US Dollar.   
+- **Gilt yields**  
+- **Sterling** strengthened against the US Dollar in June to July, with this reversing subsequently.  
+- **Equities** rallied strongly, especially since July, and by a cumulative 6% over the period. 
 
 This combination points towards positive foreign growth shocks predominating in the past 3 months. While other shocks, including domestic shocks have likely applied based on a standard macro interpretation. 
 
@@ -115,16 +115,7 @@ plot2s5s +
 **Swap spreads** have also widened in recent weeks, as shown in @fig-swap-spreads. This reflects both the rise in Gilt yields, and a fall in swap rates. Swap spreads have been volatile over the past decade or more, reflecting changes in market liquidity, risk premia, and other factors.
 
 Fiscal developments have likely played a role in the rise in term spreads and widening of swap spreads (see here for a discussio). 
-
-**Neutral rates** We limit our discussion of neutral rates. @fig-neutral shows estimates since the pandemic based on a survey of market participants in Sterling markets. In principle, this survey should embody informed assessments of the impact on neutral rates from a broad set of influences. I simulate individual responses based on the reported summary statistics published by the BoE in its Market Participants Survey (MaPS).  
-
-```{r}
-#| label: fig-neutral
-#| fig-cap: "Market Participants Survey: Neutral rate estimates"
-
-source(here::here("setup", "05b_neutral.R"))
-boxplot.neutral
-```
+  
 
 # Evolving market pricing and OIS curves
 Reflecting related developments over a longer period, @fig-ois-historical shows how GBP OIS curves have evolved over time, alongside the MPC's Bank Rate decisions. Research has shown how the persistent forecast errors shown in this chart reflect a gradual process of learning about slow-moving, medium-term factors such as the neutral and trend productivity growth.
@@ -146,6 +137,18 @@ ois1
 ois2
 ```
 
+**Neutral rates** We limit our discussion of neutral rates. @fig-neutral shows estimates since the pandemic based on a survey of market participants in Sterling markets. In principle, this survey should embody informed assessments of the impact on neutral rates from a broad set of influences. I simulate individual responses based on the reported summary statistics published by the BoE in its Market Participants Survey (MaPS).
+
+```{r}
+#| label: fig-neutral
+#| fig-cap: "Market Participants Survey: Neutral rate estimates"
+
+source(here::here("setup", "05b_neutral.R"))
+boxplot.neutral
+```
+
+
+
 
 # International spillovers
 
@@ -165,7 +168,7 @@ plots_list[[3]]
 # Market reactions and macro news at BoE policy events
 ## Analysing monetary policy shocks
 
-In this section, we review how a range of financial markets have reacted to BoE policy events, and how these reactions relate to macro news digested by markets at those BoE policy events.  
+In this section, we review how a range of financial markets has reacted to BoE policy events. The relate the combination of reactions to macro news as digested by markets at those BoE policy events.  
 
 
 

@@ -195,7 +195,7 @@ plot.gilts.eq <- ggplot(dat, aes(x = date)) +
   ) +
   # Labels & Legends
   labs(
-    title = "Gilt yields and FTSE-All share",
+    title = "Gilt yields and UK Equity prices",
     subtitle = "cumulative change",
     color = "",
     fill = ""
@@ -221,7 +221,7 @@ ois1 <- ggplot(fwcv, aes(x = date2, y = yield, group = date)) +
   theme(legend.position = "none") +
   scale_x_date(date_breaks = "2 years", date_labels = "%Y") +
   labs(
-    title = "Bank Rate and GBP OIS Curves",
+    title = "GBP OIS Curves and Bank Rate",
     subtitle = "monthly averages of end-of-day daily data",
     x = "date",
     y = "rate %",
