@@ -19,11 +19,6 @@ lapply(
   require,
   character.only = TRUE
 )
-here::here()
-
-# Source Functions
-source(here('functions', 'chartFormat.R'))
-
 
 # Mon pol factors
 # DATA: Braun et al 2024
@@ -42,8 +37,8 @@ event.factors <- event.factors |>
 
 event.factors.wide <- read_excel(
   here::here(
-    'inputs',
-    'measuring-monetary-policy-in-the-uk-the-ukmpesd_feb_2025.xlsx'
+    'data',
+    'measuring-monetary-policy-in-the-uk-the-ukmpesd_may_2025.xlsx'
   ),
   sheet = "factors"
 ) |>
@@ -51,8 +46,8 @@ event.factors.wide <- read_excel(
 
 MPC.factors <- read_excel(
   here::here(
-    'inputs',
-    'measuring-monetary-policy-in-the-uk-the-ukmpesd_feb_2025.xlsx'
+    'data',
+    'measuring-monetary-policy-in-the-uk-the-ukmpesd_may_2025.xlsx'
   ),
   sheet = "factors"
 ) |>
@@ -61,8 +56,8 @@ MPC.factors <- read_excel(
 
 event.surprises <- read_excel(
   here::here(
-    'inputs',
-    'measuring-monetary-policy-in-the-uk-the-ukmpesd_feb_2025.xlsx'
+    'data',
+    'measuring-monetary-policy-in-the-uk-the-ukmpesd_may_2025.xlsx'
   ),
   sheet = "surprises"
 )
@@ -99,3 +94,74 @@ p2 <- ggplot(filter(event.factors, date >= datecusp)) +
     caption = "Source: UK Monetary Policy Event Study Database (UKMPD)"
   ) +
   theme(legend.position = "none")
+
+# take past 8 MPC meetings and summarise the market reactions
+#=============================================================
+n.events <- 12
+
+dat <- event.surprises |>
+  tail(n.events) |>
+  dplyr::select(
+    "date" = Datetime,
+    starts_with("SON") |
+      starts_with("GB") |
+      starts_with(".FT") |
+      starts_with("EUR")
+  ) |>
+  mutate(date = as.Date(date)) |>
+  janitor::clean_names() |>
+  rename(gbpusd = gbp)
+names(dat) <- str_remove_all(names(dat), "_rr")
+
+
+dat.long <- dat |>
+  dplyr::select(
+    date,
+    gbp1yois,
+    gbp2yois,
+    gb2yt,
+    gb5yt,
+    gb10yt,
+    gbpusd,
+    eurgbp,
+    ftse
+  ) |>
+  pivot_longer(!date, names_to = "variable", values_to = "value")
+
+dat.long$variable <- factor(
+  dat.long$variable,
+  levels = c(
+    "gbp1yois",
+    "gbp2yois",
+    "gb2yt",
+    "gb5yt",
+    "gb10yt",
+    "gbpusd",
+    "eurgbp",
+    "ftse"
+  )
+)
+# Plot
+#-------
+plot.reactions <- ggplot(dat.long, aes(x = value, y = date)) +
+  # Add horizontal segment from zero to value
+  geom_segment(
+    aes(x = 0, xend = value, y = date, yend = date, color = value > 0),
+    size = 1
+  ) +
+  # Add dots
+  geom_point(aes(color = value > 0), size = 3) +
+  # Vertical reference line at x = 0
+  geom_vline(xintercept = 0.0, lty = 4) +
+  # Facet by variable
+  facet_wrap(~variable) +
+  # Set colors: green for positive, red for negative
+  #  scale_color_manual(
+  #    values = c("TRUE" = "darkgreen", "FALSE" = "red"),
+  #    labels = c("TRUE" = "Positive", "FALSE" = "Negative")
+  #  ) +
+  theme(legend.position = "none") +
+  labs(
+    title = "Asset price reactions at MPC meetings",
+    caption = "Sources: Braun et al (2025) and own calculations"
+  )

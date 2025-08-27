@@ -59,10 +59,11 @@ bond_yields %>%
     .groups = "drop"
   )
 
-# Plot
+# Plot----
 ggplot(bond_yields, aes(x = date, y = yield, color = country)) +
   geom_line() +
   geom_point() +
+  geom_hline(yintercept = 0.0, lty = 4) +
   scale_color_jco() + # Add JCO color palette
   labs(
     title = "Government Bond Yields (10-year)",
@@ -118,16 +119,6 @@ cleanDF <- function(df) {
   return(df)
 }
 
-# Estimate VAR, HistDecomps
-v1 <- vars::VAR(dat, lag.max = 4, type = "both", ic = "AIC")
-summary(v1)
-
-# Structural break date
-sbDate <- lubridate::ymd("2020-03-01")
-nSB <- nrow(df_wide[df_wide$date <= sbDate, ])
-EA.cv <- id.cv(v1, SB = nSB) # changes in volatility identification
-summary(EA.cv)
-
 # Generate historical decompositions for each series
 k <- ncol(dat)
 hd_results <- list()
@@ -166,7 +157,7 @@ for (i in 1:length(temp_dfs)) {
     )
 }
 
-# Create improved plots with better styling
+# Styling
 plot_titles <- c(
   "US 10y Treasury Yields",
   "German 10y Bund Yields",
@@ -182,7 +173,7 @@ for (i in 1:k) {
     aes(fill = shock, y = value, x = date)
   ) +
     geom_bar(position = "stack", stat = "identity", alpha = 0.8) +
-    scale_fill_viridis_d(name = "Shock Origin") +
+    scale_fill_jco(name = "Shock Origin") +
     ggtitle(plot_titles[i]) +
     labs(
       x = "Date",
@@ -192,8 +183,7 @@ for (i in 1:k) {
     theme(
       legend.position = "bottom",
       legend.title = element_blank(),
-      plot.title = element_text(size = 12, face = "bold"),
-      axis.text.x = element_text(angle = 45, hjust = 1)
+      plot.title = element_text(size = 12, face = "bold")
     )
 }
 
@@ -207,7 +197,7 @@ plots_list[[4]] # Japanese decomposition
 cat("=== Rigobon Structural VAR Results ===\n")
 cat("Structural break date:", as.character(sbDate), "\n")
 cat("Pre-break observations:", nSB, "\n")
-cat("Post-break observations:", nrow(dat) - nSB, "\n")
+cat("Post-break observations:", (nrow(dat) / k) - nSB, "\n")
 cat("Number of variables:", k, "\n")
 cat("VAR lag order selected:", v1$p, "\n")
 
@@ -257,13 +247,14 @@ for (i in 1:k) {
     # Horizontal line at zero (baseline)
     geom_hline(yintercept = 0, linetype = "dashed", alpha = 0.5) +
     # Actual yield level (right axis)
-    geom_line(
-      data = actual_data,
-      aes(y = (actual_yield - initial_yield) * 100), # Convert to basis points
-      color = "red",
-      size = 1.2
-    ) +
-    scale_fill_viridis_d(name = "Shock Origin") +
+    #    geom_line(
+    #      data = actual_data,
+    #      aes(y = (actual_yield - initial_yield) * 100), # Convert to basis points
+    #      color = "red",
+    #      size = 1.2
+    #    ) +
+    scale_x_date(date_breaks = "2 years", date_labels = "%Y") +
+    scale_fill_jco(name = "Shock Origin") +
     ggtitle(paste(plot_titles[i], "- Decomposition vs Actual")) +
     labs(
       x = "Date",
@@ -276,8 +267,7 @@ for (i in 1:k) {
     theme(
       legend.position = "bottom",
       legend.title = element_blank(),
-      plot.title = element_text(size = 11, face = "bold"),
-      axis.text.x = element_text(angle = 45, hjust = 1)
+      plot.title = element_text(size = 11, face = "bold")
     )
 }
 

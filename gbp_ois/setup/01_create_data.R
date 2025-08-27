@@ -206,7 +206,7 @@ glc <- bind_rows(glc1, glc2, glc3, glc_latest) # Daily GLC data
 glc <- glc |>
   tibble::rownames_to_column("date") |>
   mutate(date = as.Date(date)) |>
-  select(date, everything()) # Ensure date is the first column
+  dplyr::select(date, everything()) # Ensure date is the first column
 glc <- filter(glc, date >= store_date)
 
 # spreads: 2y5y, 2y10y, 5y10, 10y30y
@@ -224,10 +224,10 @@ glcspreads <- glc |>
 gbpeur <- get_data("EXR.D.GBP.EUR.SP00.A") |>
   mutate(date = convert_dates(obstime)) |>
   mutate(gbpeur = 1 / obsvalue) |>
-  select(date, gbpeur)
+  dplyr::select(date, gbpeur)
 eurusd <- get_data("EXR.D.USD.EUR.SP00.A") |>
   mutate(date = convert_dates(obstime)) |>
-  select(date, "eurusd" = obsvalue)
+  dplyr::select(date, "eurusd" = obsvalue)
 fx_levels <- left_join(gbpeur, eurusd, by = "date") |>
   mutate(gbpusd = gbpeur * eurusd)
 fx_levels <- filter(fx_levels, date >= store_date)
@@ -270,7 +270,18 @@ delta.gbp <- dat_gbp |>
 
 # delta.gbp.long (for plotting)
 delta.gbp.long <- delta.gbp |>
-  select(date, x24, x60, col_4, col_20, gbpeur, eurusd, gbpusd, ftse_all) |>
+  dplyr::select(
+    date,
+    x24,
+    x60,
+    col_4,
+    col_20,
+    col_50,
+    gbpeur,
+    eurusd,
+    gbpusd,
+    ftse_all
+  ) |>
   pivot_longer(
     cols = starts_with("x") |
       starts_with("col_") |
@@ -288,7 +299,18 @@ start_date <- max(dat_gbp$date, na.rm = TRUE) - days(opt.h)
 delta.gbp.cumul <- dat_gbp |>
   arrange(date) |>
   filter(date >= start_date) |>
-  select(date, x24, x60, col_4, col_20, gbpeur, eurusd, gbpusd, ftse_all) |>
+  dplyr::select(
+    date,
+    x24,
+    x60,
+    col_4,
+    col_20,
+    col_50,
+    gbpeur,
+    eurusd,
+    gbpusd,
+    ftse_all
+  ) |>
   filter(!is.na(ftse_all)) |>
   mutate(
     # Handle NA values in baseline calculation for yield data
@@ -332,6 +354,9 @@ delta.gbp.cumul.long <- delta.gbp.cumul |>
     values_to = "cumulative_change"
   )
 
+
+# Add real rates and inflation data from BoE
+
 #========================================
 # EVENTS
 #========================================
@@ -340,5 +365,5 @@ delta.gbp.cumul.long <- delta.gbp.cumul |>
 url_boe <- "https://www.bankofengland.co.uk/monetary-policy/upcoming-mpc-dates"
 url_fed <- "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"
 
-recent_mpc_dates <- get_mpc_dates(url_boe)
-recent_fomc_dates <- get_fomc_dates(url_fed)
+#recent_mpc_dates <- get_mpc_dates(url_boe)
+#recent_fomc_dates <- get_fomc_dates(url_fed)

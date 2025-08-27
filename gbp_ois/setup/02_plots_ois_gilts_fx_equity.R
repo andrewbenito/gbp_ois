@@ -7,15 +7,35 @@ dat <- delta.gbp.cumul.long
 scale_factor <- 10
 
 # EVENTS
-events1 <- as.Date(c('2025-05-07', '2025-06-18', '2025-07-30', '2025-08-22'))
+events1 <- as.Date(c(
+  '2025-05-07',
+  '2025-06-18',
+  '2025-07-30',
+  '2025-08-22',
+  '2025-09-17',
+  '2025-10-29',
+  '2025-12-10'
+))
 events1.label <- 'FOMC'
 
-events2 <- as.Date(c('2025-05-08', '2025-06-19', '2025-08-07', '2025-09-18'))
+events2 <- as.Date(c(
+  '2025-05-08',
+  '2025-06-19',
+  '2025-08-07',
+  '2025-09-18',
+  '2025-09-18',
+  '2025-11-06',
+  '2025-12-18'
+))
 events2.label <- 'BoE'
+
+# Payrolls
+events3 <- get_first_fridays()
+events3.label <- 'US Payrolls'
 
 # limit dates to chosen data window
 date_range <- range(dat$date, na.rm = TRUE)
-events_list <- list(events1, events2)
+events_list <- list(events1, events2, events3)
 for (i in seq_along(events_list)) {
   events_list[[i]] <- events_list[[i]][
     events_list[[i]] >= date_range[1] & events_list[[i]] <= date_range[2]
@@ -56,6 +76,13 @@ plot.ois.gbp <- ggplot(dat, aes(x = date)) +
     color = "blue",
     alpha = 0.7
   ) +
+  # ADD EVENT DATES - US Payrolls
+  geom_vline(
+    xintercept = events_list[[3]],
+    linetype = "dashed",
+    color = "gray70",
+    alpha = 0.7
+  ) +
   # Add text labels for the event lines
   annotate(
     "text",
@@ -76,6 +103,17 @@ plot.ois.gbp <- ggplot(dat, aes(x = date)) +
     hjust = 0.5,
     vjust = 1.2,
     color = "blue",
+    size = 3,
+    angle = 90
+  ) +
+  annotate(
+    "text",
+    x = events_list[[3]],
+    y = 10,
+    label = events3.label,
+    hjust = 0.5,
+    vjust = 1.2,
+    color = "gray70",
     size = 3,
     angle = 90
   ) +
@@ -116,12 +154,12 @@ scale_factor <- 10
 plot.gilts.eq <- ggplot(dat, aes(x = date)) +
   # Primary Y-axis (Interest Rate Changes) - filter for Gilt variables (col_4, col_20)
   geom_line(
-    data = dat %>% filter(variable %in% c("col_4", "col_20")),
+    data = dat %>% filter(variable %in% c("col_4", "col_20", "col_50")),
     aes(y = cumulative_change, color = factor(variable)),
     linewidth = 0.9
   ) +
   geom_point(
-    data = dat %>% filter(variable %in% c("col_4", "col_20")),
+    data = dat %>% filter(variable %in% c("col_4", "col_20", "col_50")),
     aes(y = cumulative_change, color = factor(variable)),
     size = 1.1
   ) +
@@ -144,6 +182,13 @@ plot.gilts.eq <- ggplot(dat, aes(x = date)) +
     xintercept = as.numeric(events_list[[2]]),
     linetype = "dashed",
     color = "blue",
+    alpha = 0.7
+  ) +
+  # ADD EVENT DATES - US Payrolls
+  geom_vline(
+    xintercept = events_list[[3]],
+    linetype = "dashed",
+    color = "gray70",
     alpha = 0.7
   ) +
   # Add text labels for the event lines
@@ -169,21 +214,30 @@ plot.gilts.eq <- ggplot(dat, aes(x = date)) +
     size = 3,
     angle = 90
   ) +
+  annotate(
+    "text",
+    x = events_list[[3]],
+    y = 10,
+    label = events3.label,
+    hjust = 0.5,
+    vjust = 1.2,
+    color = "gray70",
+    size = 3,
+    angle = 90
+  ) +
   # Reference lines
   geom_hline(yintercept = 0.0, linetype = 4) +
   # Color scales - control order with breaks parameter
   scale_color_jco(
     labels = c(
       "col_4" = "2y Gilt",
-      "col_20" = "10y Gilt"
+      "col_20" = "10y Gilt",
+      "col_50" = "25y Gilt"
     ),
-    breaks = c("col_4", "col_20")
-  ) + # FIXED: Added missing closing parenthesis and +
-  # Fill scale for FTSE bars - put it last in legend
-  scale_fill_manual(
-    values = c("ftse_all" = "gray70"),
-    labels = c("ftse_all" = "FTSE All Share"),
-    breaks = c("ftse_all")
+    breaks = c("col_4", "col_20", "col_50")
+  ) +
+  scale_fill_jco(
+    labels = c("ftse_all" = "FTSE All Share")
   ) +
   # Primary and Secondary Y-Axis
   scale_y_continuous(
@@ -287,15 +341,18 @@ ggsave(
 #=================#=================
 # Plot Spreads
 #=================#=================
+start_date <- as.Date('2020-01-01')
+#start_date <- today() - days(opt.h)
+
 plot_spread <- function(dataf, spread_col) {
   # Extract the maturity parts and format with hyphen
   maturity_part <- gsub("spread", "", spread_col) # Remove "spread" prefix
   formatted_title <- gsub("(\\d+)s(\\d+)s", "\\1-\\2", maturity_part) # Convert "2s5s" to "2-5"
 
   dataf |>
-    filter(date >= max(date) - days(opt.h)) |>
+    filter(date >= start_date) |>
     ggplot(aes(x = date, y = .data[[spread_col]])) +
-    geom_point() +
+    geom_line() +
     geom_hline(yintercept = 0, lty = 4) +
     labs(
       title = paste0(formatted_title, "y spread"),
@@ -330,14 +387,16 @@ plot2s5s +
     guides = "collect"
   ) &
   theme(plot.margin = margin(2, 2, 2, 2)) &
-  ylim(range(
-    c(
-      layer_data(plot2s5s)$y,
-      layer_data(plot5s10s)$y,
-      layer_data(plot10s25s)$y
-    ),
-    na.rm = TRUE
-  ))
+  ylim(
+    range(
+      c(
+        layer_data(plot2s5s)$y,
+        layer_data(plot5s10s)$y,
+        layer_data(plot10s25s)$y
+      ),
+      na.rm = TRUE
+    )
+  )
 
 #=================
 # plot 2y v 10y,
@@ -381,18 +440,77 @@ plot2y_v_10y <- glc |>
   geom_hline(yintercept = 0, lty = 4) +
   geom_vline(xintercept = 0, lty = 4) +
   geom_abline(intercept = 0, slope = 1, lty = 2) +
-  scale_color_aaas() + # Use ggsci color palette
+  scale_color_jco() + # Use ggsci color palette
   labs(
     title = "2y vs 10y Gilt yields",
     subtitle = "sample: last 10 years, daily data",
     x = "2y Gilt yield (%)",
     y = "10y Gilt yield (%)"
   ) +
-  theme(legend.position = "right")
+  theme(legend.position = "bottom")
 # save
 ggsave(
   here("plots", "4.Gilt_2y_v_10y.png"),
   plot = plot2y_v_10y,
+  width = 10,
+  height = 6,
+  dpi = 300
+)
+
+#=================
+# plot 5y v 25y,
+#=================
+# plot 2y v 10y with color coding for 2-year periods
+plot5y_v_25y <- glc |>
+  filter(date >= max(date) - years(10)) |>
+  mutate(
+    # Create 2-year period groupings
+    period = case_when(
+      date >= max(date) - years(2) ~ "2023-2025",
+      date >= max(date) - years(4) ~ "2021-2023",
+      date >= max(date) - years(6) ~ "2019-2021",
+      date >= max(date) - years(8) ~ "2017-2019",
+      date >= max(date) - years(10) ~ "2015-2017"
+    ),
+    # Ensure proper factor ordering (oldest to newest)
+    period = factor(
+      period,
+      levels = c(
+        "2015-2017",
+        "2017-2019",
+        "2019-2021",
+        "2021-2023",
+        "2023-2025"
+      )
+    )
+  ) |>
+  ggplot(aes(x = col_10, y = col_50, color = period)) +
+  geom_point(alpha = 0.7) +
+  geom_point(
+    data = glc |>
+      filter(date >= max(date) - years(10)) |>
+      slice_tail(n = 10),
+    aes(x = col_10, y = col_50),
+    shape = 4,
+    color = "black", # Highlight last 10 observations
+    size = 3,
+    inherit.aes = FALSE # Don't inherit the color aesthetic
+  ) +
+  geom_hline(yintercept = 0, lty = 4) +
+  geom_vline(xintercept = 0, lty = 4) +
+  geom_abline(intercept = 0, slope = 1, lty = 2) +
+  scale_color_jco() + # Use ggsci color palette
+  labs(
+    title = "5y vs 25y Gilt yields",
+    subtitle = "sample: last 10 years, daily data",
+    x = "5y Gilt yield (%)",
+    y = "25y Gilt yield (%)"
+  ) +
+  theme(legend.position = "bottom")
+# save
+ggsave(
+  here("plots", "4b.Gilt_5y_v_25y.png"),
+  plot = plot5y_v_25y,
   width = 10,
   height = 6,
   dpi = 300

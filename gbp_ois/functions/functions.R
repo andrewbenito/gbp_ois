@@ -15,7 +15,7 @@ get_mpc_dates <- function(url = url_boe) {
       date = dmy(paste0(date_clean, " 2025"))
     ) |>
     filter(!is.na(date)) |>
-    select(date_text, date_clean, date)
+    dplyr::select(date_text, date_clean, date)
 
   return(mpc_dates$date)
 }
@@ -47,6 +47,30 @@ get_fomc_dates <- function(url = url_fed) {
     mdy()
 
   return(recent_fed_dates)
+}
+
+# for Payrolls dates
+get_first_fridays <- function(start_year = 2025, end_year = 2025) {
+  # Create all first days of months in the range
+  dates <- seq(
+    as.Date(paste0(start_year, "-01-01")),
+    as.Date(paste0(end_year, "-12-01")),
+    by = "month"
+  )
+
+  # Calculate first Friday for each month
+  first_fridays <- dates + (6 - wday(dates)) %% 7
+
+  # Create results dataframe
+  results <- data.frame(
+    date = first_fridays,
+    year = year(first_fridays),
+    month = month(first_fridays),
+    month_name = month.name[month(first_fridays)],
+    formatted = format(first_fridays, "%A, %B %d, %Y")
+  )
+
+  return(results$date)
 }
 
 
