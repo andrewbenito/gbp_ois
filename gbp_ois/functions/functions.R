@@ -375,3 +375,154 @@ clean_mpc_voting <- function(df) {
 
   return(df_votes)
 }
+
+# Function to Classify Market Reaction based on co-movement of Equities and Bonds----
+classify_market_reactions <- function(
+  data,
+  date_col = "date",
+  short_yield_col = "gb2yt",
+  long_yield_col = "gb10yt",
+  equity_col = "ftse",
+  value_col = "value",
+  variable_col = "variable",
+  data_format = c("long", "wide"),
+  aggregation_method = "mean",
+  return_details = TRUE
+) {
+  # Match arguments and load libraries
+  data_format <- match.arg(data_format)
+  library(dplyr)
+  library(tidyr)
+
+  # Convert data to wide format if needed
+  if (data_format == "long") {
+    # Handle aggregation of duplicates
+    agg_fun <- switch(
+      aggregation_method,
+      "mean" = mean,
+      "median" = median,
+      "first" = function(x) first(x),
+      "last" = function(x) last(x),
+      mean
+    ) # default to mean
+
+    data_wide <- data %>%
+      group_by(!!sym(date_col), !!sym(variable_col)) %>%
+      summarise(
+        !!sym(value_col) := agg_fun(!!sym(value_col), na.rm = TRUE),
+        .groups = "drop"
+      ) %>%
+      pivot_wider(
+        names_from = !!sym(variable_col),
+        values_from = !!sym(value_col)
+      )
+  } else {
+    data_wide <- data
+  }
+
+  # Validate required columns
+  required_cols <- c(date_col, short_yield_col, long_yield_col, equity_col)
+  missing_cols <- setdiff(required_cols, names(data_wide))
+
+  if (length(missing_cols) > 0) {
+    stop("Missing required columns: ", paste(missing_cols, collapse = ", "))
+  }
+
+  # Apply classification
+  classified_data <- data_wide %>%
+    mutate(
+      # Calculate absolute changes
+      abs_short_yield = abs(!!sym(short_yield_col)),
+      abs_long_yield = abs(!!sym(long_yield_col)),
+
+      # Calculate correlation
+      yield_equity_corr = cor(
+        !!sym(short_yield_col),
+        !!sym(equity_col),
+        use = "complete.obs"
+      )
+    ) %>%
+    mutate(
+      # Classification conditions
+      condition_long_lt_short = abs_long_yield < abs_short_yield,
+      condition_long_gt_short = abs_long_yield > abs_short_yield,
+      condition_positive_corr = yield_equity_corr > 0,
+      condition_negative_corr = yield_equity_corr < 0,
+
+      # Apply classification rules
+      market_reaction_type = case_when(
+        # Growth: |long_yield| < |short_yield| AND correlation > 0
+        condition_long_lt_short & condition_positive_corr ~ "Growth",
+
+        # Risk premium: |short_yield| < |long_yield| AND correlation > 0
+        condition_long_gt_short & condition_positive_corr ~ "Risk premium",
+
+        # Conventional monetary policy: |long_yield| < |short_yield| AND correlation < 0
+        condition_long_lt_short & condition_negative_corr ~
+          "Conventional monetary policy",
+
+        # Unconventional monetary policy: |long_yield| > |short_yield| AND correlation < 0
+        condition_long_gt_short & condition_negative_corr ~
+          "Unconventional monetary policy",
+
+        TRUE ~ "Unclassified"
+      )
+    )
+
+  # Create summary statistics
+  summary_stats <- classified_data %>%
+    count(market_reaction_type, name = "frequency") %>%
+    mutate(percentage = round(frequency / sum(frequency) * 100, 1))
+
+  # Prepare results
+  if (return_details) {
+    results <- list(
+      classified_data = classified_data,
+      summary = summary_stats,
+      correlation = unique(classified_data$yield_equity_corr),
+      n_observations = nrow(classified_data),
+      date_range = range(classified_data[[date_col]], na.rm = TRUE),
+      classification_conditions = classified_data %>%
+        select(
+          !!sym(date_col),
+          condition_long_lt_short,
+          condition_long_gt_short,
+          condition_positive_corr,
+          condition_negative_corr,
+          market_reaction_type
+        )
+    )
+  } else {
+    results <- classified_data %>%
+      select(
+        !!sym(date_col),
+        !!sym(short_yield_col),
+        !!sym(long_yield_col),
+        !!sym(equity_col),
+        market_reaction_type
+      )
+  }
+
+  return(results)
+}
+
+# Test the updated function
+print("=== UPDATED CLASSIFICATION WITH RULES ===")
+results <- classify_market_reactions(dat.long)
+
+print("Updated Classification Summary:")
+print(results$summary)
+
+print("\nDetailed Results:")
+print(
+  results$classified_data %>%
+    select(
+      date,
+      gb2yt,
+      gb10yt,
+      ftse,
+      abs_gb2yt,
+      abs_gb10yt,
+      market_reaction_type
+    )
+)

@@ -4,6 +4,7 @@ lapply(
   c(
     'here',
     'tidyverse',
+    'readxl',
     'ggtext',
     'ggsci',
     'patchwork',
@@ -147,7 +148,7 @@ plot.reactions <- ggplot(dat.long, aes(x = value, y = date)) +
   # Add horizontal segment from zero to value
   geom_segment(
     aes(x = 0, xend = value, y = date, yend = date, color = value > 0),
-    size = 1
+    linewidth = 1
   ) +
   # Add dots
   geom_point(aes(color = value > 0), size = 3) +
@@ -155,13 +156,14 @@ plot.reactions <- ggplot(dat.long, aes(x = value, y = date)) +
   geom_vline(xintercept = 0.0, lty = 4) +
   # Facet by variable
   facet_wrap(~variable) +
-  # Set colors: green for positive, red for negative
-  #  scale_color_manual(
-  #    values = c("TRUE" = "darkgreen", "FALSE" = "red"),
-  #    labels = c("TRUE" = "Positive", "FALSE" = "Negative")
-  #  ) +
+  scale_color_jco() +
   theme(legend.position = "none") +
   labs(
     title = "Asset price reactions at MPC meetings",
+    x = "% or pp",
     caption = "Sources: Braun et al (2025) and own calculations"
   )
+plot.reactions
+
+# Market reactions
+#===================
