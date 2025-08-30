@@ -260,7 +260,6 @@ plot.gilts.eq
 #================================
 # Figure 1: Evolving Forwards----
 #================================
-
 ois1 <- ggplot(fwcv, aes(x = date2, y = yield, group = date)) +
   geom_line(aes(colour = as.factor(date))) +
   geom_line(
@@ -268,7 +267,8 @@ ois1 <- ggplot(fwcv, aes(x = date2, y = yield, group = date)) +
     aes(x = date2, y = yield),
     color = "black",
     lty = 2,
-    linewidth = 1.2
+    linewidth = 1.2,
+    inherit.aes = FALSE
   ) +
   geom_line(aes(y = bankrate)) +
   geom_hline(yintercept = 0.0, lty = 4) +
@@ -304,19 +304,33 @@ ois2 <- ggplot(
   aes(x = date2, y = yield, group = date)
 ) +
   geom_line(color = "gray70", linewidth = 1.25) +
+  # ADD: Highlight the latest OIS curve with a dashed black line
+  geom_line(
+    data = fwcv %>%
+      filter(!is.na(yield)) %>%
+      filter(date == max(date)),
+    aes(x = date2, y = yield),
+    color = "black",
+    lty = 2,
+    linewidth = 1.2,
+    inherit.aes = FALSE
+  ) +
+  # OPTIONAL: Keep the red points if you want them too
   geom_point(
-    data = subset(fwcv, date == max(date)),
+    data = fwcv %>%
+      filter(!is.na(yield)) %>%
+      filter(date == max(date)),
     aes(x = date2, y = yield),
     color = "red",
     size = 2,
-    inherit.aes = FALSE # Add this to avoid group conflicts
+    inherit.aes = FALSE
   ) +
   geom_line(
     data = subset(fwcv, date %in% last_12m),
     aes(x = date2, y = bankrate),
     color = "black",
     linewidth = 1.25,
-    inherit.aes = FALSE # Add this to avoid grouping by date
+    inherit.aes = FALSE # avoid grouping by date
   ) +
   theme(legend.position = "none") +
   scale_x_date(date_breaks = "1 year", date_labels = "%Y") +

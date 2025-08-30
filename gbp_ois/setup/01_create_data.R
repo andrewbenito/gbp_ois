@@ -82,7 +82,7 @@ df4 <- read_xlsx(
 for (dfn in c("df1", "df2", "df3", "df4")) {
   assign(dfn, cleanOIS(get(dfn)))
 }
-# OIS total data----
+# OIS total data----[Daily]
 ois <- bind_rows(df1, df2, df3, df4) # Daily OIS data for inst fwds 1-60m
 
 # Convert Daily Data to Monthly; pivot----
@@ -145,11 +145,20 @@ dat <- eom_df %>%
 # Join with forward curve data
 fwcv <- left_join(fwcv, dat, by = 'date2', relationship = "many-to-many")
 
-latest <- fwcv |> dplyr::filter(date == max(date))
+# Get the most recent date with valid yield data
+latest_valid_date <- fwcv |>
+  filter(!is.na(yield)) |>
+  arrange(desc(date)) |>
+  slice_head(n = 1) |>
+  pull(date)
+
+# the latest valid curve
+latest <- fwcv |>
+  filter(date == latest_valid_date) |>
+  filter(!is.na(yield))
 
 # OIS: add date
 ois <- ois |> tibble::rownames_to_column("date")
-
 ois$date <- as.Date(ois$date)
 store_date <- as.Date(min(ois$date, na.rm = TRUE))
 
@@ -354,7 +363,6 @@ delta.gbp.cumul.long <- delta.gbp.cumul |>
     values_to = "cumulative_change"
   )
 
-
 # Add real rates and inflation data from BoE
 
 #========================================
@@ -362,8 +370,8 @@ delta.gbp.cumul.long <- delta.gbp.cumul |>
 #========================================
 
 # scraped MPC and Fed announcement days [in functions.R]
-url_boe <- "https://www.bankofengland.co.uk/monetary-policy/upcoming-mpc-dates"
-url_fed <- "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"
+#url_boe <- "https://www.bankofengland.co.uk/monetary-policy/upcoming-mpc-dates"
+#url_fed <- "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"
 
 #recent_mpc_dates <- get_mpc_dates(url_boe)
 #recent_fomc_dates <- get_fomc_dates(url_fed)

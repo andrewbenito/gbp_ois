@@ -345,7 +345,7 @@ clean_mpc_voting <- function(df) {
   # Extract the voting data starting from the row after "Meetings"
   df_votes <- df |>
     slice((meetings_row + 2):n()) |>
-    select(-1)
+    dplyr::select(-1)
 
   # colnames in row 2, MPC member names excl first column
   mpcnames <- df[2, -1]
@@ -370,7 +370,7 @@ clean_mpc_voting <- function(df) {
     mutate(
       date = as.Date(as.numeric(date), origin = "1899-12-30")
     ) |>
-    select(-contains("Past")) |> # remove past members column
+    dplyr::select(-contains("Past")) |> # remove past members column
     filter(!is.na(date))
 
   return(df_votes)
@@ -483,7 +483,7 @@ classify_market_reactions <- function(
       n_observations = nrow(classified_data),
       date_range = range(classified_data[[date_col]], na.rm = TRUE),
       classification_conditions = classified_data %>%
-        select(
+        dplyr::select(
           !!sym(date_col),
           condition_long_lt_short,
           condition_long_gt_short,
@@ -494,7 +494,7 @@ classify_market_reactions <- function(
     )
   } else {
     results <- classified_data %>%
-      select(
+      dplyr::select(
         !!sym(date_col),
         !!sym(short_yield_col),
         !!sym(long_yield_col),
@@ -505,24 +505,3 @@ classify_market_reactions <- function(
 
   return(results)
 }
-
-# Test the updated function
-print("=== UPDATED CLASSIFICATION WITH RULES ===")
-results <- classify_market_reactions(dat.long)
-
-print("Updated Classification Summary:")
-print(results$summary)
-
-print("\nDetailed Results:")
-print(
-  results$classified_data %>%
-    select(
-      date,
-      gb2yt,
-      gb10yt,
-      ftse,
-      abs_gb2yt,
-      abs_gb10yt,
-      market_reaction_type
-    )
-)

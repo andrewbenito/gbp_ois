@@ -60,9 +60,8 @@ bond_yields %>%
   )
 
 # Plot----
-ggplot(bond_yields, aes(x = date, y = yield, color = country)) +
+plot.yields <- ggplot(bond_yields, aes(x = date, y = yield, color = country)) +
   geom_line() +
-  geom_point() +
   geom_hline(yintercept = 0.0, lty = 4) +
   scale_color_jco() + # Add JCO color palette
   labs(
@@ -71,7 +70,9 @@ ggplot(bond_yields, aes(x = date, y = yield, color = country)) +
     x = "Date",
     y = "Yield (%)",
     color = NULL
-  )
+  ) +
+  theme(legend.position = "bottom")
+plot.yields
 
 df <- bond_yields |> dplyr::select(-contains('date'))
 df_wide <- bond_yields |>
@@ -159,10 +160,10 @@ for (i in 1:length(temp_dfs)) {
 
 # Styling
 plot_titles <- c(
-  "US 10y Treasury Yields",
-  "German 10y Bund Yields",
-  "UK 10y Gilt Yields",
-  "Japan 10y Bond Yields"
+  "Spillovers: US 10y Treasury Yields",
+  "Spillovers: German 10y Bund Yields",
+  "Spillovers: UK 10y Gilt Yields",
+  "Spillovers: Japan 10y Bond Yields"
 )
 
 # Generate plots

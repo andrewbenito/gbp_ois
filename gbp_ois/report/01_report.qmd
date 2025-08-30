@@ -156,13 +156,16 @@ boxplot.neutral
 What of international spillovers? Using the Rigobon (2003) methodology, we can estimate the extent to which international spillovers have contributed to fluctuations in 10y Gilt yields.  
 
 
+
+
 ```{r}
 #| label: fig-rigobon
-#| fig-cap: "International spillovers to 10y Gilts yields"
+#| fig-cap: "International spillovers"
+#| results: hide
 
 source(here::here("setup", "04_Rigobon.R"))
 
-plots_list[[3]]
+plot.yields + plots_list[[3]] 
 ```
 
 
