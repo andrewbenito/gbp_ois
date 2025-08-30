@@ -79,46 +79,22 @@ df_wide <- bond_yields |>
   pivot_wider(id_cols = date, names_from = country, values_from = yield) |>
   na.omit()
 
-# wide and clean [dat]
+# wide and clean [dat], drop date
 dat <- df_wide |>
   dplyr::select(-date) |>
   na.omit()
 
+#============================
 # Estimate VAR, HistDecomps
+#============================
 v1 <- vars::VAR(dat, lag.max = 4, type = "both", ic = "AIC")
 summary(v1)
 
 # sbDate
-sbDate <- lubridate::ymd("2020-03-01")
+sbDate <- lubridate::ymd("2022-03-01")
 nSB <- nrow(df_wide[df_wide$date <= lubridate::ymd(sbDate), ])
 EA.cv <- id.cv(v1, SB = nSB) # changes in volatility;
 summary(EA.cv)
-
-# Put HistDecomp into x1-x4 (Lists)
-k <- ncol(dat)
-for (i in 1:k) {
-  assign(paste0("x", i, sep = ""), hd(EA.cv, series = i))
-}
-
-# Create DFs with HistDecomps, Clean
-hdlist <- list(x1[['hidec']], x2[['hidec']], x3[['hidec']], x4[['hidec']])
-for (i in 1:length(hdlist)) {
-  assign(paste("temp", i, sep = ''), as.data.frame(hdlist[i]))
-}
-
-# Clean function, then apply
-cleanDF <- function(df) {
-  # Get the original date column (should be row names from df_wide)
-  date_col <- df_wide$date[(nrow(df_wide) - nrow(df) + 1):nrow(df_wide)]
-
-  df <- df %>%
-    rename('US' = 4, 'Germany' = 5, 'UK' = 6, 'Japan' = 7) %>% # Fixed country names
-    dplyr::select(-1, -2, -3) %>%
-    mutate(date = date_col) %>% # Use actual dates from df_wide
-    dplyr::select(date, everything()) # Move date to front
-
-  return(df)
-}
 
 # Generate historical decompositions for each series
 k <- ncol(dat)
@@ -129,7 +105,7 @@ for (i in 1:k) {
 
 # Extract historical decomposition matrices
 hdlist <- lapply(hd_results, function(x) x[['hidec']])
-names(hdlist) <- colnames(dat)
+names(hdlist) <- colnames(df_wide)[-1]
 
 # Create clean dataframes for each country's decomposition
 country_names <- c("US", "Germany", "UK", "Japan")
@@ -179,7 +155,7 @@ for (i in 1:k) {
     labs(
       x = "Date",
       y = "Contribution (percentage points)",
-      subtitle = "Historical decomposition"
+      subtitle = "Historical decomposition: VAR results"
     ) +
     theme(
       legend.position = "bottom",
@@ -206,74 +182,92 @@ cat("VAR lag order selected:", v1$p, "\n")
 cat("\nStructural coefficients (Lambda matrix):\n")
 print(round(EA.cv$Lambda, 4))
 
-# Calculate variance decomposition at different horizons
-fevd_results <- fevd(EA.cv, n.ahead = 12)
-cat("\nForecast Error Variance Decomposition at 12-month horizon:\n")
-print(round(fevd_results[["US"]][12, ], 3))
 
-
-# Alternative: Show decomposition as deviations from initial level
-plots_list_levels <- list()
+# Add the actual yield changes AND sum of contributions to the historical decomposition plots
+plots_list_with_actual <- list()
 for (i in 1:k) {
   country_name <- colnames(dat)[i]
 
-  # Get the starting yield level
-  initial_yield <- df_wide %>%
-    slice_tail(n = nrow(df_long_list[[i]]) / 4) %>%
-    slice_head(n = 1) %>%
-    pull(!!country_name)
-
-  # Calculate cumulative decomposition + initial level
-  decomp_with_level <- df_long_list[[i]] %>%
-    group_by(date) %>%
-    summarise(
-      total_change = sum(value, na.rm = TRUE),
-      .groups = "drop"
+  # Calculate the actual month-to-month changes in bond yields
+  actual_yield_changes <- df_wide %>%
+    arrange(date) %>%
+    slice_tail(n = nrow(df_long_list[[i]]) / 4) %>% # Match the decomposition period
+    mutate(
+      yield_change = !!sym(country_name) - lag(!!sym(country_name))
     ) %>%
-    mutate(implied_yield = initial_yield + total_change)
+    dplyr::select(date, yield_change) %>%
+    filter(!is.na(yield_change))
 
-  # Get actual yields for comparison
-  actual_data <- df_wide %>%
-    slice_tail(n = nrow(decomp_with_level)) %>%
-    dplyr::select(date, actual_yield = !!country_name)
+  # Calculate sum of contributions per date
+  decomp_totals <- df_long_list[[i]] %>%
+    group_by(date) %>%
+    summarise(total_contribution = sum(value, na.rm = TRUE), .groups = "drop")
 
-  plots_list_levels[[i]] <- ggplot(df_long_list[[i]], aes(x = date)) +
-    # Stacked decomposition
+  verification <- actual_yield_changes %>%
+    left_join(decomp_totals, by = "date") %>%
+    mutate(difference = abs(yield_change - total_contribution))
+
+  cat("\n=== Verification for", country_name, "Change Decomposition ===\n")
+  cat(
+    "Mean absolute difference:",
+    round(mean(verification$difference, na.rm = TRUE), 6),
+    "\n"
+  )
+  cat(
+    "Max absolute difference:",
+    round(max(verification$difference, na.rm = TRUE), 6),
+    "\n"
+  )
+
+  plots_list_with_actual[[i]] <- ggplot(df_long_list[[i]], aes(x = date)) +
+    # Historical decomposition as stacked bars
     geom_bar(
       aes(fill = shock, y = value),
       position = "stack",
       stat = "identity",
-      alpha = 0.7
+      alpha = 0.8
     ) +
-    # Horizontal line at zero (baseline)
+    # Add sum of contributions as a blue line
+    geom_line(
+      data = decomp_totals,
+      aes(x = date, y = total_contribution),
+      color = "blue",
+      size = 1.2,
+      linetype = "dashed",
+      inherit.aes = FALSE
+    ) +
+    # Add actual yield changes as a black line
+    geom_line(
+      data = actual_yield_changes,
+      aes(x = date, y = yield_change),
+      color = "black",
+      size = 1.5,
+      linetype = "solid",
+      inherit.aes = FALSE
+    ) +
+    # Add points for actual yield changes
+    geom_point(
+      data = actual_yield_changes,
+      aes(x = date, y = yield_change),
+      color = "red",
+      size = 2,
+      inherit.aes = FALSE
+    ) +
+    # Reference line at zero
     geom_hline(yintercept = 0, linetype = "dashed", alpha = 0.5) +
-    # Actual yield level (right axis)
-    #    geom_line(
-    #      data = actual_data,
-    #      aes(y = (actual_yield - initial_yield) * 100), # Convert to basis points
-    #      color = "red",
-    #      size = 1.2
-    #    ) +
-    scale_x_date(date_breaks = "2 years", date_labels = "%Y") +
     scale_fill_jco(name = "Shock Origin") +
-    ggtitle(paste(plot_titles[i], "- Decomposition vs Actual")) +
+    ggtitle(plot_titles[i]) +
     labs(
       x = "Date",
-      y = "Contribution to yield change (basis points)",
-      subtitle = paste(
-        "Decomposition (bars) vs actual change (red line) from",
-        format(min(actual_data$date), "%Y-%m")
-      )
+      y = "Yield Change (percentage points)",
+      subtitle = "Decomposition (bars), sum of contributions (blue dashed), actual changes (black line)"
     ) +
     theme(
       legend.position = "bottom",
       legend.title = element_blank(),
-      plot.title = element_text(size = 11, face = "bold")
+      plot.title = element_text(size = 12, face = "bold")
     )
 }
 
-# Display level-adjusted plots
-plots_list_levels[[1]]
-plots_list_levels[[2]]
-plots_list_levels[[3]]
-plots_list_levels[[4]]
+# Display the corrected plots
+plots_list_with_actual[[3]] # UK decomposition with actual changes and sum of contributions

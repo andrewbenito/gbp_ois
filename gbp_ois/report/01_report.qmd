@@ -49,10 +49,10 @@ source(here::here("setup", "05_mpc_voting.R"))
 # Market developments
 ## Latest developments: the past three months
 
-Summarising some key developments in Sterling markets the past 3 months:   
+Summarising some key developments in Sterling markets in the past 3 months:   
 - **OIS rates** have seen a 'round-trip', rallying in June by 20bp and subsequently reversing that move. 
 - **Sterling** strengthened against the US Dollar in June (while OIS rallied), and then reversed that (as OIS rates sold-off).  
-- **Gilt yields** rallied similar to OIS in June, but that has been more than reversed since then and especially at the long-end. 10y and 30y Gilt yields end the period significantly higher.  
+- **Gilt yields** rallied similar to OIS in June, but that has been more than reversed since then and especially at the long-end. 10y and 30y Gilt yields end the period xxxbp higher.  
 - **Equities** rallied strongly by a cumulative 6% over the period, and concentrated in the period since July. 
 
 This combination points towards positive foreign growth shocks predominating in the past 3 months. While other shocks, including domestic shocks have likely applied, positive global growth sentiment has been the predominant driver based on a standard macro interpretation. A dovish monetary policy impulse in June was subsequently reversed yet was accompanied by a rally in equities thanks to a belief in stronger growth. 
@@ -75,9 +75,10 @@ plot.gilts.eq
 
 **Term spreads** Setting some historical context for the recent spread of 10y Gilt yields relative to 2y Gilts yields is @fig-2yv10y. This shows how a term spread has been restored relative to different periods over the past 10 years and can distingsuish severa phases over that period.  
 
+
 ```{r}
 #| label: fig-2yv10y
-#| fig-cap: "Gilt yields (daily data)"
+#| fig-cap: "Gilt yields"
 
 plot2y_v_10y +
   plot5y_v_25y +
@@ -113,13 +114,19 @@ plot2s5s +
   ))
 ```
 
-**Swap spreads** have also widened in recent weeks, as shown in @fig-swap-spreads. This reflects both the rise in Gilt yields, and a fall in swap rates. Swap spreads have been volatile over the past decade or more, reflecting changes in market liquidity, risk premia, and other factors.
+**Swap spreads** help shed light on potential effects from bond supply in different markets. Swap spreads have moved more deeply negative in recent weeks and by more in the UK than in the US or Germany.  
+
+[some detail]
 
 Fiscal developments have likely played a role in the rise in term spreads and widening of swap spreads (see here for a discussio). 
-  
+
+[contribution from OIS and bond yields to changes in swap spreads in UK, US, GER since 2022-01-01]
+
 
 # Evolving market pricing and OIS curves
 Reflecting related developments over a longer period, @fig-ois-historical shows how GBP OIS curves have evolved over time, alongside the MPC's Bank Rate decisions. Research has shown how the persistent forecast errors shown in this chart reflect a gradual process of learning about slow-moving, medium-term factors such as the neutral and trend productivity growth.
+
+@fig-ois-recent zooms-in on how OIS curves and Bank Rate have evolved over the past year.   [check this chart]
 
 
 ```{r}
@@ -129,7 +136,6 @@ Reflecting related developments over a longer period, @fig-ois-historical shows 
 ois1
 ```
 
-@fig-ois-recent zooms-in on how OIS curves and Bank Rate have evolved over the past year.   [check this chart]
 
 ```{r}
 #| label: fig-ois-recent
