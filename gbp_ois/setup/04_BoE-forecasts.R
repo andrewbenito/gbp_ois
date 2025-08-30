@@ -2,7 +2,7 @@
 # ABenito, March 2025
 #=================================
 #devtools::install_github("jasonhilton/ggfan")
-lapply(c('rdbnomics', 'ggfan'), require, character.only = TRUE)
+lapply(c('rdbnomics', 'ggfan', 'glue'), require, character.only = TRUE)
 
 # INPUT: Most recent MPR ----
 year <- 2025

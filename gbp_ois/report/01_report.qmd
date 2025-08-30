@@ -203,7 +203,15 @@ The weakness of productivity growth, negative terms of trade shocks (e.g. Brexit
 
 **Recent updates** Looking over the past six MPC forecasts...
 
+```{r}
+#| label: plot-fe 
+#| fig-cap: "Distribution of BoE Forecast errors"
 
+source(here::here("setup", "04_BoE-forecasts.R"))
+
+p3 + p4 + p5
+
+```
 
 # MPC Voting: increased disagreement 
 
