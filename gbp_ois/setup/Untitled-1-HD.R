@@ -494,6 +494,7 @@ clean_data_diff <- clean_data |>
     across(all_of(country_names), ~ c(NA, diff(.x)), .names = "d_{.col}")
   ) |>
   dplyr::select(date, starts_with("d_")) |>
+  filter(date>="2020-01-01")
   na.omit()
 
 # Rename columns to remove d_ prefix for consistency
@@ -1039,3 +1040,133 @@ verification_display_rounded <- verification_display |>
   )
 
 print(verification_display_rounded)
+
+
+
+# Plot Structural Shocks
+
+# Check what's available in the structural model
+print("Structural model components:")
+print(names(structural_model))
+
+# Check if there are residuals in different locations
+print("\nChecking for structural shocks in different components:")
+if(!is.null(structural_model$residuals)) {
+  print("Found residuals component")
+  structural_shocks <- structural_model$residuals
+} else if(!is.null(structural_model$u)) {
+  print("Found u component") 
+  structural_shocks <- structural_model$u
+} else if(!is.null(structural_model$residuals.svar)) {
+  print("Found residuals.svar component")
+  structural_shocks <- structural_model$residuals.svar
+} else {
+  # Extract from the VAR model and transform using structural matrices
+  print("Extracting from VAR model")
+  var_residuals <- residuals(var_model)
+  B_matrix <- structural_model$B
+  structural_shocks <- var_residuals %*% solve(B_matrix)
+}
+
+print("Structural shocks dimensions:")
+print(dim(structural_shocks))
+print("First few rows:")
+print(head(structural_shocks))
+
+# Now create the structural shocks evolution plot
+if(!is.null(structural_shocks) && nrow(structural_shocks) > 0) {
+  # Create proper date sequence matching the shocks
+  shock_dates <- seq.Date(as.Date("2015-03-01"), by = "month", length.out = nrow(structural_shocks))
+  
+  # Convert to data frame with proper dates and country labels
+  shocks_df <- data.frame(
+    date = shock_dates,
+    US_shock = structural_shocks[,1],
+    Germany_shock = structural_shocks[,2], 
+    UK_shock = structural_shocks[,3],
+    Japan_shock = structural_shocks[,4]
+  )
+  
+  # Convert to long format for plotting
+  shocks_long <- shocks_df |>
+    pivot_longer(
+      cols = -date,
+      names_to = "shock_origin",
+      values_to = "shock_value"
+    ) |>
+    mutate(
+      shock_origin = str_remove(shock_origin, "_shock"),
+      shock_origin = factor(shock_origin, levels = country_names)
+    )
+  
+  # Create plot showing evolution of structural shocks
+  plot_structural_shocks <- ggplot(shocks_long, aes(x = date, y = shock_value, color = shock_origin)) +
+    geom_line(size = 0.8, alpha = 0.8) +
+    geom_hline(yintercept = 0, linetype = "dashed", alpha = 0.5, color = "gray50") +
+    facet_wrap(~shock_origin, scales = "free_y", ncol = 2) +
+    scale_color_manual(
+      name = "Country",
+      values = c("US" = "#E31A1C", "Germany" = "#1F78B4", 
+                "UK" = "#33A02C", "Japan" = "#FF7F00")
+    ) +
+    labs(
+      title = "Evolution of Structural Shocks in International Bond Markets",
+      subtitle = "Identified structural shocks from 4-country VAR using distance covariances",
+      x = "Date",
+      y = "Structural Shock (standardized)",
+      caption = "Each panel shows the structural shocks originating from that country's bond market"
+    ) +
+    theme_minimal() +
+    theme(
+      legend.position = "none",  # Remove legend since facets show countries
+      plot.title = element_text(size = 14, face = "bold"),
+      plot.subtitle = element_text(size = 11),
+      strip.text = element_text(face = "bold"),
+      panel.grid.minor = element_blank()
+    )
+  
+  # Display the plot
+  print(plot_structural_shocks)
+  
+  # Calculate and display some summary statistics
+  cat("=== Structural Shocks Summary Statistics ===\n")
+  shock_summary <- shocks_long |>
+    group_by(shock_origin) |>
+    summarise(
+      mean = mean(shock_value),
+      std_dev = sd(shock_value),
+      min_shock = min(shock_value),
+      max_shock = max(shock_value),
+      .groups = "drop"
+    )
+  
+  print(shock_summary)
+  
+  # Identify periods of largest shocks
+  cat("\n=== Largest Positive and Negative Shocks by Country ===\n")
+  for (country in country_names) {
+    country_shocks <- shocks_df |>
+      select(date, shock = !!paste0(country, "_shock")) |>
+      arrange(desc(abs(shock)))
+    
+    cat("\n", country, ":\n")
+    cat("Largest positive shock:", round(country_shocks$shock[1], 3), 
+        "on", as.character(country_shocks$date[1]), "\n")
+    
+    largest_negative <- country_shocks |>
+      filter(shock < 0) |>
+      slice_head(n = 1)
+    
+    if(nrow(largest_negative) > 0) {
+      cat("Largest negative shock:", round(largest_negative$shock, 3), 
+          "on", as.character(largest_negative$date), "\n")
+    }
+  }
+  
+} else {
+  cat("Could not extract structural shocks from the model.\n")
+}
+
+
+
+

@@ -157,7 +157,7 @@ boxplot.neutral
 
 
 
-# International spillovers
+# International spillovers in sovereign bond markets
 
 What of international spillovers? Using the Rigobon (2003) methodology, we can estimate the extent to which international spillovers have contributed to fluctuations in 10y Gilt yields.  
 
@@ -169,16 +169,16 @@ What of international spillovers? Using the Rigobon (2003) methodology, we can e
 #| fig-cap: "International spillovers"
 #| results: hide
 
-source(here::here("setup", "04_Rigobon.R"))
+source(here("setup", "test_rigobon_cv.R"))
 
-plot.yields + plots_list[[3]] 
+plot_structural_shocks
 ```
 
 
 # Market reactions and macro news at BoE policy events
 ## Analysing monetary policy shocks
 
-In this section, we review how a range of financial markets has reacted to BoE policy events. The relate the combination of reactions to macro news as digested by markets at those BoE policy events.  
+We now review how financial markets -- OIS, Gilts, Foreign exchange and Equities -- reacted to news at BoE policy events. These reactions are summarised in @fig-mon-factors. 
 
 
 
