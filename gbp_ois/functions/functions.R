@@ -505,3 +505,146 @@ classify_market_reactions <- function(
 
   return(results)
 }
+
+
+# function to clean the IMF Fiscal Monitor dat matrix and convert to long format
+
+clean_IMF_FM <- function(
+  raw_data,
+  metadata_rows = 16,
+  remove_na = TRUE,
+  convert_numeric = TRUE,
+  clean_column_names = TRUE,
+  custom_column_names = NULL
+) {
+  # Step 1: Handle input data format
+  if (is.matrix(raw_data)) {
+    raw_data <- as.data.frame(raw_data, stringsAsFactors = FALSE)
+  }
+
+  # Step 2: Extract metadata and year data from the raw matrix structure
+  metadata_df <- raw_data[1:metadata_rows, , drop = FALSE]
+  year_rows_start <- metadata_rows + 1
+  year_df <- raw_data[year_rows_start:nrow(raw_data), , drop = FALSE]
+  years <- as.numeric(rownames(year_df))
+
+  # Step 3: Create metadata lookup table
+  metadata_t <- as.data.frame(t(metadata_df), stringsAsFactors = FALSE)
+  colnames(metadata_t) <- rownames(metadata_df)
+
+  # Step 4: Process data year by year and combine into long format
+  all_data <- list()
+
+  for (i in seq_along(years)) {
+    year_val <- years[i]
+
+    # Get values for this year and convert to numeric
+    values <- if (convert_numeric) {
+      as.numeric(year_df[i, ])
+    } else {
+      as.character(year_df[i, ])
+    }
+
+    # Create data frame for this year
+    year_data <- data.frame(
+      year = year_val,
+      country_code = metadata_t$REF_AREA,
+      country = metadata_t$REF_AREA_LABEL,
+      indicator_label = metadata_t$INDICATOR_LABEL,
+      value = values,
+      stringsAsFactors = FALSE
+    )
+
+    # Remove NA values if requested
+    if (remove_na) {
+      year_data <- year_data[!is.na(year_data$value), ]
+    }
+
+    all_data[[i]] <- year_data
+  }
+
+  # Step 5: Combine all years into a single dataframe
+  combined_data <- do.call(rbind, all_data)
+
+  # Step 6: Pivot to wide format with indicators as columns
+  result <- combined_data %>%
+    pivot_wider(
+      names_from = indicator_label,
+      values_from = value,
+      id_cols = c(year, country_code, country)
+    )
+
+  # Step 7: Clean column names if requested
+  if (clean_column_names) {
+    if (!is.null(custom_column_names)) {
+      # Use custom column names if provided and they match the number of columns
+      if (length(custom_column_names) == ncol(result)) {
+        colnames(result) <- custom_column_names
+      } else {
+        warning(
+          "Custom column names length doesn't match number of columns. Using automatic cleaning."
+        )
+        clean_column_names <- TRUE # Fall back to automatic cleaning
+      }
+    }
+
+    # Automatic column name cleaning (if custom names not used or don't match)
+    if (
+      is.null(custom_column_names) ||
+        length(custom_column_names) != ncol(result)
+    ) {
+      old_names <- colnames(result)
+      new_names <- old_names
+
+      # Clean indicator column names (skip year, country_code, country)
+      indicator_cols <- setdiff(old_names, c("year", "country_code", "country"))
+
+      for (col in indicator_cols) {
+        clean_name <- col %>%
+          gsub("\\(.*?\\)", "", .) %>% # Remove parentheses and content
+          gsub("[^A-Za-z0-9\\s]", "", .) %>% # Remove special chars
+          gsub("also referred as.*", "", .) %>% # Remove long explanations
+          trimws() %>% # Trim whitespace
+          gsub("\\s+", "_", .) %>% # Replace spaces with underscores
+          tolower() # Convert to lowercase
+
+        new_names[old_names == col] <- clean_name
+      }
+
+      colnames(result) <- new_names
+    }
+  }
+
+  # Step 8: Arrange by year and country for better organization
+  result <- result %>%
+    arrange(year, country_code)
+
+  return(result)
+}
+
+# Test the composite function with the original dat matrix (assuming it's the raw matrix)
+print("Testing composite function...")
+
+# First, let's check what format our current 'dat' is in
+print("Current dat structure:")
+print(class(dat))
+print(dim(dat))
+
+# If dat is already processed, we need the original matrix
+# Let's check if we can find it or recreate the test
+if (is.data.frame(dat) && "value" %in% colnames(dat)) {
+  print(
+    "Current 'dat' appears to be already processed. Need the original matrix format."
+  )
+  print("Function is ready to use with raw matrix data.")
+} else {
+  print("Testing with current dat...")
+  dat_wide_composite <- process_dat_to_wide(dat)
+
+  print("Result dimensions:")
+  print(dim(dat_wide_composite))
+  print("Column names:")
+  print(colnames(dat_wide_composite))
+  print("First few rows:")
+  print(head(dat_wide_composite, 3))
+}
