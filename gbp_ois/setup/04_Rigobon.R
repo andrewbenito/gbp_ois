@@ -312,15 +312,13 @@ if (is.null(structural_shocks)) {
 }
 
 # Create proper date sequence matching the shocks
-shock_dates <- seq.Date(
-  as.Date("2020-02-01"),
-  by = "month",
-  length.out = nrow(structural_shocks)
-)
+# Get the actual dates that correspond to the VAR model period
+var_start_row <- nrow(df_wide) - nrow(structural_shocks) + 1
+shock_dates <- df_wide$date[var_start_row:nrow(df_wide)]
 
-# Convert to data frame with proper dates and country labels
+# Replace the hard-coded date sequence with actual dates
 shocks_df <- data.frame(
-  date = shock_dates,
+  date = shock_dates, # Use actual dates instead of seq.Date()
   US_shock = structural_shocks[, 1],
   Germany_shock = structural_shocks[, 2],
   UK_shock = structural_shocks[, 3],
@@ -360,15 +358,7 @@ plot_structural_shocks <- ggplot(
     alpha = 0.8
   ) +
   facet_wrap(~shock_origin, scales = "free_y", ncol = 2) +
-  scale_color_manual(
-    name = "Country",
-    values = c(
-      "US" = "#E31A1C",
-      "Germany" = "#1F78B4",
-      "UK" = "#33A02C",
-      "Japan" = "#FF7F00"
-    )
-  ) +
+  scale_color_jco() +
   labs(
     title = "Estimated Structural Shocks in International Bond Markets",
     subtitle = "Structural shocks from 4-country VAR with change-in-volatility identification",

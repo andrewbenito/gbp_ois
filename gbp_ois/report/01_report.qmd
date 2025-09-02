@@ -103,9 +103,9 @@ plot2s5s +
   ))
 ```
 
-**Swap spreads** help shed light on potential effects from bond supply in different markets. Swap spreads have moved more deeply negative in recent weeks and by more in the UK than in the US or Germany.  
+**Swap spreads** shed light on potential effects from bond supply in different markets. Swap spreads have moved more deeply negative in recent weeks and by more in the UK than in the US or Germany.  
 
-[some detail]
+
 
 Fiscal developments have likely played a role in the rise in term spreads and widening of swap spreads. @fig_swsp shows 5y swap spreads (see here for a discussio). 
 
@@ -116,7 +116,7 @@ Fiscal developments have likely played a role in the rise in term spreads and wi
 #| label: fig-swsp
 #| fig-cap: "5y swap spreads"
 
-plot.swsp5y + plot_contributions_5yswsp
+plot.swsp5y + plot_contributions_5yswsp + plot_layout(widths = c(2,3))
 
 ```
 

@@ -271,7 +271,7 @@ dat_gbp <- list(ois, glc, fx_levels, ftse) |>
 # On Swap Spreads and Contributions [5y swap]
 #---------------------------------------------
 swsp <- dat_gbp |>
-  mutate(swsp5y = x60 - col_20)
+  mutate(swsp5y = x60 - col_10)
 
 
 # delta.gbp: daily ab.changes and pc changes
