@@ -44,7 +44,7 @@ Summarising some key developments in Sterling markets in the past 3 months:
 - **Gilt yields** rallied (by less than OIS) in June, and that decline has been more than reversed since then and especially at the long-end. 25y Gilt yields end the period a full 40bp higher.  
 - **Equities** rallied strongly by a cumulative 5% over the period, and concentrated in the period from July to mid-August. 
 
-
+\newpage
 
 ```{r}
 #| label: fig-ois
@@ -107,9 +107,19 @@ plot2s5s +
 
 [some detail]
 
-Fiscal developments have likely played a role in the rise in term spreads and widening of swap spreads (see here for a discussio). 
+Fiscal developments have likely played a role in the rise in term spreads and widening of swap spreads. @fig_swsp shows 5y swap spreads (see here for a discussio). 
 
 [contribution from OIS and bond yields to changes in swap spreads in UK, US, GER since 2022-01-01]
+
+
+```{r}
+#| label: fig-swsp
+#| fig-cap: "5y swap spreads"
+
+plot.swsp5y + plot_contributions_5yswsp
+
+```
+
 
 
 # Evolving market pricing and OIS curves
@@ -213,6 +223,10 @@ p3 + p4 + p5
 
 ```
 
+## Evolving inflation forecasts
+Based on the pattern of past BoE forecast errors, a realistic path to overshooting the 2% inflation target, is that the MPC produces too optimistic inflation forecasts and retaining too little policy restriction to complete the disinflation. 
+
+
 # MPC Voting: increased disagreement 
 
 We inspect MPC voting patterns to illustrate two points. First, the rising extent of disagreement among MPC members. Second, how current MPC member voting compares with that of past members.   
@@ -238,6 +252,5 @@ plot.member_patterns
 
 Increasingly nuanced macroeconomic assessments are producing more closely contested votes and heightened disagreement among MPC members. This development places greater emphasis on the quality of macroeconomic analysis and forecasts that underpin MPC decisions. While such complex judgements reinforce the importance of maintaining independence from political pressures, the forecast errors documented earlier pose a risk to both the credibility of the MPC's analytical process and public confidence in its institutional independence. This may leave Sterling markets more sensitive to international spillovers and to political and fiscal news. 
 
-# Views
 
-Based on the pattern of past BoE forecast errors, a realistic path to overshooting the 2% inflation target, is that the MPC produces too optimistic inflation forecasts and retaining too little policy restriction to complete the disinflation. 
+

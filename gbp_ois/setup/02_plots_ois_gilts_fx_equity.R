@@ -351,7 +351,6 @@ ggsave(
   dpi = 300
 )
 
-
 #=================#=================
 # Plot Spreads
 #=================#=================
@@ -529,3 +528,159 @@ ggsave(
   height = 6,
   dpi = 300
 )
+
+#==============
+# Swap Spreads
+#==============
+plot.swsp5y <- swsp |>
+  ggplot() +
+  geom_line(aes(x = date, y = swsp5y)) +
+  geom_hline(yintercept = 0.0, lty = 4) +
+  labs(x = "date", y = "5-year swap spread")
+
+
+# find 3-year-ago values
+# use a tolerance of ±7 days to find the closest match
+calculate_3y_lag <- function(data, target_date, value_col, tolerance_days = 7) {
+  target_date_3y_ago <- target_date - years(3)
+
+  # Find observations within tolerance
+  candidate_data <- data |>
+    filter(abs(as.numeric(date - target_date_3y_ago)) <= tolerance_days) |>
+    arrange(abs(as.numeric(date - target_date_3y_ago)))
+
+  if (nrow(candidate_data) > 0) {
+    return(candidate_data[[value_col]][1])
+  } else {
+    return(NA_real_)
+  }
+}
+
+# Calculate 3-year lagged values for each observation
+swsp_final <- swsp |>
+  arrange(date) |>
+  rowwise() |>
+  mutate(
+    swsp5y_3y_lag = calculate_3y_lag(swsp, date, "swsp5y"),
+    x60_3y_lag = calculate_3y_lag(swsp, date, "x60"),
+    col_20_3y_lag = calculate_3y_lag(swsp, date, "col_20")
+  ) |>
+  ungroup()
+
+# Calculate the indexed changes and contributions
+swsp_final <- swsp_final |>
+  mutate(
+    # Calculate 3-year changes
+    dswsp5y_3y_change = swsp5y - swsp5y_3y_lag,
+    dx60_3y_change = x60 - x60_3y_lag,
+    dcol_20_3y_change = col_20 - col_20_3y_lag,
+
+    # Index the changes (base = 100 at the 3-year-ago level)
+    dswsp5y_3y = ifelse(
+      !is.na(swsp5y_3y_lag) & swsp5y_3y_lag != 0,
+      100 * (swsp5y / swsp5y_3y_lag),
+      NA_real_
+    ),
+
+    # Calculate contributions (how much each component contributed to the total change)
+    # Contribution = (change in component / initial swsp5y level) * 100
+    contrib_x60_3y = ifelse(
+      !is.na(swsp5y_3y_lag) & swsp5y_3y_lag != 0,
+      100 * (dx60_3y_change / abs(swsp5y_3y_lag)),
+      NA_real_
+    ),
+
+    contrib_col_20_3y = ifelse(
+      !is.na(swsp5y_3y_lag) & swsp5y_3y_lag != 0,
+      100 * (-dcol_20_3y_change / abs(swsp5y_3y_lag)), # Negative because swsp5y = x60 - col_20
+      NA_real_
+    ),
+
+    # Alternative: Contributions as absolute basis points
+    contrib_x60_3y_bp = dx60_3y_change * 100, # Convert to basis points
+    contrib_col_20_3y_bp = -dcol_20_3y_change * 100, # Negative because of subtraction
+
+    # Verification: contributions should sum to total change
+    total_contrib_check = contrib_x60_3y_bp + contrib_col_20_3y_bp,
+    total_change_bp = dswsp5y_3y_change * 100
+  ) |>
+  filter(!is.na(dswsp5y_3y)) # Remove observations without 3-year history
+
+
+# Create contribution decomposition plot
+# Calculate the date that represents "3 years ago" from the latest data
+latest_date <- max(swsp_final$date, na.rm = TRUE)
+three_years_ago_date <- latest_date - years(3)
+
+contrib_data <- swsp_final |>
+  filter(date >= as.Date("2015-01-01")) |>
+  dplyr::select(
+    date,
+    contrib_x60_3y_bp,
+    contrib_col_20_3y_bp,
+    total_change_bp
+  ) |>
+  pivot_longer(
+    cols = c(contrib_x60_3y_bp, contrib_col_20_3y_bp),
+    names_to = "component",
+    values_to = "contribution"
+  )
+
+plot_5yswsp <- ggplot() +
+
+  plot_contributions_5yswsp <- ggplot() +
+  # Stacked bar chart showing contributions
+  geom_col(
+    data = contrib_data,
+    aes(x = date, y = contribution, fill = component),
+    position = "stack",
+    alpha = 0.8,
+    width = 30 # Adjust width for daily data
+  ) +
+  # Line showing total change for verification
+  geom_line(
+    data = swsp_final |> filter(date >= as.Date("2015-01-01")),
+    aes(x = date, y = total_change_bp),
+    color = "black",
+    size = 1,
+    alpha = 0.7
+  ) +
+  # Add vertical line for 3 years ago
+  geom_vline(
+    xintercept = three_years_ago_date,
+    linetype = "dashed",
+    linewidth = 1.0,
+    alpha = 0.8
+  ) +
+  annotate(
+    "text",
+    x = three_years_ago_date,
+    y = max(contrib_data$contribution, na.rm = TRUE) * 0.9,
+    label = paste("base period:\n", format(three_years_ago_date, "%b %Y")),
+    size = 3.5,
+    hjust = -0.1
+  ) +
+  scale_fill_jco(
+    name = "Contribution:",
+    labels = c("contrib_col_20_3y_bp" = "Gilt", "contrib_x60_3y_bp" = "OIS")
+  ) +
+  geom_hline(
+    yintercept = 0,
+    linetype = "dotted",
+    alpha = 0.6,
+    color = "gray50"
+  ) +
+  labs(
+    title = "Decomposition of 5Y Swap Spread",
+    subtitle = "Contributions to change in 5y swap from 3years ago",
+    x = "Date",
+    y = "Contribution to Change (bp)",
+    caption = ""
+  ) +
+  theme(
+    legend.position = "bottom",
+    plot.title = element_text(size = 14, face = "bold"),
+    plot.subtitle = element_text(size = 11)
+  )
+
+print(plot_contributions_5yswsp)
