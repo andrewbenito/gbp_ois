@@ -266,6 +266,15 @@ dat_gbp <- list(ois, glc, fx_levels, ftse) |>
   reduce(full_join, by = "date") |>
   arrange(date)
 
+
+#---------------------------------------------
+# On Swap Spreads and Contributions [5y swap]
+#---------------------------------------------
+
+swsp <- dat_gbp |>
+  mutate(swsp5y = x60 - col_20)
+
+
 # delta.gbp: daily ab.changes and pc changes
 delta.gbp <- dat_gbp |>
   arrange(date) |>

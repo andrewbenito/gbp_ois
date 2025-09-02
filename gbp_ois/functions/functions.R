@@ -621,30 +621,3 @@ clean_IMF_FM <- function(
 
   return(result)
 }
-
-# Test the composite function with the original dat matrix (assuming it's the raw matrix)
-print("Testing composite function...")
-
-# First, let's check what format our current 'dat' is in
-print("Current dat structure:")
-print(class(dat))
-print(dim(dat))
-
-# If dat is already processed, we need the original matrix
-# Let's check if we can find it or recreate the test
-if (is.data.frame(dat) && "value" %in% colnames(dat)) {
-  print(
-    "Current 'dat' appears to be already processed. Need the original matrix format."
-  )
-  print("Function is ready to use with raw matrix data.")
-} else {
-  print("Testing with current dat...")
-  dat_wide_composite <- process_dat_to_wide(dat)
-
-  print("Result dimensions:")
-  print(dim(dat_wide_composite))
-  print("Column names:")
-  print(colnames(dat_wide_composite))
-  print("First few rows:")
-  print(head(dat_wide_composite, 3))
-}

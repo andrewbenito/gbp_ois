@@ -24,23 +24,12 @@ execute:
   echo: false    
 ---
 
-```{r setup}
-#| include: false
-knitr::opts_chunk$set(
-  fig.width = 6,
-  fig.height = 3.7,
-  fig.align = 'center',
-  out.width = '100%',
-  dpi = 300
-)
-```
-
 
 ```{r}
 #| include: false
 source(here::here("setup", "01_create_data.R"))
 source(here::here("setup", "02_plots_ois_gilts_fx_equity.R"))
-source(here::here("setup", "05_mpc_voting.R"))
+source(here::here("setup", "08_mpc_voting.R"))
 
 ```
 
@@ -50,12 +39,12 @@ source(here::here("setup", "05_mpc_voting.R"))
 ## Latest developments: the past three months
 
 Summarising some key developments in Sterling markets in the past 3 months:   
-- **OIS rates** have seen a 'round-trip', rallying in June by 20bp and subsequently reversing that move. 
+- **OIS rates** have seen a 'round-trip', rallying in June by 25bp and subsequently reversing that move. 
 - **Sterling** strengthened against the US Dollar in June (while OIS rallied), and then reversed that (as OIS rates sold-off).  
-- **Gilt yields** rallied similar to OIS in June, but that has been more than reversed since then and especially at the long-end. 10y and 30y Gilt yields end the period xxxbp higher.  
-- **Equities** rallied strongly by a cumulative 6% over the period, and concentrated in the period since July. 
+- **Gilt yields** rallied (by less than OIS) in June, and that decline has been more than reversed since then and especially at the long-end. 25y Gilt yields end the period a full 40bp higher.  
+- **Equities** rallied strongly by a cumulative 5% over the period, and concentrated in the period from July to mid-August. 
 
-This combination points towards positive foreign growth shocks predominating in the past 3 months. While other shocks, including domestic shocks have likely applied, positive global growth sentiment has been the predominant driver based on a standard macro interpretation. A dovish monetary policy impulse in June was subsequently reversed yet was accompanied by a rally in equities thanks to a belief in stronger growth. 
+
 
 ```{r}
 #| label: fig-ois
@@ -150,7 +139,7 @@ ois2
 #| label: fig-neutral
 #| fig-cap: "Market Participants Survey: Neutral rate estimates"
 
-source(here::here("setup", "05b_neutral.R"))
+source(here::here("setup", "03_neutral_r.R"))
 boxplot.neutral
 ```
 
@@ -169,13 +158,24 @@ What of international spillovers? Using the Rigobon (2003) methodology, we can e
 #| fig-cap: "International spillovers"
 #| results: hide
 
-source(here("setup", "test_rigobon_cv.R"))
+source(here("setup", "04_Rigobon.R"))
 
 plot_structural_shocks
+
 ```
 
+# Fiscal risks
+## The (international) risk of fiscal fatigue
 
-# Market reactions and macro news at BoE policy events
+Required fiscal effort and how UK compares.
+
+## Macro and fiscal news at UK fiscal events
+
+A fiscal downgrade of 30bn would, based on this relationship, point to tightening of 
+A key issue in the Budget will be how front-loaded is that tightening. 
+
+
+# Market reactions and macro news at recent BoE policy events
 ## Analysing monetary policy shocks
 
 We now review how financial markets -- OIS, Gilts, Foreign exchange and Equities -- reacted to news at BoE policy events. These reactions are summarised in @fig-mon-factors. 
@@ -187,7 +187,7 @@ We now review how financial markets -- OIS, Gilts, Foreign exchange and Equities
 #| fig-cap: "Asset price reactions at MPC announcements"
 #| fig-height: 6
 
-source(here::here("setup", "03_mon_pol_shocks.R"))
+source(here::here("setup", "06_mon_pol_shocks.R"))
 plot.reactions
 ```
 
@@ -207,7 +207,7 @@ The weakness of productivity growth, negative terms of trade shocks (e.g. Brexit
 #| label: plot-fe 
 #| fig-cap: "Distribution of BoE Forecast errors"
 
-source(here::here("setup", "04_BoE-forecasts.R"))
+source(here::here("setup", "07_BoE-forecasts.R"))
 
 p3 + p4 + p5
 
@@ -237,3 +237,7 @@ plot.member_patterns
 
 
 Increasingly nuanced macroeconomic assessments are producing more closely contested votes and heightened disagreement among MPC members. This development places greater emphasis on the quality of macroeconomic analysis and forecasts that underpin MPC decisions. While such complex judgements reinforce the importance of maintaining independence from political pressures, the forecast errors documented earlier pose a risk to both the credibility of the MPC's analytical process and public confidence in its institutional independence. This may leave Sterling markets more sensitive to international spillovers and to political and fiscal news. 
+
+# Views
+
+Based on the pattern of past BoE forecast errors, a realistic path to overshooting the 2% inflation target, is that the MPC produces too optimistic inflation forecasts and retaining too little policy restriction to complete the disinflation. 
