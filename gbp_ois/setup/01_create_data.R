@@ -84,28 +84,42 @@ for (dfn in c("df1", "df2", "df3", "df4")) {
 }
 # OIS total data----[Daily]
 ois <- bind_rows(df1, df2, df3, df4) # Daily OIS data for inst fwds 1-60m
+dfxts <- as.xts(ois)
+# add date
+ois <- ois |> tibble::rownames_to_column("date")
+ois$date <- as.Date(ois$date)
+store_date <- as.Date(min(ois$date, na.rm = TRUE))
 
 # Convert Daily Data to Monthly; pivot----
-dfxts <- as.xts(ois)
-df_m <- as.data.frame(apply.monthly(dfxts, mean))
-df_m$date = as_date(rownames(df_m))
-# Dates from maturities
-# dates2 is eom
-fwcv <- df_m %>%
-  pivot_longer(
-    !date,
-    names_to = "tau",
-    values_to = "yield",
-    names_prefix = "x"
-  ) %>%
+dfxts_df <- data.frame(
+  date = index(dfxts),
+  dfxts,
+  row.names = NULL
+)
+
+df_m <- dfxts_df |>
   mutate(
-    month = month(date),
-    tau = as.numeric(tau),
-    date2 = ceiling_date(as.Date(date) %m+% months(tau), unit = "month") -
-      days(1)
-  )
+    year_month = format(date, "%Y-%m")
+  ) |>
+  group_by(year_month) |>
+  summarise(
+    across(where(is.numeric), ~ mean(.x, na.rm = TRUE)),
+    n_obs = n(),
+    date = max(date), # Use the last date of the month instead of ceiling_date
+    .groups = "drop"
+  ) |>
+  filter(n_obs >= 15) |>
+  dplyr::select(-year_month, -n_obs) |>
+  arrange(date) # Ensure proper date ordering
+
+# Verify no duplicate dates
+cat("Number of rows in df_m:", nrow(df_m), "\n")
+cat("Number of unique dates:", length(unique(df_m$date)), "\n")
+cat("Any duplicate dates:", any(duplicated(df_m$date)), "\n")
+
 
 # Bank Rate from Bank of England ----
+# starts with dates/value for changes
 url <- 'https://www.bankofengland.co.uk/-/media/boe/files/monetary-policy/baserate.xls'
 temp <- tempfile()
 download.file(url, temp, mode = "wb") # Added binary mode for Excel files
@@ -128,39 +142,40 @@ bankrate <- bankrate %>%
   dplyr::filter(date2 >= as.Date('2007-01-01')) %>%
   arrange(date2) # Ensure proper ordering
 
-# monthly data frame
+# make monthly Bank rate df [dat] from dates of rate changes [bankrate]
+# Create the monthly bankrate data (from your original code)
 start_date <- floor_date(min(bankrate$date2, na.rm = TRUE), unit = "month")
 end_date <- ceiling_date(Sys.Date(), unit = "month") - days(1) # end of this month
-eom_dates <- seq.Date(from = start_date, to = end_date, by = "month") %>%
+eom_dates <- seq.Date(from = start_date, to = end_date, by = "month") |>
   ceiling_date(unit = "month") -
   days(1)
 eom_df <- tibble(date2 = eom_dates)
 
-# make monthly Bank rate df [dat] from dates of rate changes [bankrate]
-dat <- eom_df %>%
-  left_join(bankrate, by = "date2") %>% # Explicit join column
-  arrange(date2) %>% # Ensure proper ordering for fill
-  fill(bankrate, .direction = "down")
+dat <- eom_df |>
+  left_join(bankrate, by = "date2") |>
+  arrange(date2) |>
+  fill(bankrate, .direction = "down") |>
+  filter(!is.na(bankrate))
 
-# Join with forward curve data
+# FWCV - long, monthly data
+fwcv <- df_m |>
+  dplyr::select(date, all_of(paste0("x", 1:60))) |>
+  pivot_longer(
+    cols = starts_with("x"),
+    names_to = "tau",
+    values_to = "yield"
+  ) |>
+  mutate(
+    tau = as.numeric(str_remove(tau, "x")),
+    month = month(date),
+    date2 = as.Date(date %m+% months(tau))
+  )
+
+# Join with forward curve data [monthly]
 fwcv <- left_join(fwcv, dat, by = 'date2', relationship = "many-to-many")
 
-# Get the most recent date with valid yield data
-latest_valid_date <- fwcv |>
-  filter(!is.na(yield)) |>
-  arrange(desc(date)) |>
-  slice_head(n = 1) |>
-  pull(date)
-
-# the latest valid curve
-latest <- fwcv |>
-  filter(date == latest_valid_date) |>
-  filter(!is.na(yield))
-
-# OIS: add date
-ois <- ois |> tibble::rownames_to_column("date")
-ois$date <- as.Date(ois$date)
-store_date <- as.Date(min(ois$date, na.rm = TRUE))
+# last_12m calculation:
+last_12m <- tail(df_m$date, 12)
 
 #===================================
 # 2. GLC data (Gilt yields)
@@ -272,7 +287,6 @@ dat_gbp <- list(ois, glc, fx_levels, ftse) |>
 #---------------------------------------------
 swsp <- dat_gbp |>
   mutate(swsp5y = x60 - col_10)
-
 
 # delta.gbp: daily ab.changes and pc changes
 delta.gbp <- dat_gbp |>

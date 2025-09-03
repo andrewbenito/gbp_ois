@@ -74,16 +74,23 @@ get_first_fridays <- function(start_year = 2025, end_year = 2025) {
 }
 
 
-# Clean Downloaded OIS data from BoE website
 cleanOIS <- function(df) {
   # Convert all but first column to numeric
   df <- df %>% mutate(across(-1, as.numeric))
 
-  # Round the second row (months row, excl. date column)
-  months_rounded <- round(as.numeric(df[2, -1]), digits = 0)
-  colnames(df)[-1] <- as.character(months_rounded) # set as column names
+  # Check if row 2 has valid month information
+  months_raw <- as.numeric(df[2, -1])
 
-  # Clean up - remove rows, set column names, etc.
+  if (all(is.na(months_raw))) {
+    # If row 2 is all NA, use sequential numbering for columns
+    colnames(df)[-1] <- paste0("x", 1:(ncol(df) - 1))
+  } else {
+    # Round the second row (months row, excl. date column)
+    months_rounded <- round(months_raw, digits = 0)
+    colnames(df)[-1] <- as.character(months_rounded)
+  }
+
+  # Remove first 5 rows (header rows) - keeps data starting from row 6
   df <- df %>%
     tail(-5) %>%
     type.convert(as.is = TRUE) %>%
