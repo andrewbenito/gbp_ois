@@ -456,7 +456,7 @@ plot2y_v_10y <- glc |>
   scale_color_jco() + # Use ggsci color palette
   labs(
     title = "2y vs 10y Gilt yields",
-    subtitle = "sample: last 10 years, daily data",
+    subtitle = "sample: past 10 years, daily data",
     x = "2y Gilt yield (%)",
     y = "10y Gilt yield (%)"
   ) +
