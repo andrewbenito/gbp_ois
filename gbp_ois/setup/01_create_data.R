@@ -168,11 +168,12 @@ fwcv <- df_m |>
   mutate(
     tau = as.numeric(str_remove(tau, "x")),
     month = month(date),
-    date2 = as.Date(date %m+% months(tau))
+    date2 = ceiling_date(date %m+% months(tau), unit = 'month') - days(1)
   )
+fwcv$date2 <- as.Date(fwcv$date2)
 
 # Join with forward curve data [monthly]
-fwcv <- left_join(fwcv, dat, by = 'date2', relationship = "many-to-many")
+fwcv <- left_join(fwcv, dat, by = 'date2')
 
 # last_12m calculation:
 last_12m <- tail(df_m$date, 12)
@@ -273,14 +274,12 @@ ftse <- data.frame(
 )
 ftse <- filter(ftse, date >= store_date)
 
-
 #===============================================
 # Financial Market GBP data [Daily] - full_join
 #===============================================
 dat_gbp <- list(ois, glc, fx_levels, ftse) |>
   reduce(full_join, by = "date") |>
   arrange(date)
-
 
 #---------------------------------------------
 # On Swap Spreads and Contributions [5y swap]
