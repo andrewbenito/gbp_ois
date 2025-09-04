@@ -64,7 +64,7 @@ plot.ois.gbp
 plot.gilts.eq
 ```
 
-## Spreads
+## Spreads (term spreads, swap spreads)
 
 **Term spreads** Setting some historical context for the recent spread of 10y Gilt yields relative to 2y Gilts yields is @fig-2yv10y. This shows how a term spread has been restored relative to different periods over the past 10 years and can distingsuish severa phases over that period.  
 
@@ -162,9 +162,7 @@ boxplot.neutral
 
 # International spillovers in sovereign bond markets
 
-What of international spillovers? Using the Rigobon (2003) methodology, we can estimate the extent to which international spillovers have contributed to fluctuations in 10y Gilt yields.  
-
-
+What of international spillovers in bond markets? Using the Rigobon (2003) methodology, we can estimate the extent to which international spillovers have contributed to fluctuations in 10y Gilt yields. With bond markets 'spilling over' to one another, this aims to quantify to what extent different markets were 'in the driving seat' at a point in time.  
 
 
 ```{r}
@@ -183,7 +181,9 @@ plot_structural_shocks
 
 Fiscal fatigue occurs where a further fiscal effort is needed to stabilise public debt-to-GDP, but the political will to implement the necessary tax rises or restraint in public spending wanes. 
 
-We estimate the UK still has a required fiscal effort of 3% of GDP to stabilise its Debt-to-GDP ratio. Uncertainty in this estimate means it is worth showing the debt-stabilising primary balance for different combinations of 'r' (effective nominal interest rate on government debt) and 'g' (expected nominal growth rate). Estimates in @tab-dspb suggest the debt-stabilising primary balance would be aorund 0.5-1.0% of GDP, compared with a primary balance at -2.0% in 2024.  
+We estimate the UK still has a required fiscal effort of 3% of GDP to stabilise its Debt-to-GDP ratio. While completing that required fiscal effort is forecast by the OBR, the issue is whether that political will exists, absent risk premiums being priced by markets. That risk of fiscal fatigue likely lies behind the periodic risk premiums in Sterling markets, including reflected in term spreads and swap spreads shown previously.
+
+Uncertainty in this estimate of fiscal effort means it is worth showing the debt-stabilising primary balance for different combinations of 'r' (effective nominal interest rate on government debt) and 'g' (expected nominal growth rate). Estimates in @tab-dspb suggest the debt-stabilising primary balance would be aorund 0.5-1.0% of GDP, compared with a primary balance at -2.0% in 2024.  
 
 By international standards, this is xxx. [France stands out.]
 
@@ -266,7 +266,7 @@ plot.member_patterns
 
 Increasingly nuanced macroeconomic assessments are producing more closely contested votes and heightened disagreement among MPC members. This development places greater emphasis on the quality of macroeconomic analysis and forecasts that underpin MPC decisions. While such complex judgements reinforce the importance of maintaining independence from political pressures, the forecast errors documented earlier pose a risk to both the credibility of the MPC's analytical process and public confidence in its institutional independence. This may leave Sterling markets more sensitive to international spillovers and to political and fiscal news. 
 
-# Views
+# Conclusions: Macro Views
 
 1. Government bonds provide less effective portfolio hedging against equity weakness when negative supply shocks become more frequent. In supply-shock driven downturns, both equities and bonds can decline simultaneously, reducing the traditional negative correlation that makes bonds effective diversifiers.
 2. Historical forecast error patterns suggest the MPC faces material upside inflation risks if it maintains current policy settings. The Bank's tendency to overestimate the pace of disinflation, combined with insufficient recognition of the UK's structural supply-side constraints, creates conditions where inflation could persistently exceed the 2% target despite current monetary restriction.

@@ -628,3 +628,28 @@ clean_IMF_FM <- function(
 
   return(result)
 }
+
+# clean raw WEO data
+clean_IMF_WEO <- function(dataf) {
+  result <- dataf |>
+    pivot_longer(
+      cols = starts_with("x"),
+      names_prefix = "x",
+      names_to = "year",
+      values_to = "value"
+    ) |>
+    mutate(
+      year = as.numeric(ifelse(
+        trimws(tolower(year)) %in% c("n/a", "na", ""),
+        NA,
+        year
+      )),
+      value = as.numeric(ifelse(
+        trimws(tolower(value)) %in% c("n/a", "na", ""),
+        NA,
+        value
+      ))
+    )
+
+  return(result)
+}

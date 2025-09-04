@@ -72,17 +72,86 @@ print(gt.dat)
 #===========================================================
 # Cross-country data: d, r, g for required pb and actual pb
 #===========================================================
-# Load up raw data----
+# Load up raw data + Clean----
 # [1] IMF Fiscal monitor
 fm <- read_csv(here('data', 'IMF_FM_WIDEF.csv')) |> # time-series data are wide
   t()
-# [2] IMF WEO (by country): https://www.imf.org/en/Publications/WEO/weo-database/2025/april/download-entire-database
-url <- "https://www.imf.org/-/media/Files/Publications/WEO/WEO-Database/2025/april/WEOApr2025all.ashx"
-weo <- read_tsv(url, locale = locale(encoding = "UTF-16LE"))
-
-# Clean raw data----
 fm <- clean_IMF_FM(fm) |>
   arrange(country, year)
+
+# [2] IMF WEO (by country): https://www.imf.org/en/Publications/WEO/weo-database/2025/april/download-entire-database
+url <- "https://www.imf.org/-/media/Files/Publications/WEO/WEO-Database/2025/april/WEOApr2025all.ashx"
+weo <- read_tsv(url, locale = locale(encoding = "UTF-16LE")) |>
+  janitor::clean_names()
+weo <- clean_IMF_WEO(weo) |>
+  arrange(country, year)
+
+# this analysis - get variables, pivot_wider
+selection <- c("NGDP_RPCH", "NGDP_D", "PCPI", "NGAP_NPGDP")
+weo <- weo |>
+  dplyr::select(
+    country,
+    iso,
+    weo_subject_code,
+    weo_country_code,
+    year,
+    value
+  ) |>
+  rename(country_code = iso) |>
+  filter(weo_subject_code %in% selection) |>
+  pivot_wider(names_from = weo_subject_code, values_from = value)
+
+# input IMF List of Advanced Economies (country codes)
+imf_ae_list <- c(
+  171,
+  193,
+  122,
+  124,
+  156,
+  960,
+  423,
+  935,
+  128,
+  939,
+  172,
+  132,
+  134,
+  174,
+  532,
+  176,
+  178,
+  436,
+  136,
+  158,
+  542,
+  941,
+  946,
+  137,
+  546,
+  181,
+  138,
+  196,
+  142,
+  182,
+  359,
+  135,
+  576,
+  936,
+  961,
+  184,
+  144,
+  146,
+  528,
+  112,
+  111
+)
+weo <- weo |>
+  mutate(ae = if_else(weo_country_code %in% imf_ae_list, 1, 0)) |>
+  filter(ae == 1)
+
+# MERGE FM and WEO indicators
+imf <- weo |>
+  left_join(fm, by = c("country_code", "year"))
 
 
 # Check for 2024 data and primarynetlendingborrowing variable
