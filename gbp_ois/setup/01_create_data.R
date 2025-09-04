@@ -100,7 +100,7 @@ dfxts_df <- data.frame(
 
 df_m <- dfxts_df |>
   mutate(
-    year_month = format(date, "%Y-%m")
+    year_month = format(as.Date(date), "%Y-%m")
   ) |>
   group_by(year_month) |>
   summarise(
@@ -109,7 +109,7 @@ df_m <- dfxts_df |>
     date = max(date), # Use the last date of the month instead of ceiling_date
     .groups = "drop"
   ) |>
-  filter(n_obs >= 15) |>
+  #  filter(n_obs >= 15) |>
   dplyr::select(-year_month, -n_obs) |>
   arrange(date) # Ensure proper date ordering
 
@@ -117,7 +117,6 @@ df_m <- dfxts_df |>
 cat("Number of rows in df_m:", nrow(df_m), "\n")
 cat("Number of unique dates:", length(unique(df_m$date)), "\n")
 cat("Any duplicate dates:", any(duplicated(df_m$date)), "\n")
-
 
 # Bank Rate from Bank of England ----
 # starts with dates/value for changes
@@ -136,13 +135,14 @@ end_date <- ceiling_date(Sys.Date(), "month") - days(1)
 # Create dat_bankrate with CONSISTENT end-of-month dates
 dat_bankrate <- tibble(
   date2 = seq.Date(
-    from = as.Date("2007-01-31"), # Start from a known end-of-month date
-    to = end_date,
+    from = floor_date(as.Date("2007-01-31"), "month"),
+    to = floor_date(Sys.Date(), "month"),
     by = "month"
-  )
+  ) |>
+    # Convert to end-of-month
+    ceiling_date("month") -
+    days(1)
 ) |>
-  # Ensure all are proper end-of-month dates
-  mutate(date2 = ceiling_date(date2, "month") - days(1)) |>
   left_join(
     bankrate |>
       mutate(date2 = ceiling_date(date, unit = "month") - days(1)) |>
@@ -170,7 +170,7 @@ fwcv$date2 <- as.Date(fwcv$date2)
 
 # Join with forward curve data [monthly]
 fwcv <- fwcv |>
-  left_join(dat_bankrate, by = "date2")
+  left_join(dat_bankrate, by = "date2", relationship = "many-to-many")
 
 # last_12m calculation:
 last_12m <- tail(df_m$date, 12)

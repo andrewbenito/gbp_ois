@@ -271,7 +271,7 @@ ois1 <- ggplot(fwcv, aes(x = date2, y = yield, group = date)) +
     data = latest,
     aes(x = date2, y = yield),
     color = "black",
-    lty = 1,
+    lty = 4,
     linewidth = 1.1,
     inherit.aes = FALSE
   ) +
@@ -311,6 +311,15 @@ last_12m <- fwcv |>
   slice_head(n = 12) |>
   pull(date)
 
+label_df <- fwcv %>%
+  filter(date %in% last_12m) %>%
+  group_by(date) %>%
+  filter(date2 == max(date2)) %>%
+  ungroup() |>
+  mutate(date_ym = format(date, "%Y- %m"))
+
+# Plot - last 12m [ois2]
+#----------------------
 ois2 <- ggplot(
   subset(fwcv, date %in% last_12m),
   aes(x = date2, y = yield, group = date)
@@ -327,7 +336,6 @@ ois2 <- ggplot(
     linewidth = 1.2,
     inherit.aes = FALSE
   ) +
-  # OPTIONAL: Keep the red points if you want them too
   geom_point(
     data = fwcv %>%
       filter(!is.na(yield)) %>%
@@ -337,12 +345,32 @@ ois2 <- ggplot(
     size = 2,
     inherit.aes = FALSE
   ) +
+  # ADD: Highlight the penultimate month with a pink line
+  geom_line(
+    data = fwcv %>%
+      filter(!is.na(yield)) %>%
+      filter(date == sort(unique(date), decreasing = TRUE)[2]),
+    aes(x = date2, y = yield),
+    color = "pink",
+    linewidth = 1.5,
+    inherit.aes = FALSE
+  ) +
   geom_line(
     data = subset(fwcv, date %in% last_12m),
     aes(x = date2, y = bankrate),
     color = "black",
     linewidth = 1.25,
     inherit.aes = FALSE # avoid grouping by date
+  ) +
+  # ADD: Label from "date" for each line at the end of the line
+  geom_text_repel(
+    data = label_df,
+    aes(x = date2, y = yield, label = date_ym),
+    hjust = -0.1,
+    vjust = 0.5,
+    size = 3,
+    fontface = "bold",
+    inherit.aes = FALSE
   ) +
   theme(legend.position = "none") +
   scale_x_date(date_breaks = "1 year", date_labels = "%Y") +
@@ -352,8 +380,10 @@ ois2 <- ggplot(
     x = "date",
     y = "rate %",
     caption = "Source: Bank of England data"
-  )
+  ) +
+  coord_cartesian(clip = "off") # Useful if labels sit just outside the plot area
 ois2
+
 # save
 ggsave(
   here("plots", "2.GBP_OIS_12m.png"),
