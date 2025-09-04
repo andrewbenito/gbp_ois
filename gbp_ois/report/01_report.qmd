@@ -44,6 +44,9 @@ Summarising some key developments in Sterling markets in the past 3 months:
 - **Gilt yields** rallied (by less than OIS) in June, and that decline has been more than reversed since then and especially at the long-end. 25y Gilt yields end the period a full 40bp higher.  
 - **Equities** rallied strongly by a cumulative 5% over the period, and concentrated in the period from July to mid-August. 
 
+This pattern points to greater fiscal risks creeping into market pricing, especially in the past 2 months. While fiscal slippage boosts aggregate demand directly, some crowding-out from these interest rate responses should also be expected. Fewer rate cuts have been priced in the past month to take place over the next year, and this has tended to weigh on Equity prices. Internationally, these interest rate effects appear to have emanated from the US and UK more than from Japan or Germany. 
+
+
 \newpage
 
 ```{r}
@@ -177,7 +180,11 @@ plot_structural_shocks
 # Fiscal risks
 ## The (international) risk of fiscal fatigue
 
-Required fiscal effort and how UK compares.
+Fiscal fatigue occurs where a further fiscal effort is needed to stabilise public debt-to-GDP, but the political will to implement the necessary tax rises or restraint in public spending wanes. 
+
+We estimate the UK still has a required fiscal effort of 3% of GDP to stabilise its Debt-to-GDP ratio. By international standards this is
+
+France stands out. 
 
 ## Macro and fiscal news at UK fiscal events
 

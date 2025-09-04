@@ -100,18 +100,18 @@ dfxts_df <- data.frame(
 
 df_m <- dfxts_df |>
   mutate(
-    year_month = format(as.Date(date), "%Y-%m")
+    year_month = format(as.Date(date), "%Y-%m"),
+    end_of_month = ceiling_date(as.Date(date), "month") - days(1)
   ) |>
-  group_by(year_month) |>
+  group_by(year_month, end_of_month) |>
   summarise(
     across(where(is.numeric), ~ mean(.x, na.rm = TRUE)),
     n_obs = n(),
-    date = max(date), # Use the last date of the month instead of ceiling_date
     .groups = "drop"
   ) |>
-  #  filter(n_obs >= 15) |>
   dplyr::select(-year_month, -n_obs) |>
-  arrange(date) # Ensure proper date ordering
+  arrange(end_of_month) |>
+  rename(date = end_of_month)
 
 # Verify no duplicate dates
 cat("Number of rows in df_m:", nrow(df_m), "\n")

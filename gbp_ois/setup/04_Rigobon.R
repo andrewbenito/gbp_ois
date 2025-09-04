@@ -346,7 +346,6 @@ plot_structural_shocks <- ggplot(
   geom_hline(
     yintercept = 0,
     linetype = "dashed",
-    alpha = 0.5,
     color = "gray50"
   ) +
   # Add structural break line for March 2022
@@ -384,7 +383,7 @@ table.ss <- shocks_long |>
   gt() |>
   cols_label(
     shock_origin = "Country",
-    shock_value = "Structural Shock \n(standardized"
+    shock_value = "Structural Shock \n(standardized)"
   ) |>
   gtExtras::gt_theme_espn()
 table.ss

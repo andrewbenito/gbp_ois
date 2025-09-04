@@ -694,8 +694,8 @@ plot_contributions_5yswsp <- ggplot() +
     color = "gray50"
   ) +
   labs(
-    title = "Change in 5Y Swap Spread",
-    subtitle = "Contributions to change in 5y swap from 3years ago",
+    title = "Change in 5Y Swap spread",
+    subtitle = "Contributions to change from 3years ago",
     x = "Date",
     y = "Contribution to Change (bp)",
     caption = ""
