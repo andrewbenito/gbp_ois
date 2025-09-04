@@ -73,7 +73,7 @@ get_first_fridays <- function(start_year = 2025, end_year = 2025) {
   return(results$date)
 }
 
-
+# Clean Downloaded OIS data
 cleanOIS <- function(df) {
   # Convert all but first column to numeric
   df <- df %>% mutate(across(-1, as.numeric))
@@ -90,9 +90,9 @@ cleanOIS <- function(df) {
     colnames(df)[-1] <- as.character(months_rounded)
   }
 
-  # Remove first 5 rows (header rows) - keeps data starting from row 6
+  # Remove first 4 rows (header rows) - keeps data starting from row 5
   df <- df %>%
-    tail(-5) %>%
+    tail(-4) %>%
     type.convert(as.is = TRUE) %>%
     rename(date = 1) %>%
     mutate(date = as.Date(as.numeric(date), origin = "1899-12-30")) %>%

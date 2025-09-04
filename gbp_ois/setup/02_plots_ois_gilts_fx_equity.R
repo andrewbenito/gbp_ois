@@ -260,11 +260,6 @@ plot.gilts.eq
 #================================
 # Figure 1: Evolving Forwards----
 #================================
-bankrate.plot <- fwcv |>
-  filter(!is.na(bankrate)) |>
-  dplyr::select(date2, bankrate) |>
-  distinct()
-
 # Create the "latest" dataframe with the most recent forward curve data
 latest <- fwcv |>
   filter(date == max(date, na.rm = TRUE)) |>
@@ -281,7 +276,7 @@ ois1 <- ggplot(fwcv, aes(x = date2, y = yield, group = date)) +
     inherit.aes = FALSE
   ) +
   geom_line(
-    data = bankrate.plot,
+    data = fwcv,
     aes(x = date2, y = bankrate),
     colour = "black",
     lty = 1,

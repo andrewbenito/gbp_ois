@@ -75,10 +75,11 @@ df4 <- read_xlsx(
   unzip(tf4, files = fname4, exdir = td),
   sheet = "1. fwds, short end"
 )
+
 #======================================
 # Tidy Historic Forward Curve data ----
 #======================================
-# Clean the 3 downloaded dataframes
+# Clean the downloaded dataframes
 for (dfn in c("df1", "df2", "df3", "df4")) {
   assign(dfn, cleanOIS(get(dfn)))
 }
@@ -128,34 +129,27 @@ bankrate <- read_excel(temp, sheet = "HISTORICAL SINCE 1694", skip = 995) %>%
   rename(year = 1, day = 2, month = 3, bankrate = 4) |>
   dplyr::filter(!is.na(bankrate)) |>
   fill(year, .direction = "down") |>
-  fill(year, .direction = "up")
+  fill(year, .direction = "up") |>
+  mutate(date = dmy(paste(day, month, year)))
+end_date <- ceiling_date(Sys.Date(), "month") - days(1)
 
-# Create date variable
-bankrate <- bankrate %>%
-  mutate(
-    date_str = paste(day, month, year, sep = " "),
-    date = as.Date(date_str, format = "%d %b %Y"),
-    date2 = ceiling_date(date, unit = 'month') - days(1)
-  ) %>%
-  dplyr::filter(!is.na(date)) %>% # Remove rows with invalid dates
-  dplyr::select(date2, bankrate) %>%
-  dplyr::filter(date2 >= as.Date('2007-01-01')) %>%
-  arrange(date2) # Ensure proper ordering
-
-# make monthly Bank rate df [dat] from dates of rate changes [bankrate]
-# Create the monthly bankrate data (from your original code)
-start_date <- floor_date(min(bankrate$date2, na.rm = TRUE), unit = "month")
-end_date <- ceiling_date(Sys.Date(), unit = "month") - days(1) # end of this month
-eom_dates <- seq.Date(from = start_date, to = end_date, by = "month") |>
-  ceiling_date(unit = "month") -
-  days(1)
-eom_df <- tibble(date2 = eom_dates)
-
-dat <- eom_df |>
-  left_join(bankrate, by = "date2") |>
-  arrange(date2) |>
-  fill(bankrate, .direction = "down") |>
-  filter(!is.na(bankrate))
+# Create dat_bankrate with CONSISTENT end-of-month dates
+dat_bankrate <- tibble(
+  date2 = seq.Date(
+    from = as.Date("2007-01-31"), # Start from a known end-of-month date
+    to = end_date,
+    by = "month"
+  )
+) |>
+  # Ensure all are proper end-of-month dates
+  mutate(date2 = ceiling_date(date2, "month") - days(1)) |>
+  left_join(
+    bankrate |>
+      mutate(date2 = ceiling_date(date, unit = "month") - days(1)) |>
+      dplyr::select(date2, bankrate),
+    by = "date2"
+  ) |>
+  tidyr::fill(bankrate, .direction = "down")
 
 # FWCV - long, monthly data
 fwcv <- df_m |>
@@ -168,15 +162,19 @@ fwcv <- df_m |>
   mutate(
     tau = as.numeric(str_remove(tau, "x")),
     month = month(date),
-    date2 = ceiling_date(date %m+% months(tau), unit = 'month') - days(1)
+    # Add tau months first then to EOM
+    date2 = as.Date(date) %m+% months(tau),
+    date2 = ceiling_date(date2, unit = "month") - days(1)
   )
 fwcv$date2 <- as.Date(fwcv$date2)
 
 # Join with forward curve data [monthly]
-fwcv <- left_join(fwcv, dat, by = 'date2')
+fwcv <- fwcv |>
+  left_join(dat_bankrate, by = "date2")
 
 # last_12m calculation:
 last_12m <- tail(df_m$date, 12)
+
 
 #===================================
 # 2. GLC data (Gilt yields)
