@@ -241,6 +241,12 @@ p3 + p4 + p5
 Based on the pattern of past BoE forecast errors, a realistic path to overshooting the 2% inflation target, is that the MPC produces too optimistic inflation forecasts and retaining too little policy restriction to complete the disinflation. 
 
 
+## Risk premium episodes tilt hawkish for monetary policy
+
+
+
+
+
 # MPC Voting: increased disagreement 
 
 We inspect MPC voting patterns to illustrate two points. First, the rising extent of disagreement among MPC members. Second, how current MPC member voting compares with that of past members.   
@@ -270,8 +276,10 @@ Increasingly nuanced macroeconomic assessments are producing more closely contes
 
 1. Government bonds provide less effective portfolio hedging against equity weakness when negative supply shocks become more frequent. In supply-shock driven downturns, both equities and bonds can decline simultaneously, reducing the traditional negative correlation that makes bonds effective diversifiers.
 2. Historical forecast error patterns suggest the MPC faces material upside inflation risks if it maintains current policy settings. The Bank's tendency to overestimate the pace of disinflation, combined with insufficient recognition of the UK's structural supply-side constraints, creates conditions where inflation could persistently exceed the 2% target despite current monetary restriction.
-3. Fiscal sustainability concerns amplify bond market volatility, particularly during data-sensitive periods when investors reassess inflation trajectories. This creates a feedback loop where disappointing economic data simultaneously raises questions about fiscal capacity and inflation persistence.
-4. The authorities can mitigate yield curve steepening through active debt maturity management, specifically by reducing the average maturity of new issuance. This approach offers lower implementation risk compared to broader fiscal consolidation measures and can provide more immediate relief to long-term borrowing costs while maintaining market confidence.
+3. Fiscal sustainability concerns amplify bond market volatility, particularly during data-sensitive periods when investors reassess inflation trajectories. Disappointing economic data, coming from weak supply-side performance, simultaneously raise questions about fiscal capacity and inflation persistence. In these episodes, we should expect yield curve steepening. 
+4. The authorities can mitigate yield curve steepening through active debt maturity management, specifically by reducing the average maturity of new issuance. HMT should prioritise other forms of spending restraint and taxes that face lower implementation risk. Front-loading offers similar benefits. 
+5. If the authorities instead prioritise back-loading fiscal adjustment and/or with higher implementation risk, this would contribute to further steepening.  
+6. Fiscal risk premium episodes tilt hawkish for the BoE. Our sense is that this view surprises most analysts. 
  
 
 

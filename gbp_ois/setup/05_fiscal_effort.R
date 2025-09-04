@@ -99,7 +99,8 @@ weo <- weo |>
   ) |>
   rename(country_code = iso) |>
   filter(weo_subject_code %in% selection) |>
-  pivot_wider(names_from = weo_subject_code, values_from = value)
+  pivot_wider(names_from = weo_subject_code, values_from = value) |>
+  filter(year >= 1980)
 
 # input IMF List of Advanced Economies (country codes)
 imf_ae_list <- c(
@@ -149,175 +150,88 @@ weo <- weo |>
   mutate(ae = if_else(weo_country_code %in% imf_ae_list, 1, 0)) |>
   filter(ae == 1)
 
+
 # MERGE FM and WEO indicators
 imf <- weo |>
-  left_join(fm, by = c("country_code", "year"))
+  left_join(fm, by = c("country_code", "year")) |>
+  dplyr::select(-ae, -country.y)
 
-
-# Check for 2024 data and primarynetlendingborrowing variable
-dat_2024 <- dat |>
-  filter(year == 2024) |>
-  filter(!is.na(primarynetlendingborrowing))
-
-# Get UK value for 2024
-uk_value_2024 <- dat_2024 |>
-  filter(country == "United Kingdom") |>
-  pull(primarynetlendingborrowing)
-
-cat("\nUK Primary Net Lending/Borrowing for 2024:", uk_value_2024, "\n")
-
-# summary statistics
-summary_stats <- dat_2024 |>
-  summarise(
-    n_countries = n(),
-    mean_value = mean(primarynetlendingborrowing, na.rm = TRUE),
-    median_value = median(primarynetlendingborrowing, na.rm = TRUE),
-    sd_value = sd(primarynetlendingborrowing, na.rm = TRUE),
-    min_value = min(primarynetlendingborrowing, na.rm = TRUE),
-    max_value = max(primarynetlendingborrowing, na.rm = TRUE),
-    q25 = quantile(primarynetlendingborrowing, 0.25, na.rm = TRUE),
-    q75 = quantile(primarynetlendingborrowing, 0.75, na.rm = TRUE)
-  )
-
-# Calculate UK's position in the distribution
-uk_percentile <- ecdf(dat_2024$primarynetlendingborrowing)(uk_value_2024) * 100
-
-cat("\n=== Distribution Summary Statistics (2025) ===\n")
-cat("Number of countries:", summary_stats$n_countries, "\n")
-cat("Mean:", round(summary_stats$mean_value, 2), "%\n")
-cat("Median:", round(summary_stats$median_value, 2), "%\n")
-cat("Standard deviation:", round(summary_stats$sd_value, 2), "%\n")
-cat(
-  "Range:",
-  round(summary_stats$min_value, 2),
-  "% to",
-  round(summary_stats$max_value, 2),
-  "%\n"
-)
-cat("25th percentile:", round(summary_stats$q25, 2), "%\n")
-cat("75th percentile:", round(summary_stats$q75, 2), "%\n")
-
-cat("\n=== UK Position Analysis ===\n")
-cat("UK value:", round(uk_value_2024, 2), "%\n")
-cat("UK percentile position:", round(uk_percentile, 1), "%\n")
-cat(
-  "UK vs mean:",
-  round(uk_value_2024 - summary_stats$mean_value, 2),
-  "percentage points\n"
-)
-cat(
-  "UK vs median:",
-  round(uk_value_2024 - summary_stats$median_value, 2),
-  "percentage points\n"
-)
-
-# Show countries with similar values to UK
-similar_countries <- dat_2024 |>
-  mutate(distance_from_uk = abs(primarynetlendingborrowing - uk_value_2024)) |>
-  arrange(distance_from_uk) |>
-  slice_head(n = 6) |>
-  dplyr::select(country, primarynetlendingborrowing, distance_from_uk)
-
-cat("\n=== Countries with Similar Values to UK ===\n")
-print(similar_countries)
+# PLOTS
+# 1. UK: cyc-adj PB versus Net Debt, t-1; pre- and post-crisis
+# 2: by country: g, d(t-1), pb and dspb. [dspb - pb = fiscal effort]
 
 # Extract UK data and create lagged net debt
-uk_time_series_amended <- dat |>
-  filter(country == "United Kingdom") |>
-  filter(!is.na(primarynetlendingborrowing), !is.na(netdebt)) |>
+uk <- imf |>
+  filter(country.x == "United Kingdom") |>
+  filter(!is.na(primarynetlendingborrowing) & (!is.na(netdebt))) |>
   arrange(year) |>
   mutate(
     # Create lagged net debt (previous year's value)
-    netdebt_lag = lag(netdebt, 1),
+    netdebt_L1 = lag(netdebt, 1),
     # Create forecast indicator for 2025 onwards
     is_forecast = year >= 2025,
     # Create period classification: pre-2008, post-2008, forecast
-    period_type = case_when(
+    period_gfc = case_when(
       year <= 2008 ~ "Pre-2008",
       year > 2008 & !is_forecast ~ "Post-2008",
       is_forecast ~ "Forecast (2025+)"
     )
   ) |>
   # Remove first observation since it won't have lagged debt
-  filter(!is.na(netdebt_lag))
+  filter(!is.na(netdebt_L1))
 
-cat("UK time series data (amended):\n")
-cat(
-  "Years available:",
-  min(uk_time_series_amended$year),
-  "to",
-  max(uk_time_series_amended$year),
-  "\n"
-)
-cat(
-  "Pre-2008 observations:",
-  sum(uk_time_series_amended$period_type == "Pre-2008"),
-  "\n"
-)
-cat(
-  "Post-2008 observations:",
-  sum(uk_time_series_amended$period_type == "Post-2008"),
-  "\n"
-)
-cat(
-  "Forecast observations:",
-  sum(uk_time_series_amended$period_type == "Forecast (2025+)"),
-  "\n"
-)
-
-
-# Create the amended time series plot
+# UK plot for pb v netdebt_L1
 #------------------------------------
-plot_uk_fiscal_amended <- ggplot(
-  uk_time_series_amended,
-  aes(x = netdebt_lag, y = primarynetlendingborrowing)
+plot_uk <- ggplot(
+  uk,
+  aes(x = netdebt_L1, y = primarynetlendingborrowing)
 ) +
   # Plot pre-2008 data (green circles with solid line)
   geom_point(
-    data = uk_time_series_amended |> filter(period_type == "Pre-2008"),
-    aes(color = period_type),
+    data = uk |> filter(period_gfc == "Pre-2008"),
+    aes(color = period_gfc),
     size = 3,
     alpha = 0.8,
     shape = 19
   ) +
   geom_path(
-    data = uk_time_series_amended |> filter(period_type == "Pre-2008"),
-    aes(color = period_type),
+    data = uk |> filter(period_gfc == "Pre-2008"),
+    aes(color = period_gfc),
     size = 1,
     alpha = 0.8
   ) +
   # Plot post-2008 data (blue squares with solid line)
   geom_point(
-    data = uk_time_series_amended |> filter(period_type == "Post-2008"),
-    aes(color = period_type),
+    data = uk |> filter(period_gfc == "Post-2008"),
+    aes(color = period_gfc),
     size = 3,
     alpha = 0.8,
     shape = 15
   ) +
   geom_path(
-    data = uk_time_series_amended |> filter(period_type == "Post-2008"),
-    aes(color = period_type),
+    data = uk |> filter(period_gfc == "Post-2008"),
+    aes(color = period_gfc),
     size = 1,
     alpha = 0.8
   ) +
   # Plot forecast data (red triangles with dashed line)
   geom_point(
-    data = uk_time_series_amended |> filter(period_type == "Forecast (2025+)"),
-    aes(color = period_type),
+    data = uk |> filter(period_gfc == "Forecast (2025+)"),
+    aes(color = period_gfc),
     size = 3,
     shape = 17,
     alpha = 0.8
   ) +
   geom_path(
-    data = uk_time_series_amended |> filter(period_type == "Forecast (2025+)"),
-    aes(color = period_type),
+    data = uk |> filter(period_gfc == "Forecast (2025+)"),
+    aes(color = period_gfc),
     size = 1,
     linetype = "dashed",
     alpha = 0.8
   ) +
   # Add year labels for key transition points
   geom_text(
-    data = uk_time_series_amended |>
+    data = uk |>
       filter(year %in% c(2000, 2008, 2009, 2020, 2024, 2029)),
     aes(label = year),
     hjust = -0.3,
@@ -328,53 +242,44 @@ plot_uk_fiscal_amended <- ggplot(
   # Add reference lines
   geom_hline(
     yintercept = 0,
-    linetype = "dotted",
-    alpha = 0.6,
-    color = "gray50"
+    linetype = "dotted"
   ) +
-  geom_vline(
-    xintercept = 50,
+  geom_hline(
+    yintercept = 1.0,
     linetype = "dotted",
-    alpha = 0.6,
-    color = "gray50"
+    color = "red"
   ) +
   # Add vertical line to mark 2008 financial crisis
   geom_vline(
-    xintercept = uk_time_series_amended |>
+    xintercept = uk |>
       filter(year == 2008) |>
-      pull(netdebt_lag),
+      pull(netdebt_L1),
     linetype = "dashed",
     alpha = 0.5,
     color = "orange",
     size = 1
   ) +
   # Color scheme distinguishing three periods
-  scale_color_manual(
-    name = "Period",
-    values = c(
-      "Pre-2008" = "#27AE60",
-      "Post-2008" = "#3498DB",
-      "Forecast (2025+)" = "#E74C3C"
-    ),
-    labels = c("Pre-2008", "Post-2008", "Forecast (2025+)")
+  scale_color_jco(
+    #    labels = c("Pre-2008", "Post-2008", "Forecast (2025+)")
   ) +
   # Formatting
   scale_x_continuous(
-    name = "Previous Year's Net Debt (% of GDP)",
+    name = "Net Debt, t-1 (% of GDP)",
     labels = scales::percent_format(scale = 1),
     breaks = scales::pretty_breaks(n = 8)
   ) +
   scale_y_continuous(
-    name = "Primary Net Lending/Borrowing (% of GDP)",
+    name = "Primary Balance (% of GDP)",
     labels = scales::percent_format(scale = 1),
     breaks = scales::pretty_breaks(n = 6)
   ) +
   labs(
-    title = "UK Fiscal Position: Primary Balance vs. Previous Year's Net Debt",
-    subtitle = "Distinguishing pre-2008, post-2008, and forecast periods (2025+)",
-    caption = "Source: IMF Fiscal Monitor. Orange line marks 2008 financial crisis transition. X-axis shows lagged net debt.",
-    x = "Previous Year's Net Debt (% of GDP)",
-    y = "Primary Net Lending/Borrowing (% of GDP)"
+    title = "The fiscal reaction",
+    subtitle = "A positive slope implies debt-stabilisation",
+    caption = "Source: IMF Fiscal Monitor",
+    x = "Net Debt, t-1 (% of GDP)",
+    y = "Primary Balance (% of GDP)"
   ) +
   theme(
     plot.title = element_text(size = 14, face = "bold"),
@@ -383,4 +288,4 @@ plot_uk_fiscal_amended <- ggplot(
     panel.grid.minor = element_blank()
   )
 
-print(plot_uk_fiscal_amended)
+print(plot_uk)
