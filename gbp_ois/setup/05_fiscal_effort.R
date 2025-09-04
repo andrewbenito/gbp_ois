@@ -72,12 +72,18 @@ print(gt.dat)
 #===========================================================
 # Cross-country data: d, r, g for required pb and actual pb
 #===========================================================
-
-dat <- read_csv(here('data', 'IMF_FM_WIDEF.csv')) |> # time-series data are wide
+# Load up raw data----
+# [1] IMF Fiscal monitor
+fm <- read_csv(here('data', 'IMF_FM_WIDEF.csv')) |> # time-series data are wide
   t()
+# [2] IMF WEO (by country): https://www.imf.org/en/Publications/WEO/weo-database/2025/april/download-entire-database
+url <- "https://www.imf.org/-/media/Files/Publications/WEO/WEO-Database/2025/april/WEOApr2025all.ashx"
+weo <- read_tsv(url, locale = locale(encoding = "UTF-16LE"))
 
-dat <- clean_IMF_FM(dat) |>
+# Clean raw data----
+fm <- clean_IMF_FM(fm) |>
   arrange(country, year)
+
 
 # Check for 2024 data and primarynetlendingborrowing variable
 dat_2024 <- dat |>

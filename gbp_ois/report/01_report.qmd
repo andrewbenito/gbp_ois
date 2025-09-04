@@ -46,6 +46,7 @@ Summarising some key developments in Sterling markets in the past 3 months:
 
 This pattern points to greater fiscal risks creeping into market pricing, especially in the past 2 months. While fiscal slippage boosts aggregate demand directly, some crowding-out from these interest rate responses should also be expected. Fewer rate cuts have been priced in the past month to take place over the next year, and this has tended to weigh on Equity prices. Internationally, these interest rate effects appear to have emanated from the US and UK more than from Japan or Germany. 
 
+An increased incidence of negative Supply shocks is part of the broader macro message highlighted.  
 
 \newpage
 
@@ -182,11 +183,17 @@ plot_structural_shocks
 
 Fiscal fatigue occurs where a further fiscal effort is needed to stabilise public debt-to-GDP, but the political will to implement the necessary tax rises or restraint in public spending wanes. 
 
-We estimate the UK still has a required fiscal effort of 3% of GDP to stabilise its Debt-to-GDP ratio. By international standards this is
+We estimate the UK still has a required fiscal effort of 3% of GDP to stabilise its Debt-to-GDP ratio. Uncertainty in this estimate means it is worth showing the debt-stabilising primary balance for different combinations of 'r' (effective nominal interest rate on government debt) and 'g' (expected nominal growth rate). Estimates in @tab-dspb suggest the debt-stabilising primary balance would be aorund 0.5-1.0% of GDP, compared with a primary balance at -2.0% in 2024.  
 
-France stands out. 
+By international standards, this is xxx. [France stands out.]
+
+Populism likely adds to this risk of fiscal fatigue, including in the UK and France. 
+
 
 ## Macro and fiscal news at UK fiscal events
+
+Fig for indiv fiscal events
+
 
 A fiscal downgrade of 30bn would, based on this relationship, point to tightening of 
 A key issue in the Budget will be how front-loaded is that tightening. 
@@ -212,7 +219,7 @@ plot.reactions
 
 # Evolving macro forecasts and macro news
 
-How has the MPC's own assessment of the UK macro outlook evolved? 
+Those market reactions may owe partly to the MPC's own assessment of the UK macro outlook, eg. under the so-called information channel of monetary policy. 
 
 **Medium-term** Over the past decade or more, the MPC has tended to revise higher its forecasts for inflation, revise its outlook for unemployment lower, without an obvious bias in its forecasts for GDP growth. This points points to a pattern of the BoE having had to respond to negative supply shocks, updating its assessments in the light of that repeated pattern. 
 
@@ -258,6 +265,15 @@ plot.member_patterns
 
 
 Increasingly nuanced macroeconomic assessments are producing more closely contested votes and heightened disagreement among MPC members. This development places greater emphasis on the quality of macroeconomic analysis and forecasts that underpin MPC decisions. While such complex judgements reinforce the importance of maintaining independence from political pressures, the forecast errors documented earlier pose a risk to both the credibility of the MPC's analytical process and public confidence in its institutional independence. This may leave Sterling markets more sensitive to international spillovers and to political and fiscal news. 
+
+# Views
+
+1. Government bonds provide less effective portfolio hedging against equity weakness when negative supply shocks become more frequent. In supply-shock driven downturns, both equities and bonds can decline simultaneously, reducing the traditional negative correlation that makes bonds effective diversifiers.
+2. Historical forecast error patterns suggest the MPC faces material upside inflation risks if it maintains current policy settings. The Bank's tendency to overestimate the pace of disinflation, combined with insufficient recognition of the UK's structural supply-side constraints, creates conditions where inflation could persistently exceed the 2% target despite current monetary restriction.
+3. Fiscal sustainability concerns amplify bond market volatility, particularly during data-sensitive periods when investors reassess inflation trajectories. This creates a feedback loop where disappointing economic data simultaneously raises questions about fiscal capacity and inflation persistence.
+4. The authorities can mitigate yield curve steepening through active debt maturity management, specifically by reducing the average maturity of new issuance. This approach offers lower implementation risk compared to broader fiscal consolidation measures and can provide more immediate relief to long-term borrowing costs while maintaining market confidence.
+ 
+
 
 
 
