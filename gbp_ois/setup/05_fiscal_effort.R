@@ -150,8 +150,7 @@ weo <- weo |>
   mutate(ae = if_else(weo_country_code %in% imf_ae_list, 1, 0)) |>
   filter(ae == 1)
 
-
-# MERGE FM and WEO indicators
+# MERGE FM and WEO----
 imf <- weo |>
   left_join(fm, by = c("country_code", "year")) |>
   dplyr::select(-ae, -country.y)
@@ -266,7 +265,6 @@ plot_uk <- ggplot(
   # Formatting
   scale_x_continuous(
     name = "Net Debt, t-1 (% of GDP)",
-    labels = scales::percent_format(scale = 1),
     breaks = scales::pretty_breaks(n = 8)
   ) +
   scale_y_continuous(

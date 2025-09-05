@@ -199,6 +199,26 @@ A fiscal downgrade of 30bn would, based on this relationship, point to tightenin
 A key issue in the Budget will be how front-loaded is that tightening. 
 
 
+```{r}
+#| label: tab-fiscal-dspb
+#| fig-cap: "The fiscal reaction"
+
+source(here::here("setup", "05_fiscal_effort.R"))
+gt.dat 
+```
+
+
+```{r}
+#| label: fig-fiscal-fm
+#| fig-cap: "The fiscal reaction"
+
+source(here::here("setup", "05_fiscal_effort.R"))
+plot_uk 
+```
+
+
+
+
 # Market reactions and macro news at recent BoE policy events
 ## Analysing monetary policy shocks
 
