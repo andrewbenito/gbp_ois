@@ -8,8 +8,9 @@
 # Rt: effective nominal interest rate on government debt,
 # Gt is the nominal growth rate, dt is the debt to GDP ratio, and sfat is stock-flow adjustments
 #=================================================================================================
-library(gt)
 library(tidyverse)
+library(gt)
+library(ggsci)
 library(here)
 
 # Set initial values
@@ -183,7 +184,7 @@ uk <- imf |>
 #------------------------------------
 plot_uk <- ggplot(
   uk,
-  aes(x = netdebt_L1, y = primarynetlendingborrowing)
+  aes(x = netdebt_L1, y = cyclicallyadjustedprimarybalance)
 ) +
   # Plot pre-2008 data (green circles with solid line)
   geom_point(
@@ -277,7 +278,8 @@ plot_uk <- ggplot(
     subtitle = "A positive slope implies debt-stabilisation",
     caption = "Source: IMF Fiscal Monitor",
     x = "Net Debt, t-1 (% of GDP)",
-    y = "Primary Balance (% of GDP)"
+    y = "Cyc-adj. Primary Balance (% of GDP)",
+    color = NULL
   ) +
   theme(
     plot.title = element_text(size = 14, face = "bold"),
@@ -285,5 +287,6 @@ plot_uk <- ggplot(
     legend.position = "bottom",
     panel.grid.minor = element_blank()
   )
+# omit legend title for period_gfc
 
 print(plot_uk)
