@@ -201,7 +201,8 @@ A key issue in the Budget will be how front-loaded is that tightening.
 
 ```{r}
 #| label: tab-fiscal-dspb
-#| fig-cap: "The fiscal reaction"
+#| fig-cap: "Debt-stabilising primary balance"
+#| results: hide
 
 source(here::here("setup", "05_fiscal_effort.R"))
 gt.dat 
@@ -211,9 +212,9 @@ gt.dat
 ```{r}
 #| label: fig-fiscal-fm
 #| fig-cap: "The fiscal reaction"
+#| results: hide
 
-source(here::here("setup", "05_fiscal_effort.R"))
-plot_uk 
+plot_effort
 ```
 
 

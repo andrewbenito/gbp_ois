@@ -88,7 +88,7 @@ weo <- clean_IMF_WEO(weo) |>
   arrange(country, year)
 
 # this analysis - get variables, pivot_wider
-selection <- c("NGDP_RPCH", "NGDP_D", "PCPI", "NGAP_NPGDP")
+selection <- c("NGDP_RPCH", "NGDP_D", "PCPI", "NGAP_NPGDP", "NGDP", "GXWDG")
 weo <- weo |>
   dplyr::select(
     country,
@@ -122,7 +122,7 @@ imf_ae_list <- c(
   532,
   176,
   178,
-  436,
+  # 436, # Exclude Israel
   136,
   158,
   542,
@@ -133,7 +133,7 @@ imf_ae_list <- c(
   181,
   138,
   196,
-  142,
+  # 142, Norway
   182,
   359,
   135,
@@ -159,6 +159,27 @@ imf <- weo |>
 # PLOTS
 # 1. UK: cyc-adj PB versus Net Debt, t-1; pre- and post-crisis
 # 2: by country: g, d(t-1), pb and dspb. [dspb - pb = fiscal effort]
+
+# g, d_L1, pb, dspb and fiscal effort by country
+imf <- imf |>
+  mutate(
+    r_gdp = abs(netlendingborrowing - primarynetlendingborrowing), # interest payments / GDP (%)
+    rt = (r_gdp / grossdebt) * 100 # effective interest rate (%)
+  ) |>
+  group_by(country_code) |>
+  mutate(
+    ngap_L1 = lag(NGAP_NPGDP, 1), # lagged output gap
+    dt_L1 = lag(netdebt, 1), # lagged debt
+    ystar_gt = (((NGDP_RPCH / 100 + 1) *
+      (1 + ngap_L1 / 100) /
+      (1 + NGAP_NPGDP / 100) -
+      1) *
+      100),
+    dspb = (((rt / 100) - (ystar_gt / 100)) / (1 + (ystar_gt / 100))) * dt_L1,
+    fiscal_effort = dspb - primarynetlendingborrowing,
+    is_forecast = year >= 2025
+  ) |>
+  ungroup()
 
 # Extract UK data and create lagged net debt
 uk <- imf |>
@@ -289,4 +310,71 @@ plot_uk <- ggplot(
   )
 # omit legend title for period_gfc
 
-print(plot_uk)
+#print(plot_uk)
+
+# Plot fiscal effort over time for selected countries
+# take 2024 only
+imf_2024 <- imf |>
+  filter(year == 2024) |>
+  filter(!is.na(fiscal_effort) & !is.na(dt_L1)) |>
+  arrange(country.x)
+
+# plot fiscal effort in 2024 bar plot
+# highlight uk in this plot
+
+plot_effort <- ggplot(
+  imf_2024,
+  aes(
+    x = reorder(country.x, fiscal_effort),
+    y = fiscal_effort,
+    fill = fiscal_effort > 0
+  )
+) +
+  geom_bar(stat = "identity", width = 0.7) +
+  coord_flip() +
+  scale_y_continuous(
+    name = "Fiscal Effort (% of GDP)",
+    labels = scales::percent_format(scale = 1),
+    breaks = scales::pretty_breaks(n = 6)
+  ) +
+  scale_fill_manual(
+    values = c("TRUE" = "tomato", "FALSE" = "steelblue"),
+    labels = c("TRUE" = "Effort Required", "FALSE" = "No Effort Required"),
+    guide = FALSE
+  ) +
+  # highlight UK bar
+  geom_bar(
+    data = imf_2024 |> filter(country.x == "United Kingdom"),
+    aes(x = country.x, y = fiscal_effort),
+    stat = "identity",
+    width = 0.7,
+    fill = "gold",
+    color = "black",
+    size = 0.8
+  ) +
+  geom_text(
+    aes(
+      label = ifelse(
+        abs(fiscal_effort) >= 0.5,
+        round(fiscal_effort, 1),
+        ""
+      )
+    ),
+    hjust = ifelse(imf_2024$fiscal_effort > 0, -0.1, 1.1),
+    color = "black",
+    size = 3
+  ) +
+  ylim(min(imf_2024$fiscal_effort) - 1, max(imf_2024$fiscal_effort) + 1) +
+  labs(
+    title = "Required Fiscal Effort",
+    subtitle = "Required improvement in Primary Balance to stabilise Debt to GDP",
+    caption = "Source: IMF Fiscal Monitor and WEO",
+    x = NULL,
+    y = "Fiscal Effort (% of GDP)"
+  ) +
+  theme(
+    plot.title = element_text(size = 14, face = "bold"),
+    plot.subtitle = element_text(size = 11),
+    panel.grid.minor = element_blank()
+  )
+#plot_effort
