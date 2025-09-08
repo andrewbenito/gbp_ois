@@ -276,7 +276,9 @@ infl.forecasts.latest
 
 ## Risk premium episodes tilt hawkish for monetary policy
 
+Early-July was (anoteher) case study of the fiscal fatigue risk premium. The UK Parliament failed to pass a welfare bill of welfare restraint (modifying the bill before without fiscal savings before passing it). The Chancellor's tears at the despatch box were widely reported, alongside speculation of a risk Reeves would be replaced and with that the current fiscal rules revised. 
 
+The hawkish implied response was reflected in 2y and 5y OIS rates rising by 10-15bp over the following week (@fig-fatigue). THat was associated with a 2% decline in GBPUSD. 
 
 ```{r}
 #| label: fig-fatigue
@@ -286,10 +288,12 @@ ois_fatigue
 ```
 
 
-
 # MPC Voting: increased disagreement 
 
 We inspect MPC voting patterns to illustrate two points. First, the rising extent of disagreement among MPC members. Second, how current MPC member voting compares with that of past members.   
+
+We make the further point that the rising disagreement among MPC members reflects the increasing role for supply-shocks, and more complex macroeconomic environment, in which MPC members are making decisions.
+
 
 ```{r}
 #| label: hist-votes
@@ -311,6 +315,16 @@ plot.member_patterns
 
 
 Increasingly nuanced macroeconomic assessments are producing more closely contested votes and heightened disagreement among MPC members. This development places greater emphasis on the quality of macroeconomic analysis and forecasts that underpin MPC decisions. While such complex judgements reinforce the importance of maintaining independence from political pressures, the forecast errors documented earlier pose a risk to both the credibility of the MPC's analytical process and public confidence in its institutional independence. This may leave Sterling markets more sensitive to international spillovers and to political and fiscal news. 
+
+
+```{r}
+#| label: plot-correls
+#| fig-cap: "MPC disagreement and preferences"
+
+plot_corr_yield_eq + plot_corr_yield_fx
+```
+
+
 
 # Conclusions: Macro Views
 
