@@ -205,7 +205,7 @@ A key issue in the Budget will be how front-loaded is that tightening.
 #| results: hide
 
 source(here::here("setup", "05_fiscal_effort.R"))
-gt.dat 
+print(gt.dat) 
 ```
 
 
@@ -262,9 +262,28 @@ p3 + p4 + p5
 Based on the pattern of past BoE forecast errors, a realistic path to overshooting the 2% inflation target, is that the MPC produces too optimistic inflation forecasts and retaining too little policy restriction to complete the disinflation. 
 
 
+
+```{r}
+#| label: plot-infl-latest 
+#| fig-cap: "Successive BoE Inflation Forecasts"
+
+
+infl.forecasts.latest
+
+```
+
+
+
 ## Risk premium episodes tilt hawkish for monetary policy
 
 
+
+```{r}
+#| label: fig-fatigue
+#| fig-cap: "Fiscal fatigue and risk premium in OIS and Sterling"
+
+ois_fatigue
+```
 
 
 

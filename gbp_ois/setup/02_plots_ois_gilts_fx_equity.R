@@ -146,6 +146,137 @@ plot.ois.gbp <- ggplot(dat, aes(x = date)) +
   theme(legend.position = "bottom")
 plot.ois.gbp
 
+# Fiscal Fatigue episode plot----
+# July 2nd 2025 PMQs
+# Cumulative changes from a start date
+start_date <- as.Date('2025-07-02') - days(5)
+
+delta.gbp.cumul <- dat_gbp |>
+  arrange(date) |>
+  filter(date >= start_date & date <= (start_date + days(30))) |>
+  dplyr::select(
+    date,
+    x24,
+    x60,
+    col_4,
+    col_20,
+    col_50,
+    gbpeur,
+    eurusd,
+    gbpusd,
+    ftse_all
+  ) |>
+  filter(!is.na(ftse_all)) |>
+  mutate(
+    # Handle NA values in baseline calculation for yield data
+    across(
+      starts_with("x"),
+      ~ {
+        first_non_na <- first(.[!is.na(.)])
+        if (is.na(first_non_na)) {
+          rep(NA_real_, length(.))
+        } else {
+          (. - first_non_na) * 100
+        }
+      }
+    ),
+    across(
+      starts_with("col_"),
+      ~ {
+        first_non_na <- first(.[!is.na(.)])
+        if (is.na(first_non_na)) {
+          rep(NA_real_, length(.))
+        } else {
+          (. - first_non_na) * 100
+        }
+      }
+    ),
+    # FX rates - percent changes (should be fine as FX data is more complete)
+    across(c(gbpeur, eurusd, gbpusd), ~ (. - first(.)) / first(.) * 100),
+    # FTSE - percent changes
+    ftse_all = (ftse_all - first(ftse_all)) / first(ftse_all) * 100
+  ) |>
+  filter(!is.na(date))
+
+delta.gbp.cumul.long <- delta.gbp.cumul |>
+  pivot_longer(
+    cols = starts_with("x") |
+      starts_with("col") |
+      starts_with("gbp") |
+      starts_with("eur") |
+      starts_with("ftse"),
+    names_to = "variable",
+    values_to = "cumulative_change"
+  )
+
+dat <- delta.gbp.cumul.long
+ois_fatigue <- dat |>
+  ggplot(aes(x = date)) +
+  geom_line(
+    data = dat %>% filter(variable %in% c("x24", "x60")),
+    aes(y = cumulative_change, color = factor(variable)),
+    linewidth = 0.9
+  ) +
+  geom_point(
+    data = dat %>% filter(variable %in% c("x24", "x60")),
+    aes(y = cumulative_change, color = factor(variable)),
+    size = 1.1
+  ) +
+  # Secondary Y-axis (GBPUSD scaled)
+  geom_col(
+    data = dat %>% filter(variable == "gbpusd"),
+    aes(y = cumulative_change * scale_factor, fill = variable),
+    color = 'deeppink4',
+    alpha = 0.6
+  ) +
+  # ADD EVENT DATES - FOMC dates with labels
+  geom_vline(
+    xintercept = as.Date('2025-07-02'),
+    linetype = "dashed",
+    color = "red",
+    alpha = 0.7
+  ) +
+  # Add text labels for the event lines
+  annotate(
+    "text",
+    x = as.Date('2025-07-02'),
+    y = -15,
+    label = 'PMQs: 02.07.25',
+    hjust = 0.5,
+    vjust = 1.2,
+    color = "red",
+    size = 3,
+    angle = 90
+  ) +
+  # Reference lines
+  geom_hline(yintercept = 0.0, linetype = 4) +
+  # Color scales
+  scale_color_jco(
+    labels = c("x24" = "2y OIS", "x60" = "5y OIS")
+  ) +
+  # Fill scale for GBPUSD bars
+  scale_fill_manual(
+    values = c("gbpusd" = "deeppink4"),
+    labels = c("gbpusd" = "GBPUSD")
+  ) +
+  # Primary and Secondary Y-Axis
+  scale_y_continuous(
+    name = "bp, cumulative change",
+    sec.axis = sec_axis(
+      ~ . / scale_factor,
+      name = "GBPUSD % change"
+    )
+  ) +
+  # Labels & Legends
+  labs(
+    title = "GBP OIS and GBPUSD",
+    subtitle = "cumulative change",
+    color = "",
+    fill = ""
+  ) +
+  theme(legend.position = "bottom")
+ois_fatigue
+
 #===========================================
 # Fig: Gilts, Equities Cumul change, 90d----
 #===========================================

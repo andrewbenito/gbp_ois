@@ -2,11 +2,15 @@
 # ABenito, March 2025
 #=================================
 #devtools::install_github("jasonhilton/ggfan")
-lapply(c('rdbnomics', 'ggfan', 'glue'), require, character.only = TRUE)
+lapply(
+  c('rdbnomics', 'ggfan', 'glue', 'readxl'),
+  require,
+  character.only = TRUE
+)
 
 # INPUT: Most recent MPR ----
 year <- 2025
-month <- 'may'
+month <- 'august'
 startYear <- 2000
 
 finalReport <- year +
