@@ -66,7 +66,7 @@ correl.plot.10y.ftse <- dat_correls_long |>
   ggplot(
     aes(x = date, y = value, color = factor(variable))
   ) +
-  geom_line(linewidth = 1.75) +
+  geom_line(linewidth = 1.25) +
   geom_vline(xintercept = as.Date("2022-09-23"), lty = 4, size = 1.75) + # mini_Budget
   geom_vline(xintercept = as.Date("2024-10-30"), lty = 4, size = 1.75) + # Reeves Budget
   geom_vline(xintercept = as.Date("2025-01-07"), lty = 4, size = 1.75) + # January volatility
@@ -80,7 +80,7 @@ correl.plot.10y.ftse <- dat_correls_long |>
     hjust = 0.0,
     vjust = 0,
     angle = 0,
-    size = 13,
+    size = 4,
     fontface = "bold"
   ) +
   annotate(
@@ -91,7 +91,7 @@ correl.plot.10y.ftse <- dat_correls_long |>
     hjust = 1.0,
     vjust = 0,
     angle = 0,
-    size = 13,
+    size = 4,
     fontface = "bold"
   ) +
   annotate(
@@ -102,7 +102,7 @@ correl.plot.10y.ftse <- dat_correls_long |>
     hjust = 0.0,
     vjust = 0,
     angle = 0,
-    size = 13,
+    size = 4,
     fontface = "bold",
     color = "red"
   ) +
@@ -110,11 +110,11 @@ correl.plot.10y.ftse <- dat_correls_long |>
     "text",
     x = as.Date("2025-04-02"),
     y = min(subset(dat_correls_long, date >= "2022-06-01")$value, na.rm = TRUE),
-    label = "US Tariffs",
+    label = "US \nTariffs",
     hjust = 0.0,
     vjust = 0,
     angle = 0,
-    size = 13,
+    size = 4,
     color = "brown"
   ) +
   annotate(
@@ -125,7 +125,7 @@ correl.plot.10y.ftse <- dat_correls_long |>
     hjust = 0.0,
     vjust = 0,
     angle = 0,
-    size = 13,
+    size = 4,
     color = "red"
   ) +
   scale_color_manual(
@@ -152,7 +152,7 @@ correl.plot.10y.gbp <- dat_correls_long |>
   ggplot(
     aes(x = date, y = value, color = factor(variable))
   ) +
-  geom_line(linewidth = 1.75) +
+  geom_line(linewidth = 1.25) +
   geom_vline(xintercept = as.Date("2022-09-23"), lty = 4, size = 1.75) + # mini_Budget
   geom_vline(xintercept = as.Date("2024-10-30"), lty = 4, size = 1.75) + # Reeves Budget
   geom_vline(xintercept = as.Date("2025-01-07"), lty = 4, size = 1.75) + # January volatility
@@ -166,7 +166,7 @@ correl.plot.10y.gbp <- dat_correls_long |>
     hjust = 0.0,
     vjust = 0,
     angle = 0,
-    size = 5,
+    size = 4,
     fontface = "bold"
   ) +
   annotate(
@@ -177,7 +177,7 @@ correl.plot.10y.gbp <- dat_correls_long |>
     hjust = 1.0,
     vjust = 0,
     angle = 0,
-    size = 5,
+    size = 4,
     fontface = "bold"
   ) +
   annotate(
@@ -188,7 +188,7 @@ correl.plot.10y.gbp <- dat_correls_long |>
     hjust = 0.0,
     vjust = 0,
     angle = 0,
-    size = 5,
+    size = 4,
     fontface = "bold",
     color = "red"
   ) +
@@ -196,11 +196,11 @@ correl.plot.10y.gbp <- dat_correls_long |>
     "text",
     x = as.Date("2025-04-02"),
     y = min(subset(dat_correls_long, date >= "2022-06-01")$value, na.rm = TRUE),
-    label = "US Tariffs",
+    label = "US \nTariffs",
     hjust = 0.0,
     vjust = 0,
     angle = 0,
-    size = 5,
+    size = 4,
     color = "brown"
   ) +
   annotate(
@@ -211,7 +211,7 @@ correl.plot.10y.gbp <- dat_correls_long |>
     hjust = 0.0,
     vjust = 0,
     angle = 0,
-    size = 5,
+    size = 4,
     color = "red"
   ) +
   scale_color_manual(

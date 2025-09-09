@@ -330,7 +330,7 @@ plot_effort <- ggplot(
     fill = fiscal_effort > 0
   )
 ) +
-  geom_bar(stat = "identity", width = 0.7) +
+  geom_bar(stat = "identity", width = 0.7, color = "black") +
   coord_flip() +
   scale_y_continuous(
     name = "Fiscal Effort (% of GDP)",
