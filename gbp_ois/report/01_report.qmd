@@ -318,10 +318,25 @@ Increasingly nuanced macroeconomic assessments are producing more closely contes
 
 
 ```{r}
-#| label: plot-correls
-#| fig-cap: "MPC disagreement and preferences"
+#| label: plot-correls-gbp
+#| fig-cap: "Rolling correlation: 10y yields and GBPUSD"
+#| results: hide
 
-plot_corr_yield_eq + plot_corr_yield_fx
+source(here::here("setup", "09_bouts_risk_premium.R"))
+
+correl.plot.10y.gbp 
+```
+
+
+
+
+
+```{r}
+#| label: plot-correls-ftse
+#| fig-cap: "Rolling correlation: 10y yields and Equities"
+#| results: hide
+
+correl.plot.10y.ftse 
 ```
 
 

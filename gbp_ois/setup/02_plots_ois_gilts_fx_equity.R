@@ -245,8 +245,7 @@ ois_fatigue <- dat |>
     hjust = 0.5,
     vjust = 1.2,
     color = "red",
-    size = 3,
-    angle = 90
+    size = 3
   ) +
   # Reference lines
   geom_hline(yintercept = 0.0, linetype = 4) +

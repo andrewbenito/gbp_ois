@@ -1,205 +1,230 @@
 # Plot GBP Asset Prices - Bouts of Risk Premium
 
 #blpConnect()
+library(tidyquant)
+
 # SETTINGS
 start_date <- as.Date('2020-01-01')
 
-
 # Plot GBPUSD Correlations, weekly and monthly
-dat.correl <- df |>
-  dplyr::select(c(contains("corr"), date)) |>
+dat_correls <- dat_gbp |>
+  filter(date >= start_date)
+# Get daily yields for DGS10 from FRED
+TY10y <- tq_get(
+  "DGS10",
+  from = start_date,
+  to = Sys.Date(),
+  get = "economic.data"
+)
+
+# Calculate 10y yield gap
+dat_correls <- dat_correls |>
+  left_join(TY10y, by = c("date" = "date")) |>
+  rename(ty10y = price) |>
+  mutate(gbus10y = col_20 - ty10y)
+
+# first diff yield gap; % change in gbpusd and ftse_all
+dat_correls <- dat_correls |>
+  mutate(
+    gbus10y_d = (gbus10y - lag(gbus10y)) * 100,
+    gbpusd_ret = (gbpusd / lag(gbpusd) - 1) * 100,
+    ftse_all_ret = (ftse_all / lag(ftse_all) - 1) * 100
+  )
+
+# add rolling correlations yeld gap and gbpusd; gb10y and equities (ftse_all)
+# yield gap and gbpusd----
+corr_list <- list(
+  gbus10y_gbpusd_r20 = list(x = "gbus10y_d", y = "gbpusd_ret", width = 20),
+  gbus10y_gbpusd_r40 = list(x = "gbus10y_d", y = "gbpusd_ret", width = 40),
+  gbus10y_ftse_r20 = list(x = "gbus10y_d", y = "ftse_all_ret", width = 20),
+  gbus10y_ftse_r40 = list(x = "gbus10y_d", y = "ftse_all_ret", width = 40)
+)
+
+for (nm in names(corr_list)) {
+  spec <- corr_list[[nm]]
+  dat_correls[[nm]] <- zoo::rollapply(
+    data = dat_correls[, c(spec$x, spec$y)],
+    width = spec$width,
+    FUN = function(z) cor(z[, 1], z[, 2], use = "complete.obs"),
+    by.column = FALSE,
+    align = "right",
+    fill = NA
+  )
+}
+
+# Long format for plotting
+dat_correls_long <- dat_correls |>
+  dplyr::select(date, matches("_r20|_r40")) |>
   pivot_longer(!date, names_to = "variable", values_to = "value")
 
-# average monthly correlation
-stat.avg1 <- dat.correl |>
-  dplyr::filter(variable == "corr_monthly") |>
-  summarise(average = mean(value, na.rm = TRUE)) |>
-  pull(average)
-
 # Plot
-correl.plot <- ggplot(
-  subset(dat.correl, date >= "2022-06-01"),
-  aes(x = date, y = value, color = factor(variable))
-) +
+correl.plot.10y.ftse <- dat_correls_long |>
+  filter(
+    date >= as.Date('2022-06-01'),
+    variable %in% c("gbus10y_ftse_r20", "gbus10y_ftse_r40")
+  ) |>
+  ggplot(
+    aes(x = date, y = value, color = factor(variable))
+  ) +
   geom_line(linewidth = 1.75) +
   geom_vline(xintercept = as.Date("2022-09-23"), lty = 4, size = 1.75) + # mini_Budget
   geom_vline(xintercept = as.Date("2024-10-30"), lty = 4, size = 1.75) + # Reeves Budget
   geom_vline(xintercept = as.Date("2025-01-07"), lty = 4, size = 1.75) + # January volatility
   geom_vline(xintercept = as.Date("2025-04-02"), lty = 4, size = 1.75) + # US Tariffs announced
+  geom_vline(xintercept = as.Date("2025-07-02"), lty = 4, size = 1.75) + # PMQs 07.02.2025
   annotate(
     "text",
     x = as.Date("2022-09-23"),
-    y = min(subset(dat.correl, date >= "2022-06-01")$value, na.rm = TRUE),
+    y = min(subset(dat_correls_long, date >= "2022-06-01")$value, na.rm = TRUE),
     label = "mini-Budget",
     hjust = 0.0,
     vjust = 0,
     angle = 0,
     size = 13,
-    family = "Roboto Condensed",
     fontface = "bold"
   ) +
   annotate(
     "text",
     x = as.Date("2024-10-30"),
-    y = min(subset(dat.correl, date >= "2022-06-01")$value, na.rm = TRUE),
+    y = min(subset(dat_correls_long, date >= "2022-06-01")$value, na.rm = TRUE),
     label = "Reeves\nBudget",
     hjust = 1.0,
     vjust = 0,
     angle = 0,
     size = 13,
-    family = "Roboto Condensed",
     fontface = "bold"
   ) +
   annotate(
     "text",
     x = as.Date("2025-01-07"),
-    y = min(subset(dat.correl, date >= "2022-06-01")$value, na.rm = TRUE),
+    y = min(subset(dat_correls_long, date >= "2022-06-01")$value, na.rm = TRUE),
     label = "Jan.\nvol.",
     hjust = 0.0,
     vjust = 0,
     angle = 0,
     size = 13,
-    family = "Roboto Condensed",
     fontface = "bold",
     color = "red"
   ) +
   annotate(
     "text",
     x = as.Date("2025-04-02"),
-    y = min(subset(dat.correl, date >= "2022-06-01")$value, na.rm = TRUE),
+    y = min(subset(dat_correls_long, date >= "2022-06-01")$value, na.rm = TRUE),
     label = "US Tariffs",
     hjust = 0.0,
     vjust = 0,
     angle = 0,
     size = 13,
-    family = "Roboto Condensed",
     color = "brown"
   ) +
-  geom_hline(
-    aes(yintercept = stat.avg1, linetype = "sample mean"),
-    size = 1.75,
-    color = "darkred"
+  annotate(
+    "text",
+    x = as.Date("2025-07-02"),
+    y = min(subset(dat_correls_long, date >= "2022-06-01")$value, na.rm = TRUE),
+    label = "PMQs",
+    hjust = 0.0,
+    vjust = 0,
+    angle = 0,
+    size = 13,
+    color = "red"
   ) +
-  scale_linetype_manual(name = "", values = c("sample mean" = 4)) +
   scale_color_manual(
     values = c("red", "dodgerblue"), # Custom colors for each series
-    labels = c("1-month (rolling)", "2-week (rolling)") # Custom legend labels
+    labels = c("20d (rolling)", "40d (rolling)") # Custom legend labels
   ) +
   geom_hline(yintercept = 0.0, lty = 4) +
   labs(
-    title = "Correlation of GB/US 10y Yield Gap and GBPUSD",
+    title = "Correlation of GB/US 10y Yield Gap and Equities",
     y = "correlation",
-    caption = "Source: Bloomberg",
+    #    caption = "Source: Bloomberg",
     color = NULL
   ) +
-  theme(legend.position = "right") +
-  scale_x_date(limits = c(as.Date("2022-06-01"), as.Date("2025-06-30")))
-correl.plot
+  theme(legend.position = "bottom") +
+  scale_x_date(limits = c(as.Date("2022-06-01"), as.Date("2025-12-30")))
+correl.plot.10y.ftse
 
-# Monthly Plot, only
-dat.correl <- dat.correl[dat.correl$variable != "corr_weekly", ]
-correl.plot.m <- ggplot(
-  subset(dat.correl, date >= "2022-06-01"),
-  aes(x = date, y = value, color = factor(variable))
-) +
+# Plot
+correl.plot.10y.gbp <- dat_correls_long |>
+  filter(
+    date >= as.Date('2022-06-01'),
+    variable %in% c("gbus10y_gbpusd_r20", "gbus10y_gbpusd_r40")
+  ) |>
+  ggplot(
+    aes(x = date, y = value, color = factor(variable))
+  ) +
   geom_line(linewidth = 1.75) +
   geom_vline(xintercept = as.Date("2022-09-23"), lty = 4, size = 1.75) + # mini_Budget
   geom_vline(xintercept = as.Date("2024-10-30"), lty = 4, size = 1.75) + # Reeves Budget
   geom_vline(xintercept = as.Date("2025-01-07"), lty = 4, size = 1.75) + # January volatility
   geom_vline(xintercept = as.Date("2025-04-02"), lty = 4, size = 1.75) + # US Tariffs announced
+  geom_vline(xintercept = as.Date("2025-07-02"), lty = 4, size = 1.75) + # PMQs 07.02.2025
   annotate(
     "text",
     x = as.Date("2022-09-23"),
-    y = min(subset(dat.correl, date >= "2022-06-01")$value, na.rm = TRUE),
+    y = min(subset(dat_correls_long, date >= "2022-06-01")$value, na.rm = TRUE),
     label = "mini-Budget",
     hjust = 0.0,
     vjust = 0,
     angle = 0,
-    size = 13,
-    family = "Roboto Condensed",
+    size = 5,
     fontface = "bold"
   ) +
   annotate(
     "text",
     x = as.Date("2024-10-30"),
-    y = min(subset(dat.correl, date >= "2022-06-01")$value, na.rm = TRUE),
+    y = min(subset(dat_correls_long, date >= "2022-06-01")$value, na.rm = TRUE),
     label = "Reeves\nBudget",
     hjust = 1.0,
     vjust = 0,
     angle = 0,
-    size = 13,
-    family = "Roboto Condensed",
+    size = 5,
     fontface = "bold"
   ) +
   annotate(
     "text",
     x = as.Date("2025-01-07"),
-    y = min(subset(dat.correl, date >= "2022-06-01")$value, na.rm = TRUE),
+    y = min(subset(dat_correls_long, date >= "2022-06-01")$value, na.rm = TRUE),
     label = "Jan.\nvol.",
     hjust = 0.0,
     vjust = 0,
     angle = 0,
-    size = 13,
-    family = "Roboto Condensed",
+    size = 5,
     fontface = "bold",
     color = "red"
   ) +
   annotate(
     "text",
     x = as.Date("2025-04-02"),
-    y = min(subset(dat.correl, date >= "2022-06-01")$value, na.rm = TRUE),
+    y = min(subset(dat_correls_long, date >= "2022-06-01")$value, na.rm = TRUE),
     label = "US Tariffs",
     hjust = 0.0,
     vjust = 0,
     angle = 0,
-    size = 13,
-    family = "Roboto Condensed"
+    size = 5,
+    color = "brown"
   ) +
-  geom_hline(
-    aes(yintercept = stat.avg1, linetype = "sample mean"),
-    size = 1.75,
-    color = "darkred"
+  annotate(
+    "text",
+    x = as.Date("2025-07-02"),
+    y = min(subset(dat_correls_long, date >= "2022-06-01")$value, na.rm = TRUE),
+    label = "PMQs",
+    hjust = 0.0,
+    vjust = 0,
+    angle = 0,
+    size = 5,
+    color = "red"
   ) +
-  scale_linetype_manual(name = "", values = c("sample mean" = 4)) +
   scale_color_manual(
-    values = "blue", # Custom colors for each series
-    labels = "1-month (rolling)"
-  ) + # Custom legend labels
+    values = c("red", "dodgerblue"), # Custom colors for each series
+    labels = c("20d (rolling)", "40d (rolling)") # Custom legend labels
+  ) +
   geom_hline(yintercept = 0.0, lty = 4) +
   labs(
     title = "Correlation of GB/US 10y Yield Gap and GBPUSD",
     y = "correlation",
-    caption = "Source: Bloomberg",
+    #    caption = "Source: Bloomberg",
     color = NULL
   ) +
-  theme(legend.position = "right") +
-  scale_x_date(limits = c(as.Date("2022-06-01"), as.Date("2025-06-30")))
-correl.plot.m
-
-
-df1 <- df |>
-  dplyr::select(-c(contains("corr"), yieldgap10, gtgbp10yr_corp)) |>
-  pivot_longer(!date, names_to = "variable", values_to = "value")
-
-# plots yield gap against gbpusd
-df2 <- df |>
-  dplyr::select(date, yieldgap10, gbpusd_curncy) |>
-  pivot_longer(!date, names_to = "variable", values_to = "value")
-
-# Plot
-#[1]
-assets.plot1 <- ggplot(
-  subset(df1, date >= '2022-06-01'),
-  aes(x = date, y = value, color = factor(variable))
-) +
-  geom_line() +
-  theme(legend.position = "none") +
-  facet_wrap(~variable, scales = "free_y")
-#[2]
-assets.plot2 <- ggplot(
-  subset(df2, date >= '2022-06-01'),
-  aes(x = date, y = value, color = factor(variable))
-) +
-  geom_line() +
-  theme(legend.position = "none") +
-  facet_wrap(~variable, scales = "free_y")
+  theme(legend.position = "bottom") +
+  scale_x_date(limits = c(as.Date("2022-06-01"), as.Date("2025-12-30")))
+correl.plot.10y.gbp
