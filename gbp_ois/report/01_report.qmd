@@ -39,12 +39,12 @@ source(here::here("setup", "08_mpc_voting.R"))
 ## Latest developments: the past three months
 
 Summarising some key developments in Sterling markets in the past 3 months:   
-- **OIS rates** have seen a 'round-trip', rallying in June by 25bp, selling-off in July and subsequently reversing those moves. 
+- **OIS rates** have seen a 'round-trip', rallying in June by 25bp, selling-off in July and August in moves subsequently reversed. 
 - **Sterling** strengthened against the US Dollar in June (while OIS rallied), and then reversed that (as OIS rates sold-off).  
-- **Gilt yields** rallied (by less than OIS) in June, and that decline has been more than reversed since then and especially at the long-end. 25y Gilt yields end the period a full 40bp higher.  
+- **Gilt yields** rallied (by less than OIS) in June, and that decline has been more than reversed since then and especially at the long-end. Sharp rises in August in 25y+ Gilt yields reversed into September.  
 - **Equities** rallied strongly by a cumulative 5% over the period, and concentrated in the period from July to mid-August. 
 
-This pattern points to greater fiscal risks entering into market pricing, especially in last August. While fiscal slippage boosts aggregate demand, some crowding-out from these interest rate responses should also be expected. In the past month, fewer rate cuts have been priced to take place over the next year, and this has tended to weigh on Equity prices. Internationally, these interest rate effects appear to have emanated from the US and UK more than from Japan or Germany. 
+This pattern points to greater fiscal risks entering into market pricing, especially in August. While fiscal slippage boosts aggregate demand, some crowding-out from these interest rate responses should also be expected. In the past month, fewer rate cuts have been priced to take place over the next year. Internationally, these interest rate effects appear to have emanated from the US and UK more than from Japan or Germany. 
 
 
 \newpage
@@ -106,13 +106,7 @@ plot2s5s +
   ))
 ```
 
-**Swap spreads** shed light on potential effects from bond supply in different markets. Swap spreads have moved more deeply negative in recent weeks and by more in the UK than in the US or Germany.  
-
-
-
-Fiscal developments have likely played a role in the rise in term spreads and widening of swap spreads. @fig_swsp shows 5y swap spreads (see here for a discussio). 
-
-[contribution from OIS and bond yields to changes in swap spreads in UK, US, GER since 2022-01-01]
+**Swap spreads** shed light on potential effects from bond supply in different markets. Swap spreads have moved more deeply negative in recent weeks. At -xxxbp 5y swap spreads are around their most negative level since xxx. Fiscal developments have likely contributed to this.  
 
 
 ```{r}
@@ -123,10 +117,8 @@ plot.swsp5y + plot_contributions_5yswsp + plot_layout(widths = c(2,3))
 
 ```
 
-
-
 # Evolving market pricing and OIS curves
-Reflecting related developments over a longer period, @fig-ois-historical shows how GBP OIS curves have evolved over time, alongside the MPC's Bank Rate decisions. Research has shown how the persistent forecast errors shown in this chart reflect a gradual process of learning about slow-moving, medium-term factors such as the neutral and trend productivity growth.
+Reflecting related developments over a longer period, @fig-ois-historical shows how GBP OIS curves have evolved over time, alongside the MPC's Bank Rate decisions. Persistent forecast errors shown in this chart reflect a gradual process of markets learning about slow-moving, medium-term factors such as the neutral rate and trend productivity growth. 
 
 @fig-ois-recent zooms-in on how OIS curves and Bank Rate have evolved over the past year, during which the BoE has lowered its policy rate five times. 
 
@@ -156,9 +148,6 @@ source(here::here("setup", "03_neutral_r.R"))
 boxplot.neutral
 ```
 
-
-
-
 # International spillovers in sovereign bond markets
 
 What of international spillovers in bond markets? Using the Rigobon (2003) methodology, we can estimate the extent to which international spillovers have contributed to fluctuations in 10y Gilt yields. With bond markets 'spilling over' to one another, this aims to quantify to what extent different markets were 'in the driving seat' at a point in time.   
@@ -182,7 +171,9 @@ plot_structural_shocks
 
 One Fiscal fatigue occurs where a further fiscal effort is needed to stabilise public debt-to-GDP, but the political will to implement the necessary tax rises or restraint in public spending wanes. 
 
-We estimate the UK still has a required fiscal effort of 3% of GDP to stabilise its Debt-to-GDP ratio. While completing that required fiscal effort is forecast by the OBR, the issue is whether that political will exists, absent risk premiums being priced by markets. That risk of fiscal fatigue likely lies behind the periodic risk premiums in Sterling markets, including reflected in term spreads and swap spreads shown previously.
+We estimate that the UK still has a required fiscal effort of 3% of GDP to stabilise its Debt-to-GDP ratio. While completing that required fiscal effort is forecast by the OBR on current fiscal plans, the issue including for markets is whether the political will exists, absent risk premiums being priced by markets. Implementation risk crystallised in early July when Parliament failed to pass a Welfare bill with welfare savings. 
+
+The risk of fiscal fatigue likely lies behind the periodic risk premiums in Sterling markets, including reflected in term spreads and swap spreads shown previously.
 
 Uncertainty in this estimate of fiscal effort means it is worth showing the debt-stabilising primary balance for different combinations of 'r' (effective nominal interest rate on government debt) and 'g' (expected nominal growth rate). Estimates in @tab-dspb suggest the debt-stabilising primary balance would be aorund 0.5-1.0% of GDP, compared with a primary balance at -2.0% in 2024.  
 
@@ -196,6 +187,8 @@ Populism likely adds to this risk of fiscal fatigue, including in the UK and Fra
 Fig for indiv fiscal events
 
 
+
+
 A fiscal downgrade of 30bn would, based on this relationship, point to tightening of 
 A key issue in the Budget will be how front-loaded is that tightening. 
 
@@ -206,7 +199,7 @@ A key issue in the Budget will be how front-loaded is that tightening.
 #| results: hide
 
 source(here::here("setup", "05_fiscal_effort.R"))
-print(gt.dat) 
+gt.dat 
 ```
 
 
@@ -215,7 +208,8 @@ print(gt.dat)
 #| fig-cap: "Estimates of Required Fiscal Effort"
 #| results: hide
 
-plot_effort
+source(here::here("setup", "06_fiscal_choices.R"))
+responses.scatter + plot_effort
 ```
 
 
