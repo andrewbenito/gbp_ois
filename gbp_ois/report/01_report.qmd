@@ -249,7 +249,7 @@ infl.forecasts.latest
 
 
 
-## Risk premium episodes tilt hawkish for monetary policy
+## (Fiscal) Risk premium episodes tilt hawkish for monetary policy
 
 Early-July was (anoteher) case study of the fiscal fatigue risk premium. The UK Parliament failed to pass a welfare bill of welfare restraint (modifying the bill before without fiscal savings before passing it). The Chancellor's tears at the despatch box were widely reported, alongside speculation of a risk Reeves would be replaced and with that the current fiscal rules revised. 
 

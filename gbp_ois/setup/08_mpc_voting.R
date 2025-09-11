@@ -378,14 +378,6 @@ mpc_agree_plot <- historical_comparison %>%
     color = "red",
     alpha = 0.7
   ) +
-  annotate(
-    "text",
-    x = 2.5,
-    y = 80,
-    label = "All-time average: 77.5%",
-    color = "red",
-    size = 3.5
-  ) +
   scale_fill_manual(
     values = c("Current" = "#e31a1c", "Historical" = "#1f78b4")
   ) +
@@ -393,19 +385,18 @@ mpc_agree_plot <- historical_comparison %>%
   theme_minimal() +
   theme(
     axis.text.x = element_text(angle = 45, hjust = 1, size = 10),
-    plot.title = element_text(size = 14, face = "bold", hjust = 0.5),
-    plot.subtitle = element_text(size = 12, hjust = 0.5),
+    plot.title = element_text(size = 11, face = "bold", hjust = 0.5),
+    plot.subtitle = element_text(size = 9, hjust = 0.5),
     legend.position = "none"
   ) +
   labs(
-    title = "MPC Voting Agreement Rates",
-    subtitle = "Percentage of pairwise identical votes by period",
+    title = "MPC Voting Agreement",
+    subtitle = "Percent of pairwise equal votes",
     x = "",
     y = "Agreement Rate (%)"
   )
 
 print(mpc_agree_plot)
-
 
 #===============================================
 # Scatter plot of hawkish vs dissent tendencies
