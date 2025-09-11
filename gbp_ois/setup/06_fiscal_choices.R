@@ -49,7 +49,7 @@ responses.scatter <- ggplot(
     fill = "tomato",
     method = MASS::rlm
   ) +
-  geom_text_repel(size = 11) +
+  geom_text_repel(size = 3) +
   geom_vline(xintercept = 0.0, lty = 4, color = 'darkred', size = 2) +
   geom_hline(yintercept = 0.0, lty = 4, color = 'darkred', size = 2) +
   labs(

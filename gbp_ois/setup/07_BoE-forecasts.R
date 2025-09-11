@@ -321,35 +321,49 @@ infl.forecasts <- ggplot(
 infl.forecasts
 
 # Latest set of Inflation Forecasts (latest 5 Reports)
-infl.forecasts.latest <- ggplot(subset(
-  data.cpi,
-  reportDate >= last(reportDate) %m-% months(5 * 3)
-)) +
+latest_report <- max(data.cpi$reportDate)
+plot_data <- subset(data.cpi, reportDate >= latest_report %m-% months(15))
+
+# Get unique reportDate values, sorted
+report_dates <- sort(unique(plot_data$reportDate))
+n_lines <- length(report_dates)
+
+# Generate subtle red shades
+red_palette <- colorRampPalette(c("pink", "firebrick"))(n_lines)
+names(red_palette) <- as.character(report_dates) # Name colors for mapping
+
+infl.forecasts.latest <- ggplot(plot_data) +
   geom_line(
     aes(
       x = dateyq,
-      y = `Mean.x`,
+      y = Mean.x,
       group = reportDate,
       color = as.factor(reportDate)
     ),
     size = 1.5
   ) +
-  scale_color_jco() +
+  scale_color_manual(values = red_palette) +
   geom_point(
-    data = subset(data.cpi, reportDate == last(reportDate)), # Filter points for latest reportDate
-    aes(x = dateyq, y = `Mean.x`),
-    #    color = "blue",
+    data = subset(plot_data, reportDate == latest_report),
+    aes(x = dateyq, y = Mean.x),
     size = 3
   ) +
   geom_hline(yintercept = 2.0, lty = 4) +
-  theme(legend.position = "none") +
   labs(
     color = NULL,
     subtitle = "CPI Inflation",
     x = "Date",
     y = "BoE CPI Inflation forecast, %yoy"
+  ) +
+  theme(
+    plot.title = element_text(size = 11, face = "bold"),
+    plot.subtitle = element_text(size = 9),
+    panel.grid.minor = element_blank(),
+    legend.position = "none"
   )
+
 infl.forecasts.latest
+
 
 # FIG: Forecast News UNEMPLOYMENT
 unemp.forecasts <- ggplot(

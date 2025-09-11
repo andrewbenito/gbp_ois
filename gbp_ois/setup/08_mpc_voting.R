@@ -11,23 +11,22 @@ download.file(url_voting, tf, mode = "wb")
 voting <- read_xlsx(tf, sheet = "Bank Rate Decisions")
 
 # Clean raw voting data on Bank Rate
-# Clean raw voting data on Bank Rate
 mpc <- clean_mpc_voting(voting)
 current_members <- names(mpc)[3:11]
 
-
 # Calculate member column range dynamically
 member_cols <- 3:ncol(mpc) # All member columns (everything after date and bank_rate)
+mpcSum <- mpc[, c("date", "bank_rate")]
 
-mpc$votes_for <- rowSums(mpc[, member_cols] == mpc$bank_rate, na.rm = TRUE)
-mpc$votes_above <- rowSums(mpc[, member_cols] > mpc$bank_rate, na.rm = TRUE)
-mpc$votes_below <- rowSums(mpc[, member_cols] < mpc$bank_rate, na.rm = TRUE)
-mpc$votes_against <- mpc$votes_above + mpc$votes_below
-mpc$since_2020 <- if_else(mpc$date >= as.Date("2020-01-01"), 1, 0)
+mpcSum$votes_for <- rowSums(mpc[, member_cols] == mpc$bank_rate, na.rm = TRUE)
+mpcSum$votes_above <- rowSums(mpc[, member_cols] > mpc$bank_rate, na.rm = TRUE)
+mpcSum$votes_below <- rowSums(mpc[, member_cols] < mpc$bank_rate, na.rm = TRUE)
+mpcSum$votes_against <- mpc$votes_above + mpc$votes_below
+mpcSum$since_2020 <- if_else(mpc$date >= as.Date("2020-01-01"), 1, 0)
 
 # summarise proportions for votes_for for all meetings and since 2020
 # Calculate proportions for all periods
-voting_proportions <- mpc |>
+voting_proportions <- mpcSum |>
   # Create a combined dataset with "All meetings" category
   bind_rows(
     mpc |> mutate(period = "All Meetings"),
@@ -42,7 +41,6 @@ voting_proportions <- mpc |>
   pivot_wider(names_from = period, values_from = proportion, values_fill = 0) |>
   # Reorder columns
   select(votes_for, `All Meetings`, `Since 2020`)
-
 
 table.voting.sum <- voting_proportions |>
   arrange(desc(votes_for)) |>
@@ -77,7 +75,7 @@ table.voting.sum <- voting_proportions |>
   )
 
 # Create the data for the histogram with period split
-mpc_histogram_data <- mpc |>
+mpc_histogram_data <- mpcSum |>
   # Create a period indicator
   mutate(
     period = if_else(
@@ -142,7 +140,6 @@ print(paste0("number of MPC members: ", n_distinct(mpc.long$member)))
 #==============================
 # Some Disagreement Metrics ----
 #==============================
-
 # Calculate disagreement metrics per meeting
 meeting_disagreement <- mpc.long |>
   summarise(
@@ -208,6 +205,42 @@ voting_correlations <- mpc |>
   arrange(desc(correlation))
 voting_correlations
 
+# indicate if member1 and member2 are current members
+voting_correlations <- voting_correlations |>
+  mutate(
+    member1_current = if_else(
+      member1 %in% current_members,
+      "Current MPC",
+      "Past Member"
+    ),
+    member2_current = if_else(
+      member2 %in% current_members,
+      "Current MPC",
+      "Past Member"
+    ),
+    both_current_mpc = if_else(
+      member1_current == "Current MPC" & member2_current == "Current MPC",
+      "Both Current MPC",
+      "At least one Past Member"
+    )
+  )
+
+# Plot histogram of voting correlations, separately for both_current_mpc and at least one past member
+
+library(ggplot2)
+ggplot(
+  voting_correlations,
+  aes(x = both_current_mpc, y = correlation, fill = both_current_mpc)
+) +
+  geom_violin(trim = FALSE) +
+  geom_boxplot(width = 0.2, fill = "white") +
+  labs(
+    title = "Distribution of Pairwise Voting Correlations",
+    x = "Committee Group",
+    y = "Correlation"
+  )
+
+
 # Plot disagreement trends
 plot.disagreement.t <- ggplot(
   disagreement_trends,
@@ -221,6 +254,8 @@ plot.disagreement.t <- ggplot(
     x = "Date"
   )
 plot.disagreement.t
+
+# plot hist of correlation
 
 #===============================================
 # Scatter plot of hawkish vs dissent tendencies

@@ -6,34 +6,39 @@ author: "Andrew Benito"
 date: last-modified
 toc: true
 format: 
-  pdf:
+  typst:
+    keep-typ: true
+    fig-width: 6
+    fig-height: 4
+    fig-dpi: 300
+    fig-format: png
     mainfont: "Source Sans Pro"
     sansfont: "Source Sans Pro"
     fontsize: 11pt
     linestretch: 1.4
-    include-in-header: 
-      text: |
-        \usepackage{xcolor}
-        \usepackage{sectsty}
-        \definecolor{darkblue}{RGB}{0,51,102}        
-        \sectionfont{\color{darkblue}}  % sets colour of sections
-        \subsectionfont{\color{darkblue}}
 execute:
+  fig-width: 6
+  fig-height: 4
+  fig-dpi: 300
+  out-width: "90%"
   warning: false
   message: false
   echo: false    
+bibliography: references.bib
+suppress-bibliography: true
 ---
+
 
 
 ```{r}
 #| include: false
 source(here::here("setup", "01_create_data.R"))
 source(here::here("setup", "02_plots_ois_gilts_fx_equity.R"))
-source(here::here("setup", "08_mpc_voting.R"))
+#source(here::here("setup", "08_mpc_voting.R"))
 
 ```
 
-\newpage
+#pagebreak()
 
 # Market developments
 ## Latest developments: the past three months
@@ -47,7 +52,7 @@ Summarising some key developments in Sterling markets in the past 3 months:
 This pattern points to greater fiscal risks entering into market pricing, especially in August. While fiscal slippage boosts aggregate demand, some crowding-out from these interest rate responses should also be expected. In the past month, fewer rate cuts have been priced to take place over the next year. Internationally, these interest rate effects appear to have emanated from the US and UK more than from Japan or Germany. 
 
 
-\newpage
+#pagebreak()
 
 ```{r}
 #| label: fig-ois
@@ -175,7 +180,7 @@ We estimate that the UK still has a required fiscal effort of 3% of GDP to stabi
 
 The risk of fiscal fatigue likely lies behind the periodic risk premiums in Sterling markets, including reflected in term spreads and swap spreads shown previously.
 
-Uncertainty in this estimate of fiscal effort means it is worth showing the debt-stabilising primary balance for different combinations of 'r' (effective nominal interest rate on government debt) and 'g' (expected nominal growth rate). Estimates in @tab-dspb suggest the debt-stabilising primary balance would be aorund 0.5-1.0% of GDP, compared with a primary balance at -2.0% in 2024.  
+Uncertainty in this estimate of fiscal effort means it is worth showing the debt-stabilising primary balance for different combinations of 'r' (effective nominal interest rate on government debt) and 'g' (expected nominal growth rate). Estimates suggest the debt-stabilising primary balance would be aorund 0.5-1.0% of GDP, compared with a primary balance at -2.0% in 2024.  
 
 By international standards, this is xxx. [France stands out.]
 
@@ -274,7 +279,7 @@ We make the further point that the rising disagreement among MPC members reflect
 #| label: hist-votes
 #| fig-cap: "A weaker Consensus in MPC rate decisions"
 
-plot.disagreement.t + hist.votes
+#plot.disagreement.t + hist.votes
 ```
 
 Rising disagreement among MPC members culminated in the August 2025 MPC vote requiring a second vote among Committee members in order to secure a clear majority for the rate cut decision.
@@ -285,7 +290,7 @@ Rising disagreement among MPC members culminated in the August 2025 MPC vote req
 #| fig-cap: "MPC disagreement and preferences"
 #| out-width: "100%"
 
-plot.member_patterns
+#plot.member_patterns
 ```
 
 

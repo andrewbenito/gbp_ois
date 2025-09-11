@@ -146,6 +146,118 @@ plot.ois.gbp <- ggplot(dat, aes(x = date)) +
   theme(legend.position = "bottom")
 plot.ois.gbp
 
+
+#===========================================
+# Fig: Gilts, Equities Cumul change, 90d----
+#===========================================
+scale_factor <- 10
+
+plot.gilts.eq <- ggplot(dat, aes(x = date)) +
+  # Primary Y-axis (Interest Rate Changes) - filter for Gilt variables (col_4, col_20)
+  geom_line(
+    data = dat %>% filter(variable %in% c("col_4", "col_20", "col_50")),
+    aes(y = cumulative_change, color = factor(variable)),
+    linewidth = 0.9
+  ) +
+  geom_point(
+    data = dat %>% filter(variable %in% c("col_4", "col_20", "col_50")),
+    aes(y = cumulative_change, color = factor(variable)),
+    size = 1.1
+  ) +
+  # Secondary Y-axis (FTSE scaled)
+  geom_col(
+    data = dat %>% filter(variable == "ftse_all"),
+    aes(y = cumulative_change * scale_factor, fill = variable),
+    color = 'gray70',
+    alpha = 0.6
+  ) +
+  # ADD EVENT DATES - FOMC dates with labels
+  geom_vline(
+    xintercept = as.numeric(events_list[[1]]),
+    linetype = "dashed",
+    color = "red",
+    alpha = 0.7
+  ) +
+  # ADD EVENT DATES - BoE dates with labels
+  geom_vline(
+    xintercept = as.numeric(events_list[[2]]),
+    linetype = "dashed",
+    color = "blue",
+    alpha = 0.7
+  ) +
+  # ADD EVENT DATES - US Payrolls
+  geom_vline(
+    xintercept = events_list[[3]],
+    linetype = "dashed",
+    color = "gray70",
+    alpha = 0.7
+  ) +
+  # Add text labels for the event lines
+  annotate(
+    "text",
+    x = events_list[[1]],
+    y = 10,
+    label = events1.label,
+    hjust = 0.5,
+    vjust = 1.2,
+    color = "red",
+    size = 3,
+    angle = 90
+  ) +
+  annotate(
+    "text",
+    x = events_list[[2]],
+    y = 10,
+    label = events2.label,
+    hjust = 0.5,
+    vjust = 1.2,
+    color = "blue",
+    size = 3,
+    angle = 90
+  ) +
+  annotate(
+    "text",
+    x = events_list[[3]],
+    y = 10,
+    label = events3.label,
+    hjust = 0.5,
+    vjust = 1.2,
+    color = "gray70",
+    size = 3,
+    angle = 90
+  ) +
+  # Reference lines
+  geom_hline(yintercept = 0.0, linetype = 4) +
+  # Color scales - control order with breaks parameter
+  scale_color_jco(
+    labels = c(
+      "col_4" = "2y Gilt",
+      "col_20" = "10y Gilt",
+      "col_50" = "25y Gilt"
+    ),
+    breaks = c("col_4", "col_20", "col_50")
+  ) +
+  scale_fill_jco(
+    labels = c("ftse_all" = "FTSE All Share")
+  ) +
+  # Primary and Secondary Y-Axis
+  scale_y_continuous(
+    name = "bp, cumulative change",
+    sec.axis = sec_axis(
+      ~ . / scale_factor,
+      name = "Equity index, % change"
+    )
+  ) +
+  # Labels & Legends
+  labs(
+    title = "Gilt yields and UK Equity prices",
+    subtitle = "cumulative change",
+    color = "",
+    fill = ""
+  ) +
+  theme(legend.position = "bottom")
+plot.gilts.eq
+
 # Fiscal Fatigue episode plot----
 # July 2nd 2025 PMQs
 # Cumulative changes from a start date
@@ -153,7 +265,7 @@ start_date <- as.Date('2025-07-02') - days(5)
 
 delta.gbp.cumul <- dat_gbp |>
   arrange(date) |>
-  filter(date >= start_date & date <= (start_date + days(30))) |>
+  filter(date >= start_date & date <= (start_date + days(35))) |>
   dplyr::select(
     date,
     x24,
@@ -277,116 +389,6 @@ ois_fatigue <- dat |>
   theme(legend.position = "bottom")
 ois_fatigue
 
-#===========================================
-# Fig: Gilts, Equities Cumul change, 90d----
-#===========================================
-scale_factor <- 10
-
-plot.gilts.eq <- ggplot(dat, aes(x = date)) +
-  # Primary Y-axis (Interest Rate Changes) - filter for Gilt variables (col_4, col_20)
-  geom_line(
-    data = dat %>% filter(variable %in% c("col_4", "col_20", "col_50")),
-    aes(y = cumulative_change, color = factor(variable)),
-    linewidth = 0.9
-  ) +
-  geom_point(
-    data = dat %>% filter(variable %in% c("col_4", "col_20", "col_50")),
-    aes(y = cumulative_change, color = factor(variable)),
-    size = 1.1
-  ) +
-  # Secondary Y-axis (FTSE scaled)
-  geom_col(
-    data = dat %>% filter(variable == "ftse_all"),
-    aes(y = cumulative_change * scale_factor, fill = variable),
-    color = 'gray70',
-    alpha = 0.6
-  ) +
-  # ADD EVENT DATES - FOMC dates with labels
-  geom_vline(
-    xintercept = as.numeric(events_list[[1]]),
-    linetype = "dashed",
-    color = "red",
-    alpha = 0.7
-  ) +
-  # ADD EVENT DATES - BoE dates with labels
-  geom_vline(
-    xintercept = as.numeric(events_list[[2]]),
-    linetype = "dashed",
-    color = "blue",
-    alpha = 0.7
-  ) +
-  # ADD EVENT DATES - US Payrolls
-  geom_vline(
-    xintercept = events_list[[3]],
-    linetype = "dashed",
-    color = "gray70",
-    alpha = 0.7
-  ) +
-  # Add text labels for the event lines
-  annotate(
-    "text",
-    x = events_list[[1]],
-    y = 10,
-    label = events1.label,
-    hjust = 0.5,
-    vjust = 1.2,
-    color = "red",
-    size = 3,
-    angle = 90
-  ) +
-  annotate(
-    "text",
-    x = events_list[[2]],
-    y = 10,
-    label = events2.label,
-    hjust = 0.5,
-    vjust = 1.2,
-    color = "blue",
-    size = 3,
-    angle = 90
-  ) +
-  annotate(
-    "text",
-    x = events_list[[3]],
-    y = 10,
-    label = events3.label,
-    hjust = 0.5,
-    vjust = 1.2,
-    color = "gray70",
-    size = 3,
-    angle = 90
-  ) +
-  # Reference lines
-  geom_hline(yintercept = 0.0, linetype = 4) +
-  # Color scales - control order with breaks parameter
-  scale_color_jco(
-    labels = c(
-      "col_4" = "2y Gilt",
-      "col_20" = "10y Gilt",
-      "col_50" = "25y Gilt"
-    ),
-    breaks = c("col_4", "col_20", "col_50")
-  ) +
-  scale_fill_jco(
-    labels = c("ftse_all" = "FTSE All Share")
-  ) +
-  # Primary and Secondary Y-Axis
-  scale_y_continuous(
-    name = "bp, cumulative change",
-    sec.axis = sec_axis(
-      ~ . / scale_factor,
-      name = "Equity index, % change"
-    )
-  ) +
-  # Labels & Legends
-  labs(
-    title = "Gilt yields and UK Equity prices",
-    subtitle = "cumulative change",
-    color = "",
-    fill = ""
-  ) +
-  theme(legend.position = "bottom")
-plot.gilts.eq
 
 #================================
 # Figure 1: Evolving Forwards----

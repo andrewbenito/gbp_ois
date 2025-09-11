@@ -367,14 +367,14 @@ plot_effort <- ggplot(
   ylim(min(imf_2024$fiscal_effort) - 1, max(imf_2024$fiscal_effort) + 1) +
   labs(
     title = "Required Fiscal Effort",
-    subtitle = "Required improvement in Primary Balance to stabilise Debt to GDP",
+    subtitle = "Required improvement in Primary Balance \nto stabilise Debt to GDP",
     caption = "Source: IMF Fiscal Monitor and WEO",
     x = NULL,
     y = "Fiscal Effort (% of GDP)"
   ) +
   theme(
-    plot.title = element_text(size = 14, face = "bold"),
-    plot.subtitle = element_text(size = 11),
+    plot.title = element_text(size = 11, face = "bold"),
+    plot.subtitle = element_text(size = 9),
     panel.grid.minor = element_blank()
   )
 #plot_effort
