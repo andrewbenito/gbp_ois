@@ -49,9 +49,9 @@ responses.scatter <- ggplot(
     fill = "tomato",
     method = MASS::rlm
   ) +
-  geom_text_repel(size = 3) +
-  geom_vline(xintercept = 0.0, lty = 4, color = 'darkred', size = 2) +
-  geom_hline(yintercept = 0.0, lty = 4, color = 'darkred', size = 2) +
+  geom_text_repel(size = 2.5) +
+  geom_vline(xintercept = 0.0, lty = 4, color = 'darkred', size = 1) +
+  geom_hline(yintercept = 0.0, lty = 4, color = 'darkred', size = 1) +
   labs(
     title = "Policy Responses to Fiscal Forecast Revisions",
     subtitle = "Robust regression line",

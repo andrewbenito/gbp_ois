@@ -350,10 +350,10 @@ infl.forecasts.latest <- ggplot(plot_data) +
   ) +
   geom_hline(yintercept = 2.0, lty = 4) +
   labs(
-    color = NULL,
-    subtitle = "CPI Inflation",
+    title = "CPI Inflation",
     x = "Date",
-    y = "BoE CPI Inflation forecast, %yoy"
+    y = "BoE CPI Inflation forecasts, %yoy",
+    color = NULL
   ) +
   theme(
     plot.title = element_text(size = 11, face = "bold"),

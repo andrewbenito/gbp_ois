@@ -625,6 +625,16 @@ plot2y_v_10y <- glc |>
     size = 3,
     inherit.aes = FALSE # Don't inherit the color aesthetic
   ) +
+  geom_label_repel(
+    data = glc |>
+      filter(date >= max(date) - years(10)) |>
+      slice_tail(n = 1), # Just label the most recent point to avoid clutter
+    aes(x = col_4, y = col_20),
+    label = "past 2 weeks",
+    color = "black",
+    size = 3,
+    inherit.aes = FALSE
+  ) +
   geom_hline(yintercept = 0, lty = 4) +
   geom_vline(xintercept = 0, lty = 4) +
   geom_abline(intercept = 0, slope = 1, lty = 2) +
@@ -633,7 +643,8 @@ plot2y_v_10y <- glc |>
     title = "2y vs 10y Gilt yields",
     subtitle = "sample: past 10 years, daily data",
     x = "2y Gilt yield (%)",
-    y = "10y Gilt yield (%)"
+    y = "10y Gilt yield (%)",
+    name = NULL
   ) +
   theme(legend.position = "bottom")
 # save
@@ -684,6 +695,16 @@ plot5y_v_25y <- glc |>
     size = 3,
     inherit.aes = FALSE # Don't inherit the color aesthetic
   ) +
+  geom_label_repel(
+    data = glc |>
+      filter(date >= max(date) - years(10)) |>
+      slice_tail(n = 1), # Just label the most recent point to avoid clutter
+    aes(x = col_4, y = col_20),
+    label = "past 2 weeks",
+    color = "black",
+    size = 3,
+    inherit.aes = FALSE
+  ) +
   geom_hline(yintercept = 0, lty = 4) +
   geom_vline(xintercept = 0, lty = 4) +
   geom_abline(intercept = 0, slope = 1, lty = 2) +
@@ -692,7 +713,8 @@ plot5y_v_25y <- glc |>
     title = "5y vs 25y Gilt yields",
     subtitle = "sample: last 10 years, daily data",
     x = "5y Gilt yield (%)",
-    y = "25y Gilt yield (%)"
+    y = "25y Gilt yield (%)",
+    name = NULL
   ) +
   theme(legend.position = "bottom")
 # save

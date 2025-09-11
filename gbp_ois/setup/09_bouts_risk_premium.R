@@ -36,8 +36,8 @@ dat_correls <- dat_correls |>
 corr_list <- list(
   gbus10y_gbpusd_r20 = list(x = "gbus10y_d", y = "gbpusd_ret", width = 20),
   gbus10y_gbpusd_r40 = list(x = "gbus10y_d", y = "gbpusd_ret", width = 40),
-  gbus10y_ftse_r20 = list(x = "gbus10y_d", y = "ftse_all_ret", width = 20),
-  gbus10y_ftse_r40 = list(x = "gbus10y_d", y = "ftse_all_ret", width = 40)
+  gb10y_ftse_r20 = list(x = "col_20", y = "ftse_all_ret", width = 20),
+  gb10y_ftse_r40 = list(x = "col_20", y = "ftse_all_ret", width = 40)
 )
 
 for (nm in names(corr_list)) {
@@ -61,17 +61,17 @@ dat_correls_long <- dat_correls |>
 correl.plot.10y.ftse <- dat_correls_long |>
   filter(
     date >= as.Date('2022-06-01'),
-    variable %in% c("gbus10y_ftse_r20", "gbus10y_ftse_r40")
+    variable %in% c("gb10y_ftse_r20", "gb10y_ftse_r40")
   ) |>
   ggplot(
     aes(x = date, y = value, color = factor(variable))
   ) +
-  geom_line(linewidth = 1.25) +
-  geom_vline(xintercept = as.Date("2022-09-23"), lty = 4, size = 1.75) + # mini_Budget
-  geom_vline(xintercept = as.Date("2024-10-30"), lty = 4, size = 1.75) + # Reeves Budget
-  geom_vline(xintercept = as.Date("2025-01-07"), lty = 4, size = 1.75) + # January volatility
-  geom_vline(xintercept = as.Date("2025-04-02"), lty = 4, size = 1.75) + # US Tariffs announced
-  geom_vline(xintercept = as.Date("2025-07-02"), lty = 4, size = 1.75) + # PMQs 07.02.2025
+  geom_line(linewidth = 1.1) +
+  geom_vline(xintercept = as.Date("2022-09-23"), lty = 4, size = 1.5) + # mini_Budget
+  geom_vline(xintercept = as.Date("2024-10-30"), lty = 4, size = 1.5) + # Reeves Budget
+  geom_vline(xintercept = as.Date("2025-01-07"), lty = 4, size = 1.5) + # January volatility
+  geom_vline(xintercept = as.Date("2025-04-02"), lty = 4, size = 1.5) + # US Tariffs announced
+  geom_vline(xintercept = as.Date("2025-07-02"), lty = 4, size = 1.5) + # PMQs 07.02.2025
   annotate(
     "text",
     x = as.Date("2022-09-23"),
@@ -134,7 +134,7 @@ correl.plot.10y.ftse <- dat_correls_long |>
   ) +
   geom_hline(yintercept = 0.0, lty = 4) +
   labs(
-    title = "Correlation of GB/US 10y Yield Gap and Equities",
+    title = "Correlation of GB 10y Yield and Equities",
     y = "correlation",
     #    caption = "Source: Bloomberg",
     color = NULL
@@ -152,12 +152,12 @@ correl.plot.10y.gbp <- dat_correls_long |>
   ggplot(
     aes(x = date, y = value, color = factor(variable))
   ) +
-  geom_line(linewidth = 1.25) +
-  geom_vline(xintercept = as.Date("2022-09-23"), lty = 4, size = 1.75) + # mini_Budget
-  geom_vline(xintercept = as.Date("2024-10-30"), lty = 4, size = 1.75) + # Reeves Budget
-  geom_vline(xintercept = as.Date("2025-01-07"), lty = 4, size = 1.75) + # January volatility
-  geom_vline(xintercept = as.Date("2025-04-02"), lty = 4, size = 1.75) + # US Tariffs announced
-  geom_vline(xintercept = as.Date("2025-07-02"), lty = 4, size = 1.75) + # PMQs 07.02.2025
+  geom_line(linewidth = 1.1) +
+  geom_vline(xintercept = as.Date("2022-09-23"), lty = 4, size = 1.5) + # mini_Budget
+  geom_vline(xintercept = as.Date("2024-10-30"), lty = 4, size = 1.5) + # Reeves Budget
+  geom_vline(xintercept = as.Date("2025-01-07"), lty = 4, size = 1.5) + # January volatility
+  geom_vline(xintercept = as.Date("2025-04-02"), lty = 4, size = 1.5) + # US Tariffs announced
+  geom_vline(xintercept = as.Date("2025-07-02"), lty = 4, size = 1.5) + # PMQs 07.02.2025
   annotate(
     "text",
     x = as.Date("2022-09-23"),

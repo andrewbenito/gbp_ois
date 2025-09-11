@@ -14,65 +14,78 @@ voting <- read_xlsx(tf, sheet = "Bank Rate Decisions")
 mpc <- clean_mpc_voting(voting)
 current_members <- names(mpc)[3:11]
 
-# Calculate member column range dynamically
-member_cols <- 3:ncol(mpc) # All member columns (everything after date and bank_rate)
-mpcSum <- mpc[, c("date", "bank_rate")]
-
-mpcSum$votes_for <- rowSums(mpc[, member_cols] == mpc$bank_rate, na.rm = TRUE)
-mpcSum$votes_above <- rowSums(mpc[, member_cols] > mpc$bank_rate, na.rm = TRUE)
-mpcSum$votes_below <- rowSums(mpc[, member_cols] < mpc$bank_rate, na.rm = TRUE)
-mpcSum$votes_against <- mpc$votes_above + mpc$votes_below
-mpcSum$since_2020 <- if_else(mpc$date >= as.Date("2020-01-01"), 1, 0)
+# Create mpcSum summary dataframe
+mpcSum <- mpc |>
+  rowwise() |>
+  mutate(
+    # Get all voting columns (exclude date and bank_rate)
+    votes = list(c_across(-c(date, bank_rate))),
+    # Remove NA values from votes
+    valid_votes = list(votes[!is.na(votes)]),
+    # Count votes for different outcomes
+    votes_for = sum(valid_votes == bank_rate, na.rm = TRUE),
+    votes_for_higher = sum(valid_votes > bank_rate, na.rm = TRUE),
+    votes_for_lower = sum(valid_votes < bank_rate, na.rm = TRUE),
+    total_votes = length(valid_votes)
+  ) |>
+  dplyr::select(
+    date,
+    bank_rate,
+    votes_for,
+    votes_for_higher,
+    votes_for_lower,
+    total_votes
+  ) |>
+  ungroup()
 
 # summarise proportions for votes_for for all meetings and since 2020
-# Calculate proportions for all periods
-voting_proportions <- mpcSum |>
-  # Create a combined dataset with "All meetings" category
-  bind_rows(
-    mpc |> mutate(period = "All Meetings"),
-    mpc |>
-      filter(date >= as.Date("2020-01-01")) |>
-      mutate(period = "Since 2020")
-  ) |>
-  group_by(period) |>
-  count(votes_for) |>
-  mutate(proportion = round(n / sum(n), 3)) |>
-  select(period, votes_for, proportion) |>
-  pivot_wider(names_from = period, values_from = proportion, values_fill = 0) |>
-  # Reorder columns
-  select(votes_for, `All Meetings`, `Since 2020`)
+all_meetings <- mpcSum %>%
+  count(votes_for, name = "n_meetings") %>%
+  mutate(proportion_all = n_meetings / sum(n_meetings)) %>%
+  dplyr::select(votes_for, proportion_all)
 
-table.voting.sum <- voting_proportions |>
-  arrange(desc(votes_for)) |>
-  gt() |>
-  tab_header(
-    title = "MPC Voting Summary",
-    subtitle = "Proportion of meetings by number of members voting for Bank Rate decision"
-  ) |>
+# Calculate proportions since 2020
+since_2020 <- mpcSum %>%
+  filter(date >= as.Date("2020-01-01")) %>%
+  count(votes_for, name = "n_meetings") %>%
+  mutate(proportion_since_2020 = n_meetings / sum(n_meetings)) %>%
+  dplyr::select(votes_for, proportion_since_2020)
+
+# Combine and create the table
+voting_proportions_fixed <- tibble(votes_for = 4:9) %>%
+  left_join(all_meetings, by = "votes_for") %>%
+  left_join(since_2020, by = "votes_for") %>%
+  mutate(
+    proportion_all = replace_na(proportion_all, 0),
+    proportion_since_2020 = replace_na(proportion_since_2020, 0)
+  ) %>%
+  rename(
+    `All Meetings` = proportion_all,
+    `Since 2020` = proportion_since_2020
+  )
+
+# the gt table
+table.voting.sum <- voting_proportions_fixed %>%
+  gt() %>%
   cols_label(
-    votes_for = "Members Voting For",
-    `All Meetings` = "All Meetings",
-    `Since 2020` = "Since 2020"
-  ) |>
-  fmt_number(
+    votes_for = "Members voting for Bank Rate decision"
+  ) %>%
+  fmt_percent(
     columns = c(`All Meetings`, `Since 2020`),
-    decimals = 3
-  ) |>
+    decimals = 1
+  ) %>%
+  tab_header(
+    title = "Proportion of meetings by number of members voting for Bank Rate decision"
+  ) %>%
   tab_style(
-    style = list(
-      cell_fill(color = "#f0f0f0"),
-      cell_text(weight = "bold")
-    ),
+    style = cell_text(weight = "bold"),
     locations = cells_column_labels()
-  ) |>
+  ) %>%
   tab_style(
     style = cell_text(align = "center"),
-    locations = cells_body()
-  ) |>
-  tab_footnote(
-    footnote = "In 1998, two MPC votes were split 4-4, with an 8 member MPC.",
-    locations = cells_column_labels(columns = votes_for)
+    locations = cells_body(columns = c(`All Meetings`, `Since 2020`))
   )
+table.voting.sum
 
 # Create the data for the histogram with period split
 mpc_histogram_data <- mpcSum |>
@@ -140,20 +153,6 @@ print(paste0("number of MPC members: ", n_distinct(mpc.long$member)))
 #==============================
 # Some Disagreement Metrics ----
 #==============================
-# Calculate disagreement metrics per meeting
-meeting_disagreement <- mpc.long |>
-  summarise(
-    total_voters = n(),
-    total_dissents = sum(dissent),
-    dissent_rate = mean(dissent),
-    # Herfindahl index for vote concentration
-    vote_concentration = sum((table(vote) / n())^2),
-    # Vote spread (range of votes)
-    vote_range = max(vote) - min(vote),
-    .groups = "drop"
-  )
-meeting_disagreement
-
 # Individual member voting behavior: dissent rates, hawkish/dovish tendencies
 #================================#================================
 member_patterns <- mpc.long |>
@@ -169,14 +168,13 @@ member_patterns <- mpc.long |>
     total_votes = n(),
     dissent_rate = mean(dissent),
     avg_vote_deviation = mean(abs(vote - bank_rate)),
-    hawkish_bias = mean(vote > bank_rate), # Tendency to vote higher
-    dovish_bias = mean(vote < bank_rate), # Tendency to vote lower
-    net_bias = hawkish_bias - dovish_bias,
+    hawkish_tilt = mean(vote > bank_rate), # Tendency to vote higher
+    dovish_tilt = mean(vote < bank_rate), # Tendency to vote lower
+    net_tilt = hawkish_tilt - dovish_tilt,
     current_member = first(current_member),
     .groups = "drop"
   ) |>
   arrange(desc(dissent_rate))
-
 
 # Rolling disagreement over time (e.g., 8-mtg windows)
 disagreement_trends <- mpc.long |>
@@ -194,53 +192,6 @@ disagreement_trends <- mpc.long |>
   )
 disagreement_trends
 
-# Identify consistent voting pairs/groups
-voting_correlations <- mpc |>
-  select(-date, -bank_rate) |>
-  cor(use = "pairwise.complete.obs") |>
-  as.data.frame() |>
-  rownames_to_column("member1") |>
-  pivot_longer(-member1, names_to = "member2", values_to = "correlation") |>
-  filter(member1 != member2, !is.na(correlation)) |>
-  arrange(desc(correlation))
-voting_correlations
-
-# indicate if member1 and member2 are current members
-voting_correlations <- voting_correlations |>
-  mutate(
-    member1_current = if_else(
-      member1 %in% current_members,
-      "Current MPC",
-      "Past Member"
-    ),
-    member2_current = if_else(
-      member2 %in% current_members,
-      "Current MPC",
-      "Past Member"
-    ),
-    both_current_mpc = if_else(
-      member1_current == "Current MPC" & member2_current == "Current MPC",
-      "Both Current MPC",
-      "At least one Past Member"
-    )
-  )
-
-# Plot histogram of voting correlations, separately for both_current_mpc and at least one past member
-
-library(ggplot2)
-ggplot(
-  voting_correlations,
-  aes(x = both_current_mpc, y = correlation, fill = both_current_mpc)
-) +
-  geom_violin(trim = FALSE) +
-  geom_boxplot(width = 0.2, fill = "white") +
-  labs(
-    title = "Distribution of Pairwise Voting Correlations",
-    x = "Committee Group",
-    y = "Correlation"
-  )
-
-
 # Plot disagreement trends
 plot.disagreement.t <- ggplot(
   disagreement_trends,
@@ -255,7 +206,206 @@ plot.disagreement.t <- ggplot(
   )
 plot.disagreement.t
 
-# plot hist of correlation
+# Fix the function and calculate historical comparison more carefully
+calculate_period_agreement <- function(
+  data,
+  period_name,
+  start_date = NULL,
+  end_date = NULL
+) {
+  # Filter by date range
+  period_data <- data
+  if (!is.null(start_date)) {
+    period_data <- period_data %>% filter(date >= as.Date(start_date))
+  }
+  if (!is.null(end_date)) {
+    period_data <- period_data %>% filter(date <= as.Date(end_date))
+  }
+
+  print(paste(
+    "Analyzing period:",
+    period_name,
+    "with",
+    nrow(period_data),
+    "meetings"
+  ))
+
+  # Get member columns
+  member_cols <- names(period_data)[
+    !names(period_data) %in% c("date", "bank_rate")
+  ]
+
+  # Find active members (participated in at least 10 meetings)
+  active_members <- c()
+  for (member in member_cols) {
+    meetings_participated <- sum(!is.na(period_data[[member]]))
+    if (meetings_participated >= 10) {
+      active_members <- c(active_members, member)
+    }
+  }
+
+  print(paste("Active members:", length(active_members)))
+
+  if (length(active_members) < 2) {
+    return(data.frame(
+      Period = period_name,
+      agreement_pct = NA,
+      n_pairs = 0,
+      n_members = length(active_members)
+    ))
+  }
+
+  # Calculate all pairwise agreements
+  all_agreements <- c()
+  pair_count <- 0
+
+  for (i in 1:(length(active_members) - 1)) {
+    for (j in (i + 1):length(active_members)) {
+      member1 <- active_members[i]
+      member2 <- active_members[j]
+
+      votes1 <- period_data[[member1]]
+      votes2 <- period_data[[member2]]
+
+      # Find meetings where both voted
+      both_voted <- !is.na(votes1) & !is.na(votes2)
+      common_meetings <- sum(both_voted)
+
+      if (common_meetings >= 5) {
+        identical_votes <- sum(votes1[both_voted] == votes2[both_voted])
+        agreement_rate <- identical_votes / common_meetings
+        all_agreements <- c(all_agreements, agreement_rate)
+        pair_count <- pair_count + 1
+      }
+    }
+  }
+
+  if (length(all_agreements) > 0) {
+    mean_agreement <- mean(all_agreements) * 100
+  } else {
+    mean_agreement <- NA
+  }
+
+  return(data.frame(
+    Period = period_name,
+    agreement_pct = round(mean_agreement, 1),
+    n_pairs = pair_count,
+    n_members = length(active_members)
+  ))
+}
+
+# Calculate for different periods
+print("=== CALCULATING HISTORICAL PERIODS ===")
+
+current <- calculate_period_agreement(
+  mpc,
+  "Current (2024-2025)",
+  "2024-01-01",
+  "2025-08-31"
+)
+recent <- calculate_period_agreement(
+  mpc,
+  "Recent (2020-2023)",
+  "2020-01-01",
+  "2023-12-31"
+)
+post_crisis <- calculate_period_agreement(
+  mpc,
+  "Post-Crisis (2010-2019)",
+  "2010-01-01",
+  "2019-12-31"
+)
+crisis <- calculate_period_agreement(
+  mpc,
+  "Crisis (2007-2009)",
+  "2007-01-01",
+  "2009-12-31"
+)
+early <- calculate_period_agreement(
+  mpc,
+  "Early MPC (1997-2006)",
+  "1997-06-01",
+  "2006-12-31"
+)
+all_time <- calculate_period_agreement(
+  mpc,
+  "All Time (1997-2025)",
+  "1997-06-01",
+  "2025-08-31"
+)
+
+# Combine results
+historical_comparison <- rbind(
+  current,
+  recent,
+  post_crisis,
+  crisis,
+  early,
+  all_time
+)
+
+# Create a bar chart comparing periods
+mpc_agree_plot <- historical_comparison %>%
+  filter(Period != "All Time (1997-2025)") %>% # Exclude all-time average for clarity
+  mutate(
+    Period = factor(
+      Period,
+      levels = c(
+        "Early MPC (1997-2006)",
+        "Crisis (2007-2009)",
+        "Post-Crisis (2010-2019)",
+        "Recent (2020-2023)",
+        "Current (2024-2025)"
+      )
+    ),
+    is_current = ifelse(
+      Period == "Current (2024-2025)",
+      "Current",
+      "Historical"
+    )
+  ) %>%
+  ggplot(aes(x = Period, y = agreement_pct, fill = is_current)) +
+  geom_col(width = 0.7) +
+  geom_text(
+    aes(label = paste0(agreement_pct, "%")),
+    vjust = -0.3,
+    size = 4,
+    fontface = "bold"
+  ) +
+  geom_hline(
+    yintercept = 77.5,
+    linetype = "dashed",
+    color = "red",
+    alpha = 0.7
+  ) +
+  annotate(
+    "text",
+    x = 2.5,
+    y = 80,
+    label = "All-time average: 77.5%",
+    color = "red",
+    size = 3.5
+  ) +
+  scale_fill_manual(
+    values = c("Current" = "#e31a1c", "Historical" = "#1f78b4")
+  ) +
+  scale_y_continuous(limits = c(0, 95), breaks = seq(0, 90, 10)) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 10),
+    plot.title = element_text(size = 14, face = "bold", hjust = 0.5),
+    plot.subtitle = element_text(size = 12, hjust = 0.5),
+    legend.position = "none"
+  ) +
+  labs(
+    title = "MPC Voting Agreement Rates",
+    subtitle = "Percentage of pairwise identical votes by period",
+    x = "",
+    y = "Agreement Rate (%)"
+  )
+
+print(mpc_agree_plot)
+
 
 #===============================================
 # Scatter plot of hawkish vs dissent tendencies
@@ -264,9 +414,19 @@ plot.disagreement.t
 library(ggrepel)
 
 # Bar-plot summary by MPC member
+member_patterns <- member_patterns %>%
+  mutate(
+    tilt_category = case_when(
+      net_tilt > 0.1 ~ "Hawkish",
+      net_tilt < -0.1 ~ "Dovish",
+      TRUE ~ "Neutral"
+    )
+  )
+
+# Bar chart with categorical fill
 ggplot(
   member_patterns,
-  aes(x = reorder(member, net_bias), y = net_bias, fill = bias_direction)
+  aes(x = reorder(member, net_tilt), y = net_tilt, fill = tilt_category)
 ) +
   geom_col(alpha = 0.8) +
   coord_flip() +
@@ -278,16 +438,16 @@ ggplot(
     )
   ) +
   labs(
-    title = "MPC Member Net Bias (Hawkish - Dovish)",
+    title = "MPC Member Net Tilt (Hawkish - Dovish)",
     x = "Member",
-    y = "Net Bias Rate",
+    y = "Net Hawkish Tilt",
     fill = "Overall Tendency"
   )
 
-# Scatter plot of net bias vs dissent rate
+# Scatter net tilt vs dissent rate
 plot.member_patterns <- ggplot(
   member_patterns,
-  aes(x = net_bias, y = dissent_rate, color = current_member)
+  aes(x = net_tilt, y = dissent_rate, color = current_member)
 ) +
   geom_point(size = 3) +
   geom_text_repel(aes(label = member), max.overlaps = 25) +
@@ -302,4 +462,5 @@ plot.member_patterns <- ggplot(
     color = ""
   ) +
   theme(legend.position = "bottom")
+
 plot.member_patterns

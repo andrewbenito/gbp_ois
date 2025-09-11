@@ -39,7 +39,7 @@ source(here::here("setup", "08_mpc_voting.R"))
 ## Latest developments: the past three months
 
 Summarising some key developments in Sterling markets in the past 3 months:   
-- **OIS rates** have seen a 'round-trip', rallying in June by 25bp, selling-off in July and August in moves subsequently reversed. 
+- **OIS rates** have seen a 'round-trip', rallying in June by 25bp, selling-off in July and August in moves subsequently reversed.   
 - **Sterling** strengthened against the US Dollar in June (while OIS rallied), and then reversed that (as OIS rates sold-off).  
 - **Gilt yields** rallied (by less than OIS) in June, and that decline has been more than reversed since then and especially at the long-end. Sharp rises in August in 25y+ Gilt yields reversed into September.  
 - **Equities** rallied strongly by a cumulative 5% over the period, and concentrated in the period from July to mid-August. 
@@ -182,7 +182,7 @@ By international standards, this is xxx. [France stands out.]
 Populism likely adds to this risk of fiscal fatigue, including in the UK and France. 
 
 
-## Macro and fiscal news at UK fiscal events
+## Macro news at UK fiscal events
 
 
 
@@ -274,7 +274,7 @@ We make the further point that the rising disagreement among MPC members reflect
 #| label: hist-votes
 #| fig-cap: "A weaker Consensus in MPC rate decisions"
 
-plot.disagreement.t + hist.votes
+plot.disagreement.t + mpc_agree_plot
 ```
 
 Rising disagreement among MPC members culminated in the August 2025 MPC vote requiring a second vote among Committee members in order to secure a clear majority for the rate cut decision.
@@ -292,30 +292,6 @@ plot.member_patterns
 Increasingly nuanced macroeconomic assessments are producing more closely contested votes and heightened disagreement among MPC members. This development places greater emphasis on the quality of macroeconomic analysis and forecasts that underpin MPC decisions. While such complex judgements reinforce the importance of maintaining independence from political pressures, the forecast errors documented earlier pose a risk to both the credibility of the MPC's analytical process and public confidence in its institutional independence. This may leave Sterling markets more sensitive to international spillovers and to political and fiscal news. 
 
 
-```{r}
-#| label: plot-correls-gbp
-#| fig-cap: "Rolling correlation: 10y yields and GBPUSD"
-#| results: hide
-
-source(here::here("setup", "09_bouts_risk_premium.R"))
-
-correl.plot.10y.gbp 
-```
-
-
-
-
-
-```{r}
-#| label: plot-correls-ftse
-#| fig-cap: "Rolling correlation: 10y yields and Equities"
-#| results: hide
-
-correl.plot.10y.ftse 
-```
-
-
-
 # Conclusions: Macro views
 
 1. Government bonds provide less effective portfolio hedging against equity weakness when negative supply shocks become more frequent. In supply-shock driven downturns, both equities and bonds can decline simultaneously, reducing the traditional negative correlation that makes bonds effective diversifiers.
@@ -330,3 +306,6 @@ correl.plot.10y.ftse
 
 
 Fiscal fatigue
+risk premium episodes are hawkish for the BoE
+
+this reinforces the view that bonds 
