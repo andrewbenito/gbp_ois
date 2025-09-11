@@ -619,34 +619,21 @@ plot2y_v_10y <- glc |>
     data = glc |>
       filter(date >= max(date) - years(10)) |>
       slice_tail(n = 10),
-    aes(x = col_4, y = col_20),
+    aes(x = col_4, y = col_20, color = "Past 2 weeks"),
     shape = 4,
-    color = "black", # Highlight last 10 observations
-    size = 3,
-    inherit.aes = FALSE # Don't inherit the color aesthetic
-  ) +
-  geom_label_repel(
-    data = glc |>
-      filter(date >= max(date) - years(10)) |>
-      slice_tail(n = 1), # Just label the most recent point to avoid clutter
-    aes(x = col_4, y = col_20),
-    label = "past 2 weeks",
-    color = "black",
-    size = 3,
-    inherit.aes = FALSE
+    size = 3
   ) +
   geom_hline(yintercept = 0, lty = 4) +
   geom_vline(xintercept = 0, lty = 4) +
   geom_abline(intercept = 0, slope = 1, lty = 2) +
-  scale_color_jco() + # Use ggsci color palette
+  scale_color_jco() +
   labs(
     title = "2y vs 10y Gilt yields",
     subtitle = "sample: past 10 years, daily data",
     x = "2y Gilt yield (%)",
-    y = "10y Gilt yield (%)",
-    name = NULL
+    y = "10y Gilt yield (%)"
   ) +
-  theme(legend.position = "bottom")
+  theme(legend.position = "bottom", legend.title = element_blank())
 # save
 ggsave(
   here("plots", "4.Gilt_2y_v_10y.png"),
@@ -689,21 +676,9 @@ plot5y_v_25y <- glc |>
     data = glc |>
       filter(date >= max(date) - years(10)) |>
       slice_tail(n = 10),
-    aes(x = col_10, y = col_50),
+    aes(x = col_10, y = col_50, color = "Past 2 weeks"),
     shape = 4,
-    color = "black", # Highlight last 10 observations
-    size = 3,
-    inherit.aes = FALSE # Don't inherit the color aesthetic
-  ) +
-  geom_label_repel(
-    data = glc |>
-      filter(date >= max(date) - years(10)) |>
-      slice_tail(n = 1), # Just label the most recent point to avoid clutter
-    aes(x = col_4, y = col_20),
-    label = "past 2 weeks",
-    color = "black",
-    size = 3,
-    inherit.aes = FALSE
+    size = 3
   ) +
   geom_hline(yintercept = 0, lty = 4) +
   geom_vline(xintercept = 0, lty = 4) +
@@ -716,7 +691,8 @@ plot5y_v_25y <- glc |>
     y = "25y Gilt yield (%)",
     name = NULL
   ) +
-  theme(legend.position = "bottom")
+  theme(legend.position = "bottom", legend.title = element_blank())
+plot5y_v_25y
 # save
 ggsave(
   here("plots", "4b.Gilt_5y_v_25y.png"),
