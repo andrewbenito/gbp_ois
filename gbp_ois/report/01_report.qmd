@@ -292,20 +292,42 @@ plot.member_patterns
 Increasingly nuanced macroeconomic assessments are producing more closely contested votes and heightened disagreement among MPC members. This development places greater emphasis on the quality of macroeconomic analysis and forecasts that underpin MPC decisions. While such complex judgements reinforce the importance of maintaining independence from political pressures, the forecast errors documented earlier pose a risk to both the credibility of the MPC's analytical process and public confidence in its institutional independence. This may leave Sterling markets more sensitive to international spillovers and to political and fiscal news. 
 
 
+```{r}
+#| label: plot-rp 
+#| fig-cap: "Correlation UK/US 10y Yield Gap and GBPUSD"
+
+source(here::here("setup", "09_bouts_risk_premium.R"))
+
+correl.plot.10y.gbp
+
+```
+
+
+# Sell-side forecasts for Bank Rate
+
+
+```{r}
+#| label: plot-sellside 
+#| fig-cap: "Sell-side Forecasts for BoE Bank Rate"
+
+source(here::here("setup", "10_sell-side.R"))
+
+plot.sellside.violin
+
+```
+
+
+
+
 # Conclusions: Macro views
 
-1. Government bonds provide less effective portfolio hedging against equity weakness when negative supply shocks become more frequent. In supply-shock driven downturns, both equities and bonds can decline simultaneously, reducing the traditional negative correlation that makes bonds effective diversifiers.
-2. Historical forecast error patterns suggest the MPC faces material upside inflation risks if it maintains current policy settings. The Bank's tendency to overestimate the pace of disinflation, combined with insufficient recognition of the UK's structural supply-side constraints, creates conditions where inflation could persistently exceed the 2% target despite current monetary restriction.
-3. Fiscal sustainability concerns amplify bond market volatility, particularly during data-sensitive periods when investors reassess inflation trajectories. Disappointing economic data, coming from weak supply-side performance, simultaneously raise questions about fiscal capacity and inflation persistence. In these episodes, we should expect yield curve steepening. 
-4. The authorities can mitigate yield curve steepening through active debt maturity management, specifically by reducing the average maturity of new issuance. HMT should prioritise other forms of spending restraint and taxes that face lower implementation risk. Front-loading offers similar benefits. 
-5. If the authorities instead prioritise back-loading fiscal adjustment and/or with higher implementation risk, this would contribute to further steepening.  
-6. Fiscal risk premium episodes tilt hawkish for the BoE. Our sense is that this view surprises most analysts. 
+
+1. UK macro faces a higher incidence of negative supply shocks, which complicates the MPC's task of achieving the 2.0% inflation target. In this environment, government bonds provide a less effective hedge which would structurally weaken demand for bonds.  
+2. Historical forecast error patterns suggest the MPC faces material upside inflation risks if it maintains current policy settings. The Bank's tendency to overestimate the pace of disinflation, combines with insufficient recognition of the UK's structural supply-side constraints. Inflation could persistently exceed the 2% target despite current monetary restriction.
+3. Fiscal sustainability concerns amplify bond market volatility, particularly at the long-end and during data-sensitive periods. Disappointing economic data, coming from weak supply-side performance, simultaneously raise questions about fiscal capacity and inflation persistence. In these episodes, we should expect yield curve steepening. 
+4. The authorities can mitigate yield curve steepening through active debt management, now a bigger feature of the UK policy, reducing the average maturity of new issuance. The second policy options available to contain steepening is that HMT prioritise forms of spending restraint and tax rises with lower implementation risk (eg re-profiling fixed investment plans). Front-loading offers similar benefits. 
+5. Fiscal fatigue is therefore a key form of fiscal risk that bears watching. This risk would crystallise if the authorities instead prioritise back-loading fiscal adjustment and/or with higher implementation risk, this would contribute to further steepening.  
+6. Fiscal risk premium episodes tilt hawkish for the BoE. Our sense is that this view surprises most analysts. The BoE...
  
 
 
-
-
-Fiscal fatigue
-risk premium episodes are hawkish for the BoE
-
-this reinforces the view that bonds 
