@@ -44,7 +44,7 @@ Summarising some key developments in Sterling markets in the past 3 months:
 - **Gilt yields** rallied (by less than OIS) in June, and that decline has been more than reversed since then and especially at the long-end. Sharp rises in August in 25y+ Gilt yields reversed into September.  
 - **Equities** rallied strongly by a cumulative 5% over the period, and concentrated in the period from July to mid-August. 
 
-This pattern points to greater fiscal risks entering into market pricing, especially in August. While fiscal slippage boosts aggregate demand, some crowding-out from these interest rate responses should also be expected. In the past month, fewer rate cuts have been priced to take place over the next year. Internationally, these interest rate effects appear to have emanated from the US and UK more than from Japan or Germany. 
+This pattern points to greater fiscal risks entering into market pricing. While fiscal slippage would boost aggregate demand, some crowding-out from interest rate responses would offset that. During the past month, fewer rate cuts have been priced to take place over the next year (despite more cuts being priced into Fed policy). Internationally, interest rate effects appear to have emanated from the US and UK more than from Japan or Germany. 
 
 
 \newpage
@@ -65,7 +65,7 @@ plot.gilts.eq
 
 ## Spreads (term spreads, swap spreads)
 
-**Term spreads** Setting some historical context for the recent spread of 10y Gilt yields relative to 2y Gilts yields is @fig-2yv10y. This shows how a term spread has been restored relative to different periods over the past 10 years and can distingsuish severa phases over that period.  
+**Term spreads** Setting some historical context for the recent spread of 10y Gilt yields relative to 2y Gilts yields is @fig-2yv10y. A term spread has been restored relative to different periods over the past 10 years and distingsuishes several phases over that period.  
 
 
 ```{r}
@@ -78,7 +78,7 @@ plot2y_v_10y +
   theme(legend.position = "bottom")
 ```
 
-The 10s25s term spread has widened in recent weeks, and by more than the 2s5s and 5s10s spreads (@fig-spreads).  
+The 2s5s and 10s25s term spread has widened in recent weeks, the latter in particular being consistent with fiscal risks and demand/supply balances at the long-end. (@fig-spreads).  
 
 ```{r}
 #| label: fig-spreads
@@ -118,9 +118,9 @@ plot.swsp5y + plot_contributions_5yswsp + plot_layout(widths = c(2,3))
 ```
 
 # Evolving market pricing and OIS curves
-Reflecting related developments over a longer period, @fig-ois-historical shows how GBP OIS curves have evolved over time, alongside the MPC's Bank Rate decisions. Persistent forecast errors shown in this chart reflect a gradual process of markets learning about slow-moving, medium-term factors such as the neutral rate and trend productivity growth. 
+@fig-ois-historical shows how GBP OIS curves have evolved over time, alongside the MPC's Bank Rate decisions. Persistent forecast errors shown in this chart reflect a gradual process of markets learning about slow-moving, medium-term factors such as the neutral interest rate and trend productivity growth. 
 
-@fig-ois-recent zooms-in on how OIS curves and Bank Rate have evolved over the past year, during which the BoE has lowered its policy rate five times. 
+@fig-ois-recent zooms-in on how OIS curves and Bank Rate have evolved over the past year, during which the BoE has lowered its policy rate five times to 4.0% in its August MPC meeting. 
 
 
 ```{r}
@@ -150,7 +150,7 @@ boxplot.neutral
 
 # International spillovers in sovereign bond markets
 
-What of international spillovers in bond markets? Using the Rigobon (2003) methodology, we can estimate the extent to which international spillovers have contributed to fluctuations in 10y Gilt yields. With bond markets 'spilling over' to one another, this aims to quantify to what extent different markets were 'in the driving seat' at a point in time.   
+What of international spillovers in bond markets? Using the Rigobon (2003) methodology, we can estimate the extent to which international spillovers have contributed to fluctuations in 10y Gilt yields and other 10y yields. With bond markets 'spilling over' to one another, this aims to quantify to what extent different markets were 'in the driving seat' at a point in time.   
 
 These estimates point to the US and UK being the main 'drivers' of international bond markets over the past decade, with Japan and Germany have been on the receiving end of these spillovers. 
 
@@ -169,22 +169,20 @@ plot_structural_shocks
 # Fiscal risks
 ## The (international) risk of fiscal fatigue
 
-One Fiscal fatigue occurs where a further fiscal effort is needed to stabilise public debt-to-GDP, but the political will to implement the necessary tax rises or restraint in public spending wanes. 
+'Fiscal fatigue' occurs when a further fiscal effort is needed to stabilise public debt-to-GDP, but the political will to implement the necessary tax rises or restraint in public spending wanes. Fiscal fatigue is a key risk for the UK and other countries with high Debt-to-GDP ratios and challenges from populism. 
 
-We estimate that the UK still has a required fiscal effort of 3% of GDP to stabilise its Debt-to-GDP ratio. While completing that required fiscal effort is forecast by the OBR on current fiscal plans, the issue including for markets is whether the political will exists, absent risk premiums being priced by markets. Implementation risk crystallised in early July when Parliament failed to pass a Welfare bill with welfare savings. 
+We estimate that the UK still has a required fiscal effort of 3% of GDP to stabilise its Debt-to-GDP ratio. While completing that required fiscal effort is forecast by the OBR on current fiscal plans, the issue including for markets is whether the political will exists, absent risk premiums being priced by markets. 
 
-The risk of fiscal fatigue likely lies behind the periodic risk premiums in Sterling markets, including reflected in term spreads and swap spreads shown previously.
+The UK's failure to pass a Welfare bill with welfare savings in early-July was a clear instance of fiscal fatigue, associated with speculation about replacing Chancellor Reeves and loosening the current fiscal rules (see below). The risk of fiscal fatigue implies periodic risk premiums in Sterling markets, including reflected in term spreads and swap spreads shown previously.
 
-Uncertainty in this estimate of fiscal effort means it is worth showing the debt-stabilising primary balance for different combinations of 'r' (effective nominal interest rate on government debt) and 'g' (expected nominal growth rate). Estimates in @tab-dspb suggest the debt-stabilising primary balance would be aorund 0.5-1.0% of GDP, compared with a primary balance at -2.0% in 2024.  
+The required fiscal effort depends on 'r' (effective nominal interest rate on government debt) and 'g' (expected nominal growth rate). Estimates in @tab-dspb suggest the debt-stabilising primary balance would be aorund 0.5-1.0% of GDP, compared with a primary balance at -2.0% in 2024.  
 
-By international standards, this is xxx. [France stands out.]
-
-Populism likely adds to this risk of fiscal fatigue, including in the UK and France. 
+By international standards, this is at the upper end of required fiscal effort, leaving the UK prone to periodic bouts of risk premiums, especially associated with political risks. France provides another example of a large required fiscal effort.
 
 
 ## Macro news at UK fiscal events
 
-
+Fiscal tightening or loosening follows results from the amount of macro and fiscal news at a fiscal event (see @fig-fiscal-fm). On these estimates 
 
 
 
@@ -322,12 +320,12 @@ plot.sellside.violin
 # Conclusions: Macro views
 
 
-1. UK macro faces a higher incidence of negative supply shocks, which complicates the MPC's task of achieving the 2.0% inflation target. In this environment, government bonds provide a less effective hedge which would structurally weaken demand for bonds.  
-2. Historical forecast error patterns suggest the MPC faces material upside inflation risks if it maintains current policy settings. The Bank's tendency to overestimate the pace of disinflation, combines with insufficient recognition of the UK's structural supply-side constraints. Inflation could persistently exceed the 2% target despite current monetary restriction.
-3. Fiscal sustainability concerns amplify bond market volatility, particularly at the long-end and during data-sensitive periods. Disappointing economic data, coming from weak supply-side performance, simultaneously raise questions about fiscal capacity and inflation persistence. In these episodes, we should expect yield curve steepening. 
-4. The authorities can mitigate yield curve steepening through active debt management, now a bigger feature of the UK policy, reducing the average maturity of new issuance. The second policy options available to contain steepening is that HMT prioritise forms of spending restraint and tax rises with lower implementation risk (eg re-profiling fixed investment plans). Front-loading offers similar benefits. 
+1. UK macro faces a higher-than-normal incidence of negative supply shocks. This generates a 'stagflationary' impulse and complicates the MPC's task of achieving the 2.0% inflation target. In this environment, government bonds provide a less effective hedge which would structurally weaken demand for bonds.  
+2. The pattern of past forecast errors points to a material upside inflation risk, if that pattern is repeated partly on underestimating the UK's supply-side weakness.  
+3. Fiscal sustainability concerns amplify bond market volatility, particularly at the long-end and during data-driven periods. Disappointing economic data, coming from weak supply-side performance, simultaneously raise questions about fiscal capacity and inflation persistence. In these episodes, yield curve steepening and risk premium episodes should be expected.  
+4. The authorities can mitigate yield curve steepening through active debt management, now a bigger feature of the UK policy mix, reducing the average maturity of new issuance. A second policy option to contain steepening is that HMT prioritises restraint in public spending and tax rises that face lower implementation risk (eg re-profiling fixed investment plans). Back-loading fiscal adjustment has the opposite effect.  
 5. Fiscal fatigue is therefore a key form of fiscal risk that bears watching. This risk would crystallise if the authorities instead prioritise back-loading fiscal adjustment and/or with higher implementation risk, this would contribute to further steepening.  
-6. Fiscal risk premium episodes tilt hawkish for the BoE. Our sense is that this view surprises most analysts. The BoE...
+6. Fiscal risk premium episodes tilt hawkish for the BoE. Our sense is that this view surprises most analysts. Our current forecast is for the BoE to cut Bank Rate to 3.75% in November, but that forecast is subject to a high degree of uncertainty.
  
 
 

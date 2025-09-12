@@ -201,6 +201,7 @@ plot.disagreement.t <- ggplot(
   geom_smooth(method = "loess", span = 0.3) +
   labs(
     title = "MPC Disagreement",
+    subtitle = "Dissent rate per meeting (loess smoothed, $\alpha$=0.3)",
     y = "Dissent Rate per Meeting",
     x = "Date"
   )
@@ -279,7 +280,6 @@ calculate_period_agreement <- function(
       }
     }
   }
-
   if (length(all_agreements) > 0) {
     mean_agreement <- mean(all_agreements) * 100
   } else {
@@ -369,7 +369,7 @@ mpc_agree_plot <- historical_comparison %>%
   geom_text(
     aes(label = paste0(agreement_pct, "%")),
     vjust = -0.3,
-    size = 4,
+    size = 3,
     fontface = "bold"
   ) +
   geom_hline(
@@ -384,9 +384,9 @@ mpc_agree_plot <- historical_comparison %>%
   scale_y_continuous(limits = c(0, 95), breaks = seq(0, 90, 10)) +
   theme_minimal() +
   theme(
-    axis.text.x = element_text(angle = 45, hjust = 1, size = 10),
-    plot.title = element_text(size = 11, face = "bold", hjust = 0.5),
+    plot.title = element_text(size = 11, face = "bold"),
     plot.subtitle = element_text(size = 9, hjust = 0.5),
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 9),
     legend.position = "none"
   ) +
   labs(
