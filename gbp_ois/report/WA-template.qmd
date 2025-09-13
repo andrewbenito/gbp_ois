@@ -1,0 +1,52 @@
+---
+title: "UK -- Week Ahead"
+subtitle: "w/b: 15/09/25"
+format: pdf
+---
+
+**Overview** Xxx will dominate the week. 
+
+**Key releases** 
+
+The Government continues to look politically weak raising the prospect of fiscal slippage in the run-in to (and after) the Nov 26 Budget.  
+
+**BoE speakers** 
+
+# Week in Review
+
+```{r}
+#| include: false
+source(here::here("setup", "01_create_data.R"))
+source(here::here("setup", "02_plots_ois_gilts_fx_equity.R"))
+
+```
+
+
+Stems
+- Chart of past month Gilt and Equities 
+
+
+# Week Ahead Preview
+
+CPI (Weds, xxx): 
+
+Labour market: 
+
+
+## Macro narrative  
+The UK starts from facing an ongoing inflation problem and while unemployment is historically low, it is rising and starting to open up slack. Facing this 'stagflationary' impulse, the BoE requires some degree of slack to open-up if it is to ensure a return of CPI to its 2.0% target, from its current 3.8%. 
+
+Facing this trade-off between the speed of returning inflation to target and degree of economic slack, we expect the BoE to hold Bank Rate at 4.0% until the new year. 
+
+
+2. The pattern of past forecast errors points to a material upside inflation risk, if that pattern is repeated partly on underestimating the UK's supply-side weakness.  
+3. Fiscal sustainability concerns amplify bond market volatility, particularly at the long-end and during data-driven periods. Disappointing economic data, coming from weak supply-side performance, simultaneously raise questions about fiscal capacity and inflation persistence. In these episodes, yield curve steepening and risk premium episodes should be expected.  
+4. The authorities can mitigate yield curve steepening through active debt management, now a bigger feature of the UK policy mix, reducing the average maturity of new issuance. A second policy option to contain steepening is that HMT prioritises restraint in public spending and tax rises that face lower implementation risk (eg re-profiling fixed investment plans). Back-loading fiscal adjustment has the opposite effect.  
+5. Fiscal fatigue is therefore a key form of fiscal risk that bears watching. This risk would crystallise if the authorities instead prioritise back-loading fiscal adjustment and/or with higher implementation risk, this would contribute to further steepening.  
+6. Fiscal risk premium episodes tilt hawkish for the BoE. Our sense is that this view surprises most analysts. Our current forecast is for the BoE to cut Bank Rate to 3.75% in November, but that forecast is subject to a high degree of uncertainty.
+
+
+**Inflation forecasts**
+
+
+**OIS curves** 

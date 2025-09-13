@@ -384,8 +384,8 @@ mpc_agree_plot <- historical_comparison %>%
   scale_y_continuous(limits = c(0, 95), breaks = seq(0, 90, 10)) +
   theme_minimal() +
   theme(
-    plot.title = element_text(size = 11, face = "bold"),
-    plot.subtitle = element_text(size = 9, hjust = 0.5),
+    plot.title = element_text(size = 10, face = "bold"),
+    plot.subtitle = element_text(size = 9),
     axis.text.x = element_text(angle = 45, hjust = 1, size = 9),
     legend.position = "none"
   ) +
