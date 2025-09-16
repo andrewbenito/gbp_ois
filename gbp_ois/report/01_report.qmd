@@ -63,12 +63,7 @@ plot.ois.gbp
 plot.gilts.eq
 ```
 
-## Spreads (term spreads, swap spreads)
-
-**Term spreads** Setting some historical context for the recent spread of 10y Gilt yields relative to 2y Gilts yields is @fig-2yv10y. A term spread has been restored relative to different periods over the past 10 years and distingsuishes several phases over that period.  
-
-
-# Evolving market pricing and OIS curves
+# Evolving OIS curves
 @fig-ois-historical shows how GBP OIS curves have evolved over time, alongside the MPC's Bank Rate decisions. Persistent forecast errors shown in this chart reflect a gradual process of markets learning about slow-moving, medium-term factors such as the neutral interest rate and trend productivity growth. 
 
 @fig-ois-recent zooms-in on how OIS curves and Bank Rate have evolved over the past year, during which the BoE has lowered its policy rate five times to 4.0% in its August MPC meeting. 

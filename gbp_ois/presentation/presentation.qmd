@@ -4,13 +4,18 @@ title: "GBP Macro Report"
 author: Andrew Benito
 date: last-modified
 format: beamer
+execute:
+  warning: false
+  message: false
+  echo: false
 ---
 
 ```{r}
 #| include: false
-source(here::here("scripts", "01_create_data.R"))
-source(here::here("scripts", "02_plots_ois_gilts_fx_equity.R"))
-source(here::here("scripts", "07_BoE-forecasts.R"))
+source(here::here("setup", "01_create_data.R"))
+source(here::here("setup", "02_plots_ois_gilts_fx_equity.R"))
+source(here::here("setup", "07_BoE-forecasts.R"))
+source(here::here("setup", "08_mpc_voting.R"))
 
 ```
 
