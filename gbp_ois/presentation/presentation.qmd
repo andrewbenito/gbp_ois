@@ -21,11 +21,11 @@ source(here::here("setup", "08_mpc_voting.R"))
 
 # UK Macro views
 
-1. Repeating the past pattern of BoE forecast errors points to an upside inflation risk, owing to underestimating the UK's supply-side weakness.   
+1. **Upside inflation risk** resulting from the past pattern of BoE forecast errors and underestimating the UK's supply-side weakness.   
 
-2. Fiscal sustainability concerns amplify bond market volatility, particularly at the long-end and during data-driven periods. Disappointing economic data, coming from weak supply-side performance, and fiscal fatigue simultaneously raise questions about fiscal capacity and inflation persistence. In these episodes, yield curve steepening and risk premium episodes should be expected. These tilt the BoE hawkish.   
+2. **Bond market volatility** amplified by fiscal sustainability concerns. Weak supply-side performance and 'fiscal fatigue' raise questions about fiscal capacity and inflation persistence. In these episodes, yield curve steepening and risk premium episodes should be expected. Fiscal risk premiums tilt the BoE hawkish.   
 
-3. The authorities can mitigate yield curve steepening through active debt management, now a bigger feature of the UK policy mix, reducing the average maturity of new issuance. A second policy option to contain steepening is that HMT prioritises restraint in public spending and tax rises that face lower implementation risk (eg re-profiling fixed investment plans). Back-loading fiscal adjustment has the opposite effect. Front-loading would also mitigate inflation risk. 
+3. Authorities will mitigate yield curve steepening by active **debt management**, reducing the average maturity of new issuance. HMT should also prioritises spending restraint and tax rises with lower implementation risk (eg re-profiling fixed investment plans).   
 
 
 # GBP Market developments I
@@ -112,9 +112,8 @@ plot.disagreement.t + mpc_agree_plot
 
 # UK Macro views
 
+1. **Upside inflation risk** resulting from the past pattern of BoE forecast errors and underestimating the UK's supply-side weakness.   
 
-1. Repeating the past pattern of BoE forecast errors points to an upside inflation risk, owing to underestimating the UK's supply-side weakness.   
+2. **Bond market volatility** amplified by fiscal sustainability concerns. Weak supply-side performance and 'fiscal fatigue' raise questions about fiscal capacity and inflation persistence. In these episodes, yield curve steepening and risk premium episodes should be expected. Fiscal risk premiums tilt the BoE hawkish.   
 
-2. Fiscal sustainability concerns amplify bond market volatility, particularly at the long-end and during data-driven periods. Disappointing economic data, coming from weak supply-side performance, and fiscal fatigue simultaneously raise questions about fiscal capacity and inflation persistence. In these episodes, yield curve steepening and risk premium episodes should be expected. These tilt the BoE hawkish.   
-
-3. The authorities can mitigate yield curve steepening through active debt management, now a bigger feature of the UK policy mix, reducing the average maturity of new issuance. A second policy option to contain steepening is that HMT prioritises restraint in public spending and tax rises that face lower implementation risk (eg re-profiling fixed investment plans). Back-loading fiscal adjustment has the opposite effect. Front-loading would also mitigate inflation risk. 
+3. Authorities will mitigate yield curve steepening by active **debt management**, reducing the average maturity of new issuance. HMT should also prioritises spending restraint and tax rises with lower implementation risk (eg re-profiling fixed investment plans).
