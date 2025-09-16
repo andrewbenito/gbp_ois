@@ -1,4 +1,5 @@
 library(ggbeeswarm)
+library(ggrepel)
 
 
 mpc_dates <- as.Date(c(
@@ -40,7 +41,8 @@ sellside.long <- sellside |>
     medianR = ifelse(is.na(realized), median(rate, na.rm = TRUE), realized)
   ) |>
   ungroup() |>
-  arrange(date, bank)
+  arrange(date, bank) |>
+  filter(date >= '2025-05-01')
 
 
 # Plot: Sell-side Views----

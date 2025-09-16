@@ -1,5 +1,4 @@
-# 01_create_data.R
-rm(list = ls())
+# xx_mpc_voting.R
 lapply(
   c(
     'here',
@@ -259,7 +258,7 @@ ggplot(
     x = "nth meeting from start date",
     y = "change from peak, pp",
     color = "start date:",
-    caption = "Sources: BoE, Eisler Capital"
+    caption = "Sources: BoE"
   ) +
   theme(legend.position = "bottom")
 

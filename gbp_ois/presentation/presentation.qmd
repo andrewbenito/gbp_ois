@@ -1,29 +1,115 @@
 ---
-title: "GBP Rates Report"
+title: "GBP Macro Report"
 #subtitle: 
 author: Andrew Benito
 date: last-modified
 format: beamer
 ---
 
+```{r}
+#| include: false
+source(here::here("scripts", "01_create_data.R"))
+source(here::here("scripts", "02_plots_ois_gilts_fx_equity.R"))
+source(here::here("scripts", "07_BoE-forecasts.R"))
+
+```
+
 # UK Macro views
 
+1. Repeating the past pattern of BoE forecast errors points to an upside inflation risk, owing to underestimating the UK's supply-side weakness.   
+
+2. Fiscal sustainability concerns amplify bond market volatility, particularly at the long-end and during data-driven periods. Disappointing economic data, coming from weak supply-side performance, and fiscal fatigue simultaneously raise questions about fiscal capacity and inflation persistence. In these episodes, yield curve steepening and risk premium episodes should be expected. These tilt the BoE hawkish.   
+
+3. The authorities can mitigate yield curve steepening through active debt management, now a bigger feature of the UK policy mix, reducing the average maturity of new issuance. A second policy option to contain steepening is that HMT prioritises restraint in public spending and tax rises that face lower implementation risk (eg re-profiling fixed investment plans). Back-loading fiscal adjustment has the opposite effect. Front-loading would also mitigate inflation risk. 
 
 
-# GBP Market developments
+# GBP Market developments I
 
+```{r}
+#| label: fig-ois
+#| fig-cap: "OIS and Sterling"
+#| results: hide
+
+plot.ois.gbp
+```
+
+# GBP Market developments II
+
+```{r}
+#| label: fig-gilts
+#| fig-cap: "Gilts and Equities"
+#| results: hide
+
+plot.gilts.eq
+```
 
 # Evolving macro forecasts
 
+```{r}
+#| label: fig-infl-successive
+#| fig-cap: "Successive BoE Inflation Forecasts"
+#| results: hide
 
-# A test of fiscal fatigue
+infl.forecasts.latest
+```
+
+# Successive OIS curves tilting hawkish
+
+
+```{r}
+#| label: fig-ois-successive
+#| fig-cap: "Successive OIS Curves"
+#| results: hide
+
+ois2
+```
+
+
+# A test of fiscal fatigue?
+
+
+```{r}
+#| label: fig-fatigue
+#| fig-cap: "Fiscal fatigue and risk premium in OIS and Sterling"
+
+ois_fatigue
+```
+
+
+
+# International spillovers in bond markets
+
+```{r}
+#| label: fig-rigobon
+#| fig-cap: "International spillovers"
+#| results: hide
+
+source(here("setup", "04_Rigobon.R"))
+
+plot_structural_shocks
+
+```
 
 
 # MPC Voting: increased disagreement
 
 
 
+```{r}
+#| label: hist-votes
+#| fig-cap: "A weaker Consensus in MPC rate decisions"
+
+plot.disagreement.t + mpc_agree_plot
+```
+
+
+
+
 # UK Macro views
 
 
+1. Repeating the past pattern of BoE forecast errors points to an upside inflation risk, owing to underestimating the UK's supply-side weakness.   
 
+2. Fiscal sustainability concerns amplify bond market volatility, particularly at the long-end and during data-driven periods. Disappointing economic data, coming from weak supply-side performance, and fiscal fatigue simultaneously raise questions about fiscal capacity and inflation persistence. In these episodes, yield curve steepening and risk premium episodes should be expected. These tilt the BoE hawkish.   
+
+3. The authorities can mitigate yield curve steepening through active debt management, now a bigger feature of the UK policy mix, reducing the average maturity of new issuance. A second policy option to contain steepening is that HMT prioritises restraint in public spending and tax rises that face lower implementation risk (eg re-profiling fixed investment plans). Back-loading fiscal adjustment has the opposite effect. Front-loading would also mitigate inflation risk. 

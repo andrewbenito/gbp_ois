@@ -68,52 +68,6 @@ plot.gilts.eq
 **Term spreads** Setting some historical context for the recent spread of 10y Gilt yields relative to 2y Gilts yields is @fig-2yv10y. A term spread has been restored relative to different periods over the past 10 years and distingsuishes several phases over that period.  
 
 
-#```{r}
-##| label: fig-2yv10y
-##| fig-cap: "Gilt yields"
-
-# plot2y_v_10y +
-#  plot5y_v_25y +
-#  plot_layout(guides = "collect") &
-#  theme(legend.position = "bottom")
-#```
-
-The 2s5s and 10s25s term spread has widened in recent weeks, the latter in particular being consistent with fiscal risks and demand/supply balances at the long-end. (@fig-spreads).  
-
-#```{r}
-##| label: fig-spreads
-##| fig-cap: "Term spreads in Gilt yields"
-##| fig-height: 3
-
-#plot2s5s +
-  plot5s10s +
-  plot10s25s +
-  plot_layout(
-    axis_titles = "collect",
-    ncol = 3,
-    heights = 0.7,
-    widths = 1,
-    guides = "collect"
-  ) &
-  theme(plot.margin = margin(2, 2, 2, 2)) &
-  ylim(range(
-    c(
-      layer_data(plot2s5s)$y,
-      layer_data(plot5s10s)$y,
-      layer_data(plot10s25s)$y
-    ),
-    na.rm = TRUE
-  ))
-#```
-
-#```{r}
-##| label: fig-swsp
-##| fig-cap: "5y swap spreads"
-
-#plot.swsp5y + plot_contributions_5yswsp + plot_layout(widths = c(2,3))
-
-#```
-
 # Evolving market pricing and OIS curves
 @fig-ois-historical shows how GBP OIS curves have evolved over time, alongside the MPC's Bank Rate decisions. Persistent forecast errors shown in this chart reflect a gradual process of markets learning about slow-moving, medium-term factors such as the neutral interest rate and trend productivity growth. 
 
