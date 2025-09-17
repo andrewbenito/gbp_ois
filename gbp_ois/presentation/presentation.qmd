@@ -25,7 +25,7 @@ source(here::here("setup", "08_mpc_voting.R"))
 
 2. **Bond market volatility** amplified by fiscal sustainability concerns. Weak supply-side performance and 'fiscal fatigue' raise questions about fiscal capacity and inflation persistence. In these episodes, yield curve steepening and risk premium episodes should be expected. Fiscal risk premiums tilt the BoE hawkish.   
 
-3. Authorities will mitigate yield curve steepening by active **debt management**, reducing the average maturity of new issuance. HMT should also prioritises spending restraint and tax rises with lower implementation risk (eg re-profiling fixed investment plans).   
+3. Authorities will mitigate yield curve steepening by active **debt management**, reducing the average maturity of new issuance. HMT can prioritise spending restraint and tax rises with lower implementation risk (eg re-profiling fixed investment plans).   
 
 
 # GBP Market developments I
@@ -116,4 +116,4 @@ plot.disagreement.t + mpc_agree_plot
 
 2. **Bond market volatility** amplified by fiscal sustainability concerns. Weak supply-side performance and 'fiscal fatigue' raise questions about fiscal capacity and inflation persistence. In these episodes, yield curve steepening and risk premium episodes should be expected. Fiscal risk premiums tilt the BoE hawkish.   
 
-3. Authorities will mitigate yield curve steepening by active **debt management**, reducing the average maturity of new issuance. HMT should also prioritises spending restraint and tax rises with lower implementation risk (eg re-profiling fixed investment plans).
+3. Authorities will mitigate yield curve steepening by active **debt management**, reducing the average maturity of new issuance. HMT can prioritise spending restraint and tax rises with lower implementation risk (eg re-profiling fixed investment plans).
